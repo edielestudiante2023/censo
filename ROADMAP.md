@@ -42,12 +42,14 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 - [x] README.md y ROADMAP.md
 
 ### Hito 1 — Configuración local
-- [ ] Copiar `env` → `.env`
-- [ ] Configurar `app.baseURL` y entorno `development`
-- [ ] Configurar BD local en `.env` (MariaDB localhost, base `censo`, root sin pass)
-- [ ] Crear base `censo` en MariaDB local (vía script/CLI, no phpMyAdmin)
-- [ ] Verificar conexión (`php spark db:table --show` o migración de prueba)
-- [ ] Configurar BD de producción en `.env` de DigitalOcean (no en git)
+- [x] Copiar `env` → `.env`
+- [x] Configurar `app.baseURL` (`http://localhost:8080/`) y entorno `development`
+- [x] Configurar BD local en `.env` (MariaDB localhost, base `censo`, root sin pass)
+- [x] Generar `encryption.key` (`php spark key:generate`)
+- [x] Base `censo` disponible en MariaDB local (ya existía) y conexión verificada (`db:table --show`)
+- [ ] Configurar BD de producción en `.env` del servidor (no en git)
+
+> **Producción:** sitio creado en aaPanel → https://censo.cycloidtalent.com/ (Ubuntu 24.04, ruta `/www/wwwroot/censo`). Acceso SSH y credenciales del superadmin en archivos de claves del usuario (NO en el repo).
 
 ### Hito 2 — Modelo de datos (migraciones)
 **Núcleo / seguridad**
