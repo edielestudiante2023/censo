@@ -132,6 +132,7 @@
                                         <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id']) ?>">Ver</a>
                                         <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/edit') ?>">Editar</a>
                                         <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/config') ?>">Configurar</a>
+                                        <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/usuarios') ?>">Usuarios</a>
                                     </div>
                                 </td>
                             </tr>

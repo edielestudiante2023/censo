@@ -14,7 +14,7 @@
 - **Superadmin:** `edison.cuervo@cycloidtalent.com` (la contraseña vive en `superadmin.password` del `.env`, NO en git).
 - **Git:** ramas `main` (estable) y `cycloid` (desarrollo). Último commit incluye SSL DigitalOcean.
 
-**PRÓXIMO PUNTO DE ENTRADA → Hito 6 (backoffice).** Ya quedaron implementados el CRUD de `clientes`, la configuración del conjunto, la gestión básica de torres y el **generador de inmuebles**. Continuar con gestión de usuarios por cliente.
+**PRÓXIMO PUNTO DE ENTRADA → Hito 6 (backoffice).** Ya quedaron implementados el CRUD de `clientes`, la configuración del conjunto, la gestión básica de torres, el **generador de inmuebles** y la gestión de usuarios por cliente. Continuar con tablero: total de inmuebles vs respondidos y faltantes por diligenciar.
 
 **Hito 11 quedó parcialmente adelantado y guardado.** El login ya tiene metatags PWA, manifest, service worker, tarjeta de instalación, modal iOS e íconos (`icon-192`, `icon-512` y variantes maskable). También quedaron guardados los assets originales `entrega-04.png` y `entrega-05.png` en `public/assets/icons/`; por ahora no están referenciados por la app. Pendiente: probar instalabilidad real con Lighthouse/DevTools y, cuando se despliegue, validar en HTTPS de producción.
 
@@ -130,7 +130,7 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 ### Hito 6 — Panel administración (backoffice)
 - [x] CRUD clientes (superadmin/admin) con logo y colores (branding)
 - [x] Configuración del conjunto: tipo, torres, **generador de inmuebles** (rango casas / torres×pisos×aptos)
-- [ ] Gestión de usuarios por cliente
+- [x] Gestión de usuarios por cliente
 - [ ] Tablero: total inmuebles vs respondidos (faltantes por diligenciar)
 - [ ] Visualización/exportación de respuestas
 

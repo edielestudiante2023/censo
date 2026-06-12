@@ -26,6 +26,12 @@ $routes->group('admin', ['filter' => 'role:superadmin,admin'], static function (
     $routes->post('clientes/(:num)/config/generar-casas', 'Admin\ClienteConfiguracionController::generateCasas/$1');
     $routes->post('clientes/(:num)/config/generar-apartamentos', 'Admin\ClienteConfiguracionController::generateApartamentos/$1');
     $routes->post('clientes/(:num)/config/inmuebles/(:num)/delete', 'Admin\ClienteConfiguracionController::deleteInmueble/$1/$2');
+    $routes->get('clientes/(:num)/usuarios', 'Admin\ClienteUsuariosController::index/$1');
+    $routes->get('clientes/(:num)/usuarios/new', 'Admin\ClienteUsuariosController::new/$1');
+    $routes->post('clientes/(:num)/usuarios', 'Admin\ClienteUsuariosController::create/$1');
+    $routes->get('clientes/(:num)/usuarios/(:num)/edit', 'Admin\ClienteUsuariosController::edit/$1/$2');
+    $routes->post('clientes/(:num)/usuarios/(:num)', 'Admin\ClienteUsuariosController::update/$1/$2');
+    $routes->post('clientes/(:num)/usuarios/(:num)/delete', 'Admin\ClienteUsuariosController::delete/$1/$2');
     $routes->get('clientes/(:num)', 'Admin\ClientesController::show/$1');
     $routes->get('clientes/(:num)/edit', 'Admin\ClientesController::edit/$1');
     $routes->post('clientes/(:num)', 'Admin\ClientesController::update/$1');
