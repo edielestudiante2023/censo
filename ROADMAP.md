@@ -91,9 +91,10 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 
 > Ejecutar: `php spark db:seed DatabaseSeeder`. Para producción, definir primero `superadmin.*` en el `.env` del servidor (no va en git).
 
-### Hito 4 — Modelos y entidades
-- [ ] Models CI4 por tabla con validaciones y relaciones
-- [ ] Filtro/scope multi-tenant por `cliente_id`
+### Hito 4 — Modelos y entidades ✅ (18 models, sin errores de sintaxis)
+- [x] Models CI4 por tabla (núcleo, estructura, catálogos, QR, censos + hijas)
+- [x] Filtro/scope multi-tenant por `cliente_id` (`forCliente()`); hijas con `forCenso()`
+- [ ] Validaciones por modelo (se afinan al construir formularios/CRUD)
 
 ### Hito 5 — Autenticación y autorización
 - [ ] Login (sin sesión requerida para instalar PWA ni para formularios públicos)
