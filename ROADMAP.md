@@ -5,7 +5,7 @@
 
 ---
 
-## ESTADO ACTUAL / HANDOFF (al 2026-06-11)
+## ESTADO ACTUAL / HANDOFF (al 2026-06-12)
 
 **Hitos 0–5 COMPLETOS y verificados en LOCAL y PRODUCCIÓN.** La app tiene login funcional en ambos entornos.
 
@@ -14,7 +14,9 @@
 - **Superadmin:** `edison.cuervo@cycloidtalent.com` (la contraseña vive en `superadmin.password` del `.env`, NO en git).
 - **Git:** ramas `main` (estable) y `cycloid` (desarrollo). Último commit incluye SSL DigitalOcean.
 
-**PRÓXIMO PUNTO DE ENTRADA → Hito 8 (formularios públicos).** El Hito 7 de generación de QR quedó completo en `cycloid`: QR por instrumento, token único, SVG dinámico, resolvedor público `/q/{token}` y pieza imprimible con branding del cliente.
+**PRÓXIMO PUNTO DE ENTRADA → Hito 9 (PDF).** El Hito 8 de formularios públicos quedó completo en `cycloid`: selección de inmueble no digitable, consentimiento Habeas Data obligatorio, formularios públicos para censo poblacional y mascotas, firma en canvas, uploads a `writable/uploads`, validación servidor-side mínima y guardado transaccional.
+
+**Validación local Hito 8:** probado por HTTP real con CSRF usando `http://127.0.0.1:8080/q/{token}`. En esta máquina `localhost:8080` puede resolver a otro proyecto local (`actas`), por eso para pruebas de `censo` usar `127.0.0.1:8080` si hay conflicto.
 
 **Hito 11 quedó parcialmente adelantado y guardado.** El login ya tiene metatags PWA, manifest, service worker, tarjeta de instalación, modal iOS e íconos (`icon-192`, `icon-512` y variantes maskable). También quedaron guardados los assets originales `entrega-04.png` y `entrega-05.png` en `public/assets/icons/`; por ahora no están referenciados por la app. Pendiente: probar instalabilidad real con Lighthouse/DevTools y, cuando se despliegue, validar en HTTPS de producción.
 
@@ -139,14 +141,14 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 - [x] Pieza gráfica con branding del cliente (logo) para imprimir/pegar en torres
 
 ### Hito 8 — Formularios públicos (PWA, anónimos)
-- [x] Resolver QR token → cliente + tipo de instrumento *(placeholder público listo; formularios reales siguen en este hito)*
-- [ ] Selección de inmueble no digitable (torre→apto / casa) según config del cliente
-- [ ] Pantalla de consentimiento Habeas Data (obligatorio)
-- [ ] **Formulario A poblacional** con secciones n-items (propietarios, residentes, arrendatarios, vehículos, teléfonos)
-- [ ] **Formulario B mascotas** con n-items mascotas + subida de fotos (cámara)
-- [ ] Subida de archivos a `writable/uploads` (en BD solo la ruta)
-- [ ] **Firma en canvas táctil** → guardar PNG
-- [ ] Validaciones y guardado transaccional
+- [x] Resolver QR token → cliente + tipo de instrumento
+- [x] Selección de inmueble no digitable (torre→apto / casa) según config del cliente
+- [x] Pantalla de consentimiento Habeas Data (obligatorio)
+- [x] **Formulario A poblacional** con secciones n-items (propietarios, residentes, arrendatarios, vehículos, teléfonos)
+- [x] **Formulario B mascotas** con n-items mascotas + subida de fotos (cámara)
+- [x] Subida de archivos a `writable/uploads` (en BD solo la ruta)
+- [x] **Firma en canvas táctil** → guardar PNG
+- [x] Validaciones y guardado transaccional
 
 ### Hito 9 — PDF
 - [ ] Integrar motor PDF (dompdf)

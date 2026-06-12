@@ -12,6 +12,8 @@ $routes->get('login', 'AuthController::login');
 $routes->post('login', 'AuthController::attemptLogin');
 $routes->get('logout', 'AuthController::logout');
 $routes->get('q/(:segment)', 'QrPublicController::resolve/$1');
+$routes->post('q/(:segment)/form', 'QrPublicController::form/$1');
+$routes->post('q/(:segment)/submit', 'QrPublicController::submit/$1');
 
 // Area autenticada
 $routes->get('dashboard', 'DashboardController::index', ['filter' => 'auth']);
