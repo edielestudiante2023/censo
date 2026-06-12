@@ -59,9 +59,9 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 - [x] `clientes` (nombre_tercero, tipo_documento, documento/NIT, direccion, ciudad, telefono, persona_contacto, email, logo, color_primario, color_secundario, tipo_conjunto[casas|apartamentos|mixto], slug, texto_habeas_data, activo)
 - [x] `usuarios` (cliente_id NULL si superadmin/admin, rol_id, nombre, email, password_hash, telefono, activo, last_login)
 
-**Estructura física**
-- [ ] `torres` (cliente_id, nombre, num_pisos) — solo aptos/mixto
-- [ ] `inmuebles` (cliente_id, torre_id NULL en casas, tipo[casa|apartamento], identificador, piso) — único(cliente_id,torre_id,identificador)
+**Estructura física** — LOTE 2 ✅ migrado en local
+- [x] `torres` (cliente_id, nombre, num_pisos) — solo aptos/mixto
+- [x] `inmuebles` (cliente_id, torre_id NULL en casas, tipo[casa|apartamento], identificador, piso) — único(cliente_id,torre_id,identificador)
 
 **QR**
 - [ ] `qr_codes` (cliente_id, tipo_instrumento[poblacional|mascotas], token único, titulo, activo)
@@ -78,11 +78,11 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 - [ ] `censos_mascotas` (cliente_id, qr_id, inmueble_id, autorizacion_datos, fecha_autorizacion, responsable_nombre/documento/telefono/correo, firmante_nombre, firma_imagen, pdf_ruta, pdf_enviado, fecha_envio, ip, user_agent)
 - [ ] `mascotas` (censo_mascota_id, nombre, tipo_mascota_id, edad, raza_color, vacunacion_completa, esterilizada, foto_ruta, foto_carne_ruta, foto_poliza_ruta)
 
-**Catálogos**
-- [ ] `tipos_documento` (NIT, CC, CE, TI, …)
-- [ ] `parentescos`
-- [ ] `tipos_vehiculo` (carro, moto, bici, …)
-- [ ] `tipos_mascota` (perro, gato, …)
+**Catálogos** — LOTE 2 ✅ migrado en local (tablas creadas; datos en Hito 3 seeders)
+- [x] `tipos_documento` (NIT, CC, CE, TI, …)
+- [x] `parentescos`
+- [x] `tipos_vehiculo` (carro, moto, bici, …)
+- [x] `tipos_mascota` (perro, gato, …)
 
 ### Hito 3 — Seeders
 - [ ] Seeder de catálogos (tipos_documento, parentescos, tipos_vehiculo, tipos_mascota)
