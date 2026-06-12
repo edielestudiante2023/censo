@@ -14,7 +14,9 @@
 - **Superadmin:** `edison.cuervo@cycloidtalent.com` (la contraseña vive en `superadmin.password` del `.env`, NO en git).
 - **Git:** ramas `main` (estable) y `cycloid` (desarrollo). Último commit incluye SSL DigitalOcean.
 
-**PRÓXIMO PUNTO DE ENTRADA → Hito 6 (backoffice).** Empezar por: CRUD de `clientes` (con logo/colores), configuración del conjunto y **generador de inmuebles**. No hay tareas a medias de hitos previos; los `[ ]` restantes pertenecen explícitamente a su hito futuro.
+**PRÓXIMO PUNTO DE ENTRADA → Hito 6 (backoffice).** Empezar por: CRUD de `clientes` (con logo/colores), configuración del conjunto y **generador de inmuebles**.
+
+**Hito 11 quedó parcialmente adelantado y guardado.** El login ya tiene metatags PWA, manifest, service worker, tarjeta de instalación, modal iOS e íconos (`icon-192`, `icon-512` y variantes maskable). También quedaron guardados los assets originales `entrega-04.png` y `entrega-05.png` en `public/assets/icons/`; por ahora no están referenciados por la app. Pendiente: probar instalabilidad real con Lighthouse/DevTools y, cuando se despliegue, validar en HTTPS de producción.
 
 ### Flujo de trabajo (repetir en cada avance)
 1. Desarrollar en `cycloid`, probar en LOCAL (`php spark serve`).
@@ -160,12 +162,13 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 - [ ] Al finalizar: enviar PDF al **diligenciador** y al **cliente**
 
 ### Hito 11 — PWA instalable desde login
-- [ ] Verificar HTTPS/localhost e íconos (`public/assets/icons/icon-192.png`, `icon-512.png`)
-- [ ] `public/manifest_login.json` (id/start_url = ruta de login)
-- [ ] `public/sw_login.js` (service worker minimalista, network-first)
-- [ ] Tarjeta de instalación + modal iOS en la vista de login
-- [ ] Meta tags PWA + registro del SW
+- [x] Íconos disponibles (`public/assets/icons/icon-192.png`, `icon-512.png`, `icon-192-maskable.png`, `icon-512-maskable.png`)
+- [x] `public/manifest_login.json` (id/start_url = ruta de login)
+- [x] `public/sw_login.js` (service worker minimalista, network-first)
+- [x] Tarjeta de instalación + modal iOS en la vista de login
+- [x] Meta tags PWA + registro del SW
 - [ ] Verificar instalabilidad (Lighthouse / DevTools)
+- [ ] Validar en producción HTTPS después del deploy
 
 ### Hito 12 — Despliegue (pipeline ya probado de punta a punta)
 - [x] Migrar en LOCAL (`php spark migrate`) y validar
