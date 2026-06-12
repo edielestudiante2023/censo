@@ -21,6 +21,7 @@ class ClientesController extends BaseController
                 ->orLike('documento', $q)
                 ->orLike('email', $q)
                 ->orLike('ciudad', $q)
+                ->orLike('slug', $q)
                 ->groupEnd();
         }
 

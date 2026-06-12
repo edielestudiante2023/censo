@@ -58,7 +58,10 @@
                 <h2><?= esc($cliente['nombre_tercero']) ?></h2>
                 <p><?= esc($cliente['slug']) ?></p>
             </div>
-            <a class="btn btn-primary" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/edit') ?>">Editar cliente</a>
+            <div class="actions" style="margin-top:0;">
+                <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/config') ?>">Configurar conjunto</a>
+                <a class="btn btn-primary" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/edit') ?>">Editar cliente</a>
+            </div>
         </div>
 
         <?php if (session('error')): ?>
