@@ -48,6 +48,13 @@
                         <span>Crear conjuntos, editar branding y preparar la configuracion del inmueble.</span>
                     </a>
                 </div>
+            <?php elseif (in_array($rol ?? '', ['cliente', 'consejo', 'comite'], true)): ?>
+                <div class="modules">
+                    <a class="module" href="<?= base_url('tablero') ?>">
+                        <strong>Tablero</strong>
+                        <span>Consultar avance del censo y faltantes por diligenciar.</span>
+                    </a>
+                </div>
             <?php endif; ?>
         </div>
     </div>
