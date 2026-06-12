@@ -142,7 +142,10 @@
                                 <td data-label="Fecha"><?= esc($respuesta['created_at']) ?></td>
                                 <td data-label="Firmante"><?= esc($respuesta['firmante_nombre'] ?: 'Sin firmante') ?></td>
                                 <td data-label="Contacto"><?= esc($respuesta['contacto'] ?: 'Sin contacto') ?></td>
-                                <td data-label="PDF"><?= (int) $respuesta['pdf_enviado'] === 1 ? 'Enviado' : 'Pendiente' ?></td>
+                                <td data-label="PDF">
+                                    <a class="btn btn-muted" href="<?= base_url($basePath . '/pdf/' . $respuesta['instrumento'] . '/' . $respuesta['id']) ?>">Descargar PDF</a>
+                                    <div class="muted"><?= (int) $respuesta['pdf_enviado'] === 1 ? 'Correo enviado' : 'Correo pendiente' ?></div>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

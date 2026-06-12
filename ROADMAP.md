@@ -150,11 +150,15 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 - [x] **Firma en canvas táctil** → guardar PNG
 - [x] Validaciones y guardado transaccional
 
-### Hito 9 — PDF
-- [ ] Integrar motor PDF (dompdf)
-- [ ] Plantilla PDF poblacional (con branding)
-- [ ] Plantilla PDF mascotas (con branding)
-- [ ] Incrustar firma e info del diligenciamiento
+### Hito 9 — PDF ✅ probado en local
+- [x] Integrar motor PDF (dompdf v3.1) — `composer require dompdf/dompdf` (producción: correr `composer install` tras el pull)
+- [x] `app/Libraries/CensoPdf.php` (genera, guarda en `writable/uploads/...`, actualiza `pdf_ruta`)
+- [x] Plantilla PDF poblacional (`app/Views/pdf/poblacional.php`) con branding (logo + color del cliente)
+- [x] Plantilla PDF mascotas (`app/Views/pdf/mascotas.php`) con branding + fotos
+- [x] Incrustar firma (base64) e info del diligenciamiento (IP, fechas, Habeas Data)
+- [x] Hook en `QrPublicController::submit()` → genera PDF tras guardar; descarga en página de gracias (`/q/{token}/pdf`)
+- [x] Descarga desde backoffice (respuestas) con regeneración si falta: `respuestas/pdf/{instrumento}/{id}` y `admin/.../respuestas/pdf/...`
+- [x] Verificado: PDF poblacional y mascotas generados OK (con datos de prueba, luego limpiados)
 
 ### Hito 10 — Correo (SendGrid)
 - [ ] `composer require sendgrid/sendgrid "^7.0" -W`

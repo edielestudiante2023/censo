@@ -58,6 +58,56 @@ class ClienteRespuestasController extends BaseController
         return $this->exportCsv($cliente);
     }
 
+    public function pdfMine(string $instrumento, int $censoId)
+    {
+        $clienteId = session()->get('cliente_id');
+        if (! $clienteId) {
+            return redirect()->to('/dashboard')->with('error', 'Tu usuario no tiene un cliente asignado.');
+        }
+
+        return $this->servePdf((int) $clienteId, $instrumento, $censoId, '/respuestas');
+    }
+
+    public function pdfAdmin(int $clienteId, string $instrumento, int $censoId)
+    {
+        $cliente = $this->findCliente($clienteId);
+        if (! $cliente) {
+            return redirect()->to('/admin/clientes')->with('error', 'Cliente no encontrado.');
+        }
+
+        return $this->servePdf($clienteId, $instrumento, $censoId, '/admin/clientes/' . $clienteId . '/respuestas');
+    }
+
+    private function servePdf(int $clienteId, string $instrumento, int $censoId, string $back)
+    {
+        if (! in_array($instrumento, self::INSTRUMENTOS, true)) {
+            return redirect()->to($back)->with('error', 'Instrumento invalido.');
+        }
+
+        $table = $instrumento === 'poblacional' ? 'censos_poblacionales' : 'censos_mascotas';
+        $censo = db_connect()->table($table)
+            ->where('id', $censoId)
+            ->where('cliente_id', $clienteId)
+            ->where('deleted_at', null)
+            ->get()->getRowArray();
+
+        if (! $censo) {
+            return redirect()->to($back)->with('error', 'Registro no encontrado.');
+        }
+
+        $path = $censo['pdf_ruta'] ?? null;
+        if (! $path || ! is_file(WRITEPATH . $path)) {
+            $path = (new \App\Libraries\CensoPdf())->generate($instrumento, $censoId);
+        }
+
+        if (! $path || ! is_file(WRITEPATH . $path)) {
+            return redirect()->to($back)->with('error', 'No fue posible generar el PDF.');
+        }
+
+        return $this->response->download(WRITEPATH . $path, null)
+            ->setFileName('censo-' . $instrumento . '-' . $censoId . '.pdf');
+    }
+
     private function respuestasData(array $cliente, bool $isAdmin): array
     {
         $filters = $this->filters();

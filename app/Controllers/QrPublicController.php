@@ -83,13 +83,15 @@ class QrPublicController extends BaseController
             return redirect()->to('/q/' . $token)->with('error', 'La firma es obligatoria.');
         }
 
+        $instrumento = (string) $qr['tipo_instrumento'];
+
         $db = db_connect();
         $db->transStart();
 
-        if ($qr['tipo_instrumento'] === 'poblacional') {
-            $this->savePoblacional($clienteId, (int) $qr['id'], (int) $inmueble['id'], $signature);
+        if ($instrumento === 'poblacional') {
+            $censoId = $this->savePoblacional($clienteId, (int) $qr['id'], (int) $inmueble['id'], $signature);
         } else {
-            $this->saveMascotas($clienteId, (int) $qr['id'], (int) $inmueble['id'], $signature);
+            $censoId = $this->saveMascotas($clienteId, (int) $qr['id'], (int) $inmueble['id'], $signature);
         }
 
         $db->transComplete();
@@ -98,10 +100,48 @@ class QrPublicController extends BaseController
             return redirect()->to('/q/' . $token)->with('error', 'No fue posible guardar el formulario. Intenta nuevamente.');
         }
 
-        return view('public/thanks', $context + ['inmueble' => $inmueble]);
+        // Generar PDF (fuera de la transaccion). Si falla, el censo igual quedo guardado.
+        $pdfReady = false;
+        try {
+            $path = (new \App\Libraries\CensoPdf())->generate($instrumento, $censoId);
+            if ($path !== null) {
+                session()->set('censo_pdf_' . $token, ['instrumento' => $instrumento, 'id' => $censoId]);
+                $pdfReady = true;
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'PDF censo {id}: {msg}', ['id' => $censoId, 'msg' => $e->getMessage()]);
+        }
+
+        return view('public/thanks', $context + ['inmueble' => $inmueble, 'pdfReady' => $pdfReady]);
     }
 
-    private function savePoblacional(int $clienteId, int $qrId, int $inmuebleId, string $signature): void
+    public function pdf(string $token)
+    {
+        $context = $this->context($token);
+        if (! $context) {
+            return view('public/qr_not_found');
+        }
+
+        $ref = session()->get('censo_pdf_' . $token);
+        if (! $ref || ! in_array($ref['instrumento'] ?? '', ['poblacional', 'mascotas'], true)) {
+            return redirect()->to('/q/' . $token)->with('error', 'No hay un PDF disponible para descargar.');
+        }
+
+        $table = $ref['instrumento'] === 'poblacional' ? 'censos_poblacionales' : 'censos_mascotas';
+        $censo = db_connect()->table($table)
+            ->where('id', (int) $ref['id'])
+            ->where('cliente_id', (int) $context['cliente']['id'])
+            ->get()->getRowArray();
+
+        if (! $censo || empty($censo['pdf_ruta']) || ! is_file(WRITEPATH . $censo['pdf_ruta'])) {
+            return redirect()->to('/q/' . $token)->with('error', 'El PDF no esta disponible.');
+        }
+
+        return $this->response->download(WRITEPATH . $censo['pdf_ruta'], null)
+            ->setFileName('censo-' . $ref['instrumento'] . '-' . $ref['id'] . '.pdf');
+    }
+
+    private function savePoblacional(int $clienteId, int $qrId, int $inmuebleId, string $signature): int
     {
         $model = new CensoPoblacionalModel();
         $model->insert([
@@ -133,6 +173,8 @@ class QrPublicController extends BaseController
         $this->saveResidents($censoId);
         $this->saveVehicles($censoId);
         $this->savePhones($censoId);
+
+        return $censoId;
     }
 
     private function validateSubmission(string $type): array
@@ -196,7 +238,7 @@ class QrPublicController extends BaseController
         return false;
     }
 
-    private function saveMascotas(int $clienteId, int $qrId, int $inmuebleId, string $signature): void
+    private function saveMascotas(int $clienteId, int $qrId, int $inmuebleId, string $signature): int
     {
         $model = new CensoMascotaModel();
         $model->insert([
@@ -242,6 +284,8 @@ class QrPublicController extends BaseController
                 'foto_poliza_ruta' => $this->saveUpload('foto_poliza_' . $index, $clienteId),
             ]);
         }
+
+        return $censoId;
     }
 
     private function savePeopleRows($model, int $censoId, string $prefix): void

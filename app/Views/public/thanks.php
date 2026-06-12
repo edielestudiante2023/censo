@@ -15,7 +15,10 @@
         <section class="panel">
             <h2>Gracias</h2>
             <p>La informacion fue registrada correctamente.</p>
-            <a class="btn btn-primary" href="<?= esc(base_url('q/' . $token)) ?>">Enviar otro formulario</a>
+            <?php if (! empty($pdfReady)): ?>
+                <p><a class="btn btn-primary" href="<?= esc(base_url('q/' . $token . '/pdf')) ?>">Descargar PDF del formulario</a></p>
+            <?php endif; ?>
+            <a class="btn" href="<?= esc(base_url('q/' . $token)) ?>">Enviar otro formulario</a>
         </section>
     </main>
 </body>
