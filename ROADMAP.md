@@ -40,6 +40,8 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 - [x] Instalar CodeIgniter 4 vía Composer (v4.7.3)
 - [x] Inicializar git, `main` + rama `cycloid`, remoto GitHub
 - [x] README.md y ROADMAP.md
+- [x] Commit del proyecto base CI4 en `cycloid` + merge a `main`
+- [x] Deploy base a producción (aaPanel, document root `/public`, pseudo-static nginx, HTTPS OK en https://censo.cycloidtalent.com/)
 
 ### Hito 1 — Configuración local
 - [x] Copiar `env` → `.env`
@@ -52,10 +54,10 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 > **Producción:** sitio creado en aaPanel → https://censo.cycloidtalent.com/ (Ubuntu 24.04, ruta `/www/wwwroot/censo`). Acceso SSH y credenciales del superadmin en archivos de claves del usuario (NO en el repo).
 
 ### Hito 2 — Modelo de datos (migraciones)
-**Núcleo / seguridad**
-- [ ] `roles` (superadmin, admin, cliente, consejo, comite)
-- [ ] `clientes` (nombre_tercero, tipo_documento, documento/NIT, direccion, ciudad, telefono, persona_contacto, email, logo, color_primario, color_secundario, tipo_conjunto[casas|apartamentos|mixto], slug, texto_habeas_data, activo)
-- [ ] `usuarios` (cliente_id NULL si superadmin/admin, rol_id, nombre, email, password_hash, telefono, activo, last_login)
+**Núcleo / seguridad** — LOTE 1 ✅ migrado en local
+- [x] `roles` (superadmin, admin, cliente, consejo, comite)
+- [x] `clientes` (nombre_tercero, tipo_documento, documento/NIT, direccion, ciudad, telefono, persona_contacto, email, logo, color_primario, color_secundario, tipo_conjunto[casas|apartamentos|mixto], slug, texto_habeas_data, activo)
+- [x] `usuarios` (cliente_id NULL si superadmin/admin, rol_id, nombre, email, password_hash, telefono, activo, last_login)
 
 **Estructura física**
 - [ ] `torres` (cliente_id, nombre, num_pisos) — solo aptos/mixto
