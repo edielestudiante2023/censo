@@ -66,17 +66,17 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 **QR**
 - [ ] `qr_codes` (cliente_id, tipo_instrumento[poblacional|mascotas], token único, titulo, activo)
 
-**Instrumento A — Censo poblacional**
-- [ ] `censos_poblacionales` (cliente_id, qr_id, inmueble_id, autorizacion_datos, fecha_autorizacion, vive_en_copropiedad, direccion_notificacion, quien_vive, administrado_por[inmobiliaria|persona_natural], inmobiliaria_nombre/telefono/correo, correo_contacto, discapacidad_descripcion, tiene_parqueadero, observaciones, firmante_nombre, firma_imagen, pdf_ruta, pdf_enviado, fecha_envio, ip, user_agent)
-- [ ] `censo_propietarios` (censo_id, nombre, documento, telefono, correo)
-- [ ] `censo_arrendatarios` (censo_id, nombre, documento, telefono, correo)
-- [ ] `censo_residentes` (censo_id, nombre, documento, parentesco_id, edad)
-- [ ] `censo_vehiculos` (censo_id, tipo_vehiculo_id, marca, linea, modelo, color, placa)
-- [ ] `censo_telefonos` (censo_id, numero, orden)
+**Instrumento A — Censo poblacional** — LOTE 3 ✅ migrado en local
+- [x] `censos_poblacionales` (cliente_id, qr_id, inmueble_id, autorizacion_datos, fecha_autorizacion, vive_en_copropiedad, direccion_notificacion, quien_vive, administrado_por[inmobiliaria|persona_natural], inmobiliaria_nombre/telefono/correo, correo_contacto, discapacidad_descripcion, tiene_parqueadero, observaciones, firmante_nombre, firma_imagen, pdf_ruta, pdf_enviado, fecha_envio, ip, user_agent)
+- [x] `censo_propietarios` (censo_id, nombre, documento, telefono, correo)
+- [x] `censo_arrendatarios` (censo_id, nombre, documento, telefono, correo)
+- [x] `censo_residentes` (censo_id, nombre, documento, parentesco_id, edad)
+- [x] `censo_vehiculos` (censo_id, tipo_vehiculo_id, marca, linea, modelo, color, placa)
+- [x] `censo_telefonos` (censo_id, numero, orden)
 
-**Instrumento B — Censo de mascotas**
-- [ ] `censos_mascotas` (cliente_id, qr_id, inmueble_id, autorizacion_datos, fecha_autorizacion, responsable_nombre/documento/telefono/correo, firmante_nombre, firma_imagen, pdf_ruta, pdf_enviado, fecha_envio, ip, user_agent)
-- [ ] `mascotas` (censo_mascota_id, nombre, tipo_mascota_id, edad, raza_color, vacunacion_completa, esterilizada, foto_ruta, foto_carne_ruta, foto_poliza_ruta)
+**Instrumento B — Censo de mascotas** — LOTE 3 ✅ migrado en local
+- [x] `censos_mascotas` (cliente_id, qr_id, inmueble_id, autorizacion_datos, fecha_autorizacion, responsable_nombre/documento/telefono/correo, firmante_nombre, firma_imagen, pdf_ruta, pdf_enviado, fecha_envio, ip, user_agent)
+- [x] `mascotas` (censo_mascota_id, nombre, tipo_mascota_id, edad, raza_color, vacunacion_completa, esterilizada, foto_ruta, foto_carne_ruta, foto_poliza_ruta)
 
 **Catálogos** — LOTE 2 ✅ migrado en local (tablas creadas; datos en Hito 3 seeders)
 - [x] `tipos_documento` (NIT, CC, CE, TI, …)
