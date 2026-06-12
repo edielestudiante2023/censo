@@ -200,5 +200,14 @@ class Database extends Config
         if (ENVIRONMENT === 'testing') {
             $this->defaultGroup = 'tests';
         }
+
+        // SSL solo para la BD gestionada de DigitalOcean (sslmode REQUIRED).
+        // No afecta el entorno local (hostname = localhost).
+        if (str_contains((string) ($this->default['hostname'] ?? ''), 'ondigitalocean.com')) {
+            $this->default['encrypt'] = [
+                'ssl_ca'     => '/etc/ssl/certs/ca-certificates.crt',
+                'ssl_verify' => false,
+            ];
+        }
     }
 }
