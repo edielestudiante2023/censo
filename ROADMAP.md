@@ -5,6 +5,26 @@
 
 ---
 
+## ESTADO ACTUAL / HANDOFF (al 2026-06-11)
+
+**Hitos 0–5 COMPLETOS y verificados en LOCAL y PRODUCCIÓN.** La app tiene login funcional en ambos entornos.
+
+- **Local:** XAMPP/MariaDB base `censo`. Servir con `php spark serve` → http://localhost:8080/ . 18 tablas migradas + seeders aplicados. Login OK con el superadmin.
+- **Producción:** https://censo.cycloidtalent.com/login (HTTP 200, login OK). BD DigitalOcean (SSL) con 18 tablas migradas + seeders. Servidor aaPanel, ruta `/www/wwwroot/censo`, document root `/public`.
+- **Superadmin:** `edison.cuervo@cycloidtalent.com` (la contraseña vive en `superadmin.password` del `.env`, NO en git).
+- **Git:** ramas `main` (estable) y `cycloid` (desarrollo). Último commit incluye SSL DigitalOcean.
+
+**PRÓXIMO PUNTO DE ENTRADA → Hito 6 (backoffice).** Empezar por: CRUD de `clientes` (con logo/colores), configuración del conjunto y **generador de inmuebles**. No hay tareas a medias de hitos previos; los `[ ]` restantes pertenecen explícitamente a su hito futuro.
+
+### Flujo de trabajo (repetir en cada avance)
+1. Desarrollar en `cycloid`, probar en LOCAL (`php spark serve`).
+2. Cambios de BD SOLO con migraciones (`php spark migrate`). Local primero.
+3. Commit en `cycloid` → `git checkout main && git merge cycloid && git push origin main && git checkout cycloid`.
+4. Deploy producción por SSH: `ssh -i C:\Users\elipt\.ssh\id_ed25519 root@66.29.154.174`, luego `cd /www/wwwroot/censo && git pull origin main`, y si hay migraciones nuevas `php spark migrate` (+ `chown -R www:www . && chmod -R 775 writable`).
+5. Credenciales de SSH, BD producción y superadmin: en `D:\DESARROLLO\KEYS\` del usuario (NUNCA al repo).
+
+---
+
 ## 0. Contexto del proyecto
 
 - **Qué es:** PWA para **censos poblacionales y de mascotas** en conjuntos residenciales (propiedad horizontal).
@@ -49,7 +69,7 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 - [x] Configurar BD local en `.env` (MariaDB localhost, base `censo`, root sin pass)
 - [x] Generar `encryption.key` (`php spark key:generate`)
 - [x] Base `censo` disponible en MariaDB local (ya existía) y conexión verificada (`db:table --show`)
-- [ ] Configurar BD de producción en `.env` del servidor (no en git)
+- [x] Configurar BD de producción en `.env` del servidor (DigitalOcean + SSL en `Config/Database.php`; no en git)
 
 > **Producción:** sitio creado en aaPanel → https://censo.cycloidtalent.com/ (Ubuntu 24.04, ruta `/www/wwwroot/censo`). Acceso SSH y credenciales del superadmin en archivos de claves del usuario (NO en el repo).
 
@@ -147,11 +167,13 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 - [ ] Meta tags PWA + registro del SW
 - [ ] Verificar instalabilidad (Lighthouse / DevTools)
 
-### Hito 12 — Despliegue
-- [ ] Migrar en LOCAL (`php spark migrate`) y validar
-- [ ] Migrar en PRODUCCIÓN solo si local OK
-- [ ] Verificar `.env` de producción (BD DigitalOcean + SendGrid)
-- [ ] Verificar `.gitignore` antes de subir el proyecto completo (no `.env`)
+### Hito 12 — Despliegue (pipeline ya probado de punta a punta)
+- [x] Migrar en LOCAL (`php spark migrate`) y validar
+- [x] Migrar en PRODUCCIÓN (DigitalOcean, SSL) — 18 tablas + seeders aplicados
+- [x] `.env` de producción con BD DigitalOcean *(SendGrid pendiente en Hito 10)*
+- [x] Verificado `.gitignore` (no sube `.env`); proyecto completo en `main`
+- [x] Deploy base + login verificados en https://censo.cycloidtalent.com/
+- [ ] Repetir migración en producción cada vez que se agreguen tablas en hitos siguientes
 
 ---
 
