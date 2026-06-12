@@ -54,6 +54,10 @@
                         <strong>Tablero</strong>
                         <span>Consultar avance del censo y faltantes por diligenciar.</span>
                     </a>
+                    <a class="module" href="<?= base_url('respuestas') ?>">
+                        <strong>Respuestas</strong>
+                        <span>Ver y exportar los censos recibidos del conjunto.</span>
+                    </a>
                 </div>
             <?php endif; ?>
         </div>

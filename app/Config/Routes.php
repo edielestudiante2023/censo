@@ -15,12 +15,16 @@ $routes->get('logout', 'AuthController::logout');
 // Area autenticada
 $routes->get('dashboard', 'DashboardController::index', ['filter' => 'auth']);
 $routes->get('tablero', 'ClienteTableroController::mine', ['filter' => 'role:cliente,consejo,comite']);
+$routes->get('respuestas', 'ClienteRespuestasController::mine', ['filter' => 'role:cliente,consejo,comite']);
+$routes->get('respuestas/exportar', 'ClienteRespuestasController::exportMine', ['filter' => 'role:cliente,consejo,comite']);
 
 $routes->group('admin', ['filter' => 'role:superadmin,admin'], static function ($routes) {
     $routes->get('clientes', 'Admin\ClientesController::index');
     $routes->get('clientes/new', 'Admin\ClientesController::new');
     $routes->post('clientes', 'Admin\ClientesController::create');
     $routes->get('clientes/(:num)/tablero', 'ClienteTableroController::admin/$1');
+    $routes->get('clientes/(:num)/respuestas', 'ClienteRespuestasController::admin/$1');
+    $routes->get('clientes/(:num)/respuestas/exportar', 'ClienteRespuestasController::exportAdmin/$1');
     $routes->get('clientes/(:num)/config', 'Admin\ClienteConfiguracionController::show/$1');
     $routes->post('clientes/(:num)/config/tipo', 'Admin\ClienteConfiguracionController::updateTipo/$1');
     $routes->post('clientes/(:num)/config/torres', 'Admin\ClienteConfiguracionController::createTorre/$1');

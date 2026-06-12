@@ -14,7 +14,7 @@
 - **Superadmin:** `edison.cuervo@cycloidtalent.com` (la contraseña vive en `superadmin.password` del `.env`, NO en git).
 - **Git:** ramas `main` (estable) y `cycloid` (desarrollo). Último commit incluye SSL DigitalOcean.
 
-**PRÓXIMO PUNTO DE ENTRADA → Hito 6 (backoffice).** Ya quedaron implementados el CRUD de `clientes`, la configuración del conjunto, la gestión básica de torres, el **generador de inmuebles**, la gestión de usuarios por cliente y el tablero de avance. Continuar con visualización/exportación de respuestas.
+**PRÓXIMO PUNTO DE ENTRADA → Hito 7 (generación de QR).** El Hito 6 de backoffice quedó completo en `cycloid`: CRUD de clientes, configuración del conjunto, torres, generador de inmuebles, usuarios por cliente, tablero de avance y visualización/exportación CSV de respuestas.
 
 **Hito 11 quedó parcialmente adelantado y guardado.** El login ya tiene metatags PWA, manifest, service worker, tarjeta de instalación, modal iOS e íconos (`icon-192`, `icon-512` y variantes maskable). También quedaron guardados los assets originales `entrega-04.png` y `entrega-05.png` en `public/assets/icons/`; por ahora no están referenciados por la app. Pendiente: probar instalabilidad real con Lighthouse/DevTools y, cuando se despliegue, validar en HTTPS de producción.
 
@@ -132,7 +132,7 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 - [x] Configuración del conjunto: tipo, torres, **generador de inmuebles** (rango casas / torres×pisos×aptos)
 - [x] Gestión de usuarios por cliente
 - [x] Tablero: total inmuebles vs respondidos (faltantes por diligenciar)
-- [ ] Visualización/exportación de respuestas
+- [x] Visualización/exportación de respuestas
 
 ### Hito 7 — Generación de QR
 - [ ] Generar QR por instrumento (poblacional / mascotas) con token único

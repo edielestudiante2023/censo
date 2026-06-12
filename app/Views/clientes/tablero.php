@@ -51,8 +51,10 @@
         <nav>
             <?php if ($isAdmin): ?>
                 <a href="<?= base_url('admin/clientes/' . $cliente['id']) ?>">Cliente</a>
+                <a href="<?= base_url('admin/clientes/' . $cliente['id'] . '/respuestas') ?>">Respuestas</a>
                 <a href="<?= base_url('admin/clientes') ?>">Clientes</a>
             <?php else: ?>
+                <a href="<?= base_url('respuestas') ?>">Respuestas</a>
                 <a href="<?= base_url('dashboard') ?>">Dashboard</a>
             <?php endif; ?>
             <a href="<?= base_url('logout') ?>">Cerrar sesion</a>
@@ -66,7 +68,12 @@
                 <p><?= esc($cliente['nombre_tercero']) ?></p>
             </div>
             <?php if ($isAdmin): ?>
-                <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id']) ?>">Volver al cliente</a>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/respuestas') ?>">Ver respuestas</a>
+                    <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id']) ?>">Volver al cliente</a>
+                </div>
+            <?php else: ?>
+                <a class="btn btn-muted" href="<?= base_url('respuestas') ?>">Ver respuestas</a>
             <?php endif; ?>
         </div>
 
