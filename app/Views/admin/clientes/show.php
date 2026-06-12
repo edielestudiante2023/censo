@@ -62,6 +62,7 @@
                 <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/usuarios') ?>">Usuarios</a>
                 <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/tablero') ?>">Tablero</a>
                 <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/respuestas') ?>">Respuestas</a>
+                <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/qr') ?>">QR</a>
                 <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/config') ?>">Configurar conjunto</a>
                 <a class="btn btn-primary" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/edit') ?>">Editar cliente</a>
             </div>

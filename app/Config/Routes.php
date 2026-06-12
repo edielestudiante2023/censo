@@ -11,6 +11,7 @@ $routes->get('/', 'AuthController::index');
 $routes->get('login', 'AuthController::login');
 $routes->post('login', 'AuthController::attemptLogin');
 $routes->get('logout', 'AuthController::logout');
+$routes->get('q/(:segment)', 'QrPublicController::resolve/$1');
 
 // Area autenticada
 $routes->get('dashboard', 'DashboardController::index', ['filter' => 'auth']);
@@ -25,6 +26,12 @@ $routes->group('admin', ['filter' => 'role:superadmin,admin'], static function (
     $routes->get('clientes/(:num)/tablero', 'ClienteTableroController::admin/$1');
     $routes->get('clientes/(:num)/respuestas', 'ClienteRespuestasController::admin/$1');
     $routes->get('clientes/(:num)/respuestas/exportar', 'ClienteRespuestasController::exportAdmin/$1');
+    $routes->get('clientes/(:num)/qr', 'Admin\ClienteQrController::index/$1');
+    $routes->post('clientes/(:num)/qr', 'Admin\ClienteQrController::create/$1');
+    $routes->post('clientes/(:num)/qr/(:num)', 'Admin\ClienteQrController::update/$1/$2');
+    $routes->post('clientes/(:num)/qr/(:num)/regenerate', 'Admin\ClienteQrController::regenerate/$1/$2');
+    $routes->get('clientes/(:num)/qr/(:num).svg', 'Admin\ClienteQrController::svg/$1/$2');
+    $routes->get('clientes/(:num)/qr/(:num)/pieza', 'Admin\ClienteQrController::pieza/$1/$2');
     $routes->get('clientes/(:num)/config', 'Admin\ClienteConfiguracionController::show/$1');
     $routes->post('clientes/(:num)/config/tipo', 'Admin\ClienteConfiguracionController::updateTipo/$1');
     $routes->post('clientes/(:num)/config/torres', 'Admin\ClienteConfiguracionController::createTorre/$1');

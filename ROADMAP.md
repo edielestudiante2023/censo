@@ -14,7 +14,7 @@
 - **Superadmin:** `edison.cuervo@cycloidtalent.com` (la contraseña vive en `superadmin.password` del `.env`, NO en git).
 - **Git:** ramas `main` (estable) y `cycloid` (desarrollo). Último commit incluye SSL DigitalOcean.
 
-**PRÓXIMO PUNTO DE ENTRADA → Hito 7 (generación de QR).** El Hito 6 de backoffice quedó completo en `cycloid`: CRUD de clientes, configuración del conjunto, torres, generador de inmuebles, usuarios por cliente, tablero de avance y visualización/exportación CSV de respuestas.
+**PRÓXIMO PUNTO DE ENTRADA → Hito 8 (formularios públicos).** El Hito 7 de generación de QR quedó completo en `cycloid`: QR por instrumento, token único, SVG dinámico, resolvedor público `/q/{token}` y pieza imprimible con branding del cliente.
 
 **Hito 11 quedó parcialmente adelantado y guardado.** El login ya tiene metatags PWA, manifest, service worker, tarjeta de instalación, modal iOS e íconos (`icon-192`, `icon-512` y variantes maskable). También quedaron guardados los assets originales `entrega-04.png` y `entrega-05.png` en `public/assets/icons/`; por ahora no están referenciados por la app. Pendiente: probar instalabilidad real con Lighthouse/DevTools y, cuando se despliegue, validar en HTTPS de producción.
 
@@ -86,7 +86,7 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 - [x] `inmuebles` (cliente_id, torre_id NULL en casas, tipo[casa|apartamento], identificador, piso) — único(cliente_id,torre_id,identificador)
 
 **QR**
-- [ ] `qr_codes` (cliente_id, tipo_instrumento[poblacional|mascotas], token único, titulo, activo)
+- [x] `qr_codes` (cliente_id, tipo_instrumento[poblacional|mascotas], token único, titulo, activo)
 
 **Instrumento A — Censo poblacional** — LOTE 3 ✅ migrado en local
 - [x] `censos_poblacionales` (cliente_id, qr_id, inmueble_id, autorizacion_datos, fecha_autorizacion, vive_en_copropiedad, direccion_notificacion, quien_vive, administrado_por[inmobiliaria|persona_natural], inmobiliaria_nombre/telefono/correo, correo_contacto, discapacidad_descripcion, tiene_parqueadero, observaciones, firmante_nombre, firma_imagen, pdf_ruta, pdf_enviado, fecha_envio, ip, user_agent)
@@ -135,11 +135,11 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 - [x] Visualización/exportación de respuestas
 
 ### Hito 7 — Generación de QR
-- [ ] Generar QR por instrumento (poblacional / mascotas) con token único
-- [ ] Pieza gráfica con branding del cliente (logo) para imprimir/pegar en torres
+- [x] Generar QR por instrumento (poblacional / mascotas) con token único
+- [x] Pieza gráfica con branding del cliente (logo) para imprimir/pegar en torres
 
 ### Hito 8 — Formularios públicos (PWA, anónimos)
-- [ ] Resolver QR token → cliente + tipo de instrumento
+- [x] Resolver QR token → cliente + tipo de instrumento *(placeholder público listo; formularios reales siguen en este hito)*
 - [ ] Selección de inmueble no digitable (torre→apto / casa) según config del cliente
 - [ ] Pantalla de consentimiento Habeas Data (obligatorio)
 - [ ] **Formulario A poblacional** con secciones n-items (propietarios, residentes, arrendatarios, vehículos, teléfonos)
