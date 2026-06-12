@@ -84,10 +84,12 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 - [x] `tipos_vehiculo` (carro, moto, bici, …)
 - [x] `tipos_mascota` (perro, gato, …)
 
-### Hito 3 — Seeders
-- [ ] Seeder de catálogos (tipos_documento, parentescos, tipos_vehiculo, tipos_mascota)
-- [ ] Seeder de roles
-- [ ] Seeder usuario superadmin inicial
+### Hito 3 — Seeders ✅ ejecutado en local
+- [x] Seeder de catálogos (tipos_documento, parentescos, tipos_vehiculo, tipos_mascota)
+- [x] Seeder de roles (superadmin, admin, cliente, consejo, comite)
+- [x] Seeder usuario superadmin inicial (lee credenciales desde `.env`: `superadmin.email`, `superadmin.nombre`, `superadmin.password`)
+
+> Ejecutar: `php spark db:seed DatabaseSeeder`. Para producción, definir primero `superadmin.*` en el `.env` del servidor (no va en git).
 
 ### Hito 4 — Modelos y entidades
 - [ ] Models CI4 por tabla con validaciones y relaciones
