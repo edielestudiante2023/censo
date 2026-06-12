@@ -96,11 +96,14 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 - [x] Filtro/scope multi-tenant por `cliente_id` (`forCliente()`); hijas con `forCenso()`
 - [ ] Validaciones por modelo (se afinan al construir formularios/CRUD)
 
-### Hito 5 — Autenticación y autorización
-- [ ] Login (sin sesión requerida para instalar PWA ni para formularios públicos)
-- [ ] Hash de contraseñas, sesión, recordar usuario
-- [ ] Filtros por rol (superadmin/admin/cliente/consejo/comite)
-- [ ] Aislamiento de datos por cliente
+### Hito 5 — Autenticación y autorización ✅ probado en local
+- [x] Login (`AuthController`) con `password_verify`, sesión y `last_login`
+- [x] Vista de login responsive (lista para branding y bloque PWA del Hito 11)
+- [x] Filtro `auth` (sesión) y filtro `role` (por rol) registrados; CSRF activado
+- [x] Rutas: `/`, `/login` (GET/POST), `/logout`, `/dashboard` (protegida)
+- [x] `indexPage` vacío (URLs limpias para nginx)
+- [x] Verificado: superadmin entra → dashboard muestra rol y nombre
+- [ ] Aislamiento de datos por cliente (se aplica al construir el Hito 6)
 
 ### Hito 6 — Panel administración (backoffice)
 - [ ] CRUD clientes (superadmin/admin) con logo y colores (branding)
