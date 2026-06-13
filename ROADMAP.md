@@ -7,18 +7,17 @@
 
 ## ESTADO ACTUAL / HANDOFF (al 2026-06-12)
 
-**Hitos 0–5 COMPLETOS y verificados en LOCAL y PRODUCCIÓN.** La app tiene login funcional en ambos entornos.
+**Hitos 0–10 COMPLETOS y DESPLEGADOS en LOCAL y PRODUCCIÓN.** App con login, backoffice, QR, formularios públicos, PDF y envío por correo. PWA (Hito 11) desplegada; solo falta auditoría Lighthouse.
 
-- **Local:** XAMPP/MariaDB base `censo`. Servir con `php spark serve` → http://localhost:8080/ . 18 tablas migradas + seeders aplicados. Login OK con el superadmin.
-- **Producción:** https://censo.cycloidtalent.com/login (HTTP 200, login OK). BD DigitalOcean (SSL) con 18 tablas migradas + seeders. Servidor aaPanel, ruta `/www/wwwroot/censo`, document root `/public`.
-- **Superadmin:** `edison.cuervo@cycloidtalent.com` (la contraseña vive en `superadmin.password` del `.env`, NO en git).
-- **Git:** ramas `main` (estable) y `cycloid` (desarrollo). Último commit incluye SSL DigitalOcean.
+- **Local:** XAMPP/MariaDB base `censo`. Servir con `php spark serve` → http://localhost:8080/ . 18 tablas + seeders. Login OK con el superadmin.
+- **Producción (en `98aa47e`):** https://censo.cycloidtalent.com/ — login, PWA (`manifest_login.json`/`sw_login.js`), backoffice, formularios públicos, PDF (dompdf) y correo (SendGrid) operativos. BD DigitalOcean (SSL). aaPanel, ruta `/www/wwwroot/censo`, document root `/public`.
+- **Superadmin:** `edison.cuervo@cycloidtalent.com` (contraseña en `superadmin.password` del `.env`, NO en git).
+- **Git:** `main` (estable) y `cycloid` (desarrollo) sincronizadas en `98aa47e`.
+- **`.env` de producción** ya tiene BD DigitalOcean + `superadmin.*` + `email.*` (SendGrid). Replicar cualquier var nueva ahí (no va en git).
 
-**PRÓXIMO PUNTO DE ENTRADA → Hito 9 (PDF).** El Hito 8 de formularios públicos quedó completo en `cycloid`: selección de inmueble no digitable, consentimiento Habeas Data obligatorio, formularios públicos para censo poblacional y mascotas, firma en canvas, uploads a `writable/uploads`, validación servidor-side mínima y guardado transaccional.
+**PRÓXIMO PUNTO DE ENTRADA → Pulido / verificación.** El núcleo funcional está completo y en vivo. Pendientes menores: (1) auditoría PWA con Lighthouse/DevTools en producción (Hito 11); (2) prueba end-to-end real del flujo público (crear un cliente demo, generar QR, diligenciar y confirmar PDF + correo); (3) afinar validaciones por modelo.
 
-**Validación local Hito 8:** probado por HTTP real con CSRF usando `http://127.0.0.1:8080/q/{token}`. En esta máquina `localhost:8080` puede resolver a otro proyecto local (`actas`), por eso para pruebas de `censo` usar `127.0.0.1:8080` si hay conflicto.
-
-**Hito 11 quedó parcialmente adelantado y guardado.** El login ya tiene metatags PWA, manifest, service worker, tarjeta de instalación, modal iOS e íconos (`icon-192`, `icon-512` y variantes maskable). También quedaron guardados los assets originales `entrega-04.png` y `entrega-05.png` en `public/assets/icons/`; por ahora no están referenciados por la app. Pendiente: probar instalabilidad real con Lighthouse/DevTools y, cuando se despliegue, validar en HTTPS de producción.
+**Nota de pruebas locales:** en esta máquina `localhost:8080` puede resolver a otro proyecto (`actas`); para `censo` usar `127.0.0.1:8080` si hay conflicto.
 
 ### Flujo de trabajo (repetir en cada avance)
 1. Desarrollar en `cycloid`, probar en LOCAL (`php spark serve`).
@@ -174,8 +173,8 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 - [x] `public/sw_login.js` (service worker minimalista, network-first)
 - [x] Tarjeta de instalación + modal iOS en la vista de login
 - [x] Meta tags PWA + registro del SW
-- [ ] Verificar instalabilidad (Lighthouse / DevTools)
-- [ ] Validar en producción HTTPS después del deploy
+- [x] Desplegado en producción: `manifest_login.json` y `sw_login.js` responden 200 en HTTPS
+- [ ] Verificar instalabilidad con auditoría Lighthouse / DevTools (pendiente)
 
 ### Hito 12 — Despliegue (pipeline ya probado de punta a punta)
 - [x] Migrar en LOCAL (`php spark migrate`) y validar
@@ -183,7 +182,8 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 - [x] `.env` de producción con BD DigitalOcean *(SendGrid pendiente en Hito 10)*
 - [x] Verificado `.gitignore` (no sube `.env`); proyecto completo en `main`
 - [x] Deploy base + login verificados en https://censo.cycloidtalent.com/
-- [ ] Repetir migración en producción cada vez que se agreguen tablas en hitos siguientes
+- [x] Deploy Hitos 6–10 + PWA a producción (`98aa47e`): pull + `composer install` (dompdf, sendgrid) + `email.*` en `.env`; login/PWA/correo verificados en vivo
+- [ ] Repetir `composer install` y/o `php spark migrate` en producción cuando se agreguen dependencias o tablas nuevas
 
 ---
 
