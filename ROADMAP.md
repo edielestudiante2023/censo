@@ -10,16 +10,16 @@
 **Hitos 0–12 COMPLETOS y DESPLEGADOS en LOCAL y PRODUCCIÓN.** App con login, backoffice, QR, formularios públicos, PDF, envío por correo y PWA instalada desde login. El flujo real de punta a punta ya fue probado en producción.
 
 - **Local:** XAMPP/MariaDB base `censo`. Servir con `php spark serve` → http://localhost:8080/ . 18 tablas + seeders. Login OK con el superadmin.
-- **Producción (en `6daffe5`):** https://censo.cycloidtalent.com/ — login, PWA (`manifest_login.json`/`sw_login.js`), backoffice, formularios públicos, PDF (dompdf) y correo (SendGrid) operativos. BD DigitalOcean (SSL). aaPanel, ruta `/www/wwwroot/censo`, document root `/public`.
+- **Producción:** https://censo.cycloidtalent.com/ — desplegada desde `main`; login, PWA (`manifest_login.json`/`sw_login.js`), backoffice, formularios públicos, PDF (dompdf) y correo (SendGrid) operativos. BD DigitalOcean (SSL). aaPanel, ruta `/www/wwwroot/censo`, document root `/public`.
 - **Superadmin:** `edison.cuervo@cycloidtalent.com` (contraseña en `superadmin.password` del `.env`, NO en git).
-- **Git:** `main` (estable) y `cycloid` (desarrollo) sincronizadas en `6daffe5`.
+- **Git:** `main` (estable) y `cycloid` (desarrollo) sincronizadas; ver `git log -1 --oneline` para el SHA actual.
 - **`.env` de producción** ya tiene BD DigitalOcean + `superadmin.*` + `email.*` (SendGrid). Replicar cualquier var nueva ahí (no va en git).
 
-**PRÓXIMO PUNTO DE ENTRADA → Pulido / operación.** El núcleo funcional está completo y en vivo. Pendientes reales: decidir si se conserva o se archiva el cliente demo E2E de producción, revisar el `robots.txt` gestionado por Cloudflare si se quiere Lighthouse limpio al 100%, y habilitar/extender pruebas automáticas locales.
+**PRÓXIMO PUNTO DE ENTRADA → Pulido / operación.** El núcleo funcional está completo y en vivo. Pendientes reales: revisar el `robots.txt` gestionado por Cloudflare si se quiere Lighthouse limpio al 100% y seguir ampliando pruebas automáticas de flujos críticos.
 
 **Auditoría PWA (2026-06-13):** Lighthouse 12.8.2 ejecutado contra producción y local. Producción cumple HTTPS, manifest, service worker e íconos. Se corrigieron en local avisos de SEO/accesibilidad del login (meta description, orden de encabezados, nombre accesible del botón de contraseña). `robots.txt` remoto contiene un bloque "Cloudflare Managed Content" con `Content-Signal`, que Lighthouse reporta como directiva desconocida aunque no viene del `public/robots.txt` versionado.
 
-**Prueba E2E producción (2026-06-13):** completada con cliente demo `Demo E2E 20260613115708` (`id=1`, slug `demo-e2e-20260613115708`). Se generó inmueble `Casa 1`, QR poblacional y QR mascotas, se diligenciaron ambos formularios públicos vía `/q/{token}`, se generaron PDFs desde backoffice y la BD quedó con `pdf_enviado=1` y `fecha_envio` en ambos censos. Tokens usados: poblacional `98378844504095414e586b045b6511511a06e9c1198d86d5`, mascotas `78bf91e3befc8c7400f5ae0163d90f743162a96d9c994483`.
+**Prueba E2E producción (2026-06-13):** completada con cliente demo `Demo E2E 20260613115708` (`id=1`, slug `demo-e2e-20260613115708`). Se generó inmueble `Casa 1`, QR poblacional y QR mascotas, se diligenciaron ambos formularios públicos vía `/q/{token}`, se generaron PDFs desde backoffice y la BD quedó con `pdf_enviado=1` y `fecha_envio` en ambos censos. Tokens usados: poblacional `98378844504095414e586b045b6511511a06e9c1198d86d5`, mascotas `78bf91e3befc8c7400f5ae0163d90f743162a96d9c994483`. El cliente demo fue archivado después de la prueba desde la ruta admin; los QR públicos ahora muestran "QR no disponible".
 
 **Nota de pruebas locales:** en esta máquina `localhost:8080` puede resolver a otro proyecto (`actas`); para `censo` usar `127.0.0.1:8080` si hay conflicto.
 
