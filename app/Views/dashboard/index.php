@@ -60,6 +60,10 @@
                         <strong>Respuestas</strong>
                         <span>Ver y exportar los censos recibidos del conjunto.</span>
                     </a>
+                    <a class="module" href="<?= base_url('inteligencia') ?>">
+                        <strong>Inteligencia</strong>
+                        <span>Estadisticas y graficos: sexo, torre, edad, parentesco y mas, con filtros.</span>
+                    </a>
                 </div>
             <?php endif; ?>
         </div>

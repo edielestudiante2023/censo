@@ -8,6 +8,15 @@
         <input name="residentes_documento[]" inputmode="numeric">
     </div>
     <div>
+        <label>Sexo</label>
+        <select name="residentes_sexo[]">
+            <option value="">Selecciona...</option>
+            <option value="M">Masculino</option>
+            <option value="F">Femenino</option>
+            <option value="Otro">Otro</option>
+        </select>
+    </div>
+    <div>
         <label>Parentesco</label>
         <select name="residentes_parentesco_id[]">
             <option value="">Selecciona...</option>

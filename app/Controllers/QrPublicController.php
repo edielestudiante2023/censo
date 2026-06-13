@@ -352,6 +352,7 @@ class QrPublicController extends BaseController
     {
         $names = (array) $this->request->getPost('residentes_nombre');
         $docs  = (array) $this->request->getPost('residentes_documento');
+        $sexos = (array) $this->request->getPost('residentes_sexo');
         $pars  = (array) $this->request->getPost('residentes_parentesco_id');
         $ages  = (array) $this->request->getPost('residentes_edad');
 
@@ -361,10 +362,13 @@ class QrPublicController extends BaseController
                 continue;
             }
 
+            $sexo = (string) ($sexos[$index] ?? '');
+
             (new CensoResidenteModel())->insert([
                 'censo_id' => $censoId,
                 'nombre' => $name ?: null,
                 'documento' => $this->arrayValue($docs, $index),
+                'sexo' => in_array($sexo, ['M', 'F', 'Otro'], true) ? $sexo : null,
                 'parentesco_id' => ! empty($pars[$index]) ? (int) $pars[$index] : null,
                 'edad' => ! empty($ages[$index]) ? (int) $ages[$index] : null,
             ]);
