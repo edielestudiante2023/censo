@@ -14,7 +14,7 @@ class UsuarioModel extends Model
     protected $dateFormat       = 'datetime';
     protected $allowedFields    = [
         'cliente_id', 'rol_id', 'nombre', 'email', 'password_hash',
-        'telefono', 'activo', 'last_login',
+        'telefono', 'activo', 'last_login', 'reset_token', 'reset_expires',
     ];
     protected $validationRules  = [
         'cliente_id'     => 'permit_empty|is_natural_no_zero',
@@ -25,7 +25,17 @@ class UsuarioModel extends Model
         'telefono'       => 'permit_empty|max_length[50]',
         'activo'         => 'required|in_list[0,1]',
         'last_login'     => 'permit_empty|valid_date[Y-m-d H:i:s]',
+        'reset_token'    => 'permit_empty|max_length[64]',
+        'reset_expires'  => 'permit_empty|valid_date[Y-m-d H:i:s]',
     ];
+
+    /** Busca un usuario por token de reset vigente (token = hash sha256). */
+    public function findByValidResetToken(string $tokenHash)
+    {
+        return $this->where('reset_token', $tokenHash)
+            ->where('reset_expires >=', date('Y-m-d H:i:s'))
+            ->first();
+    }
 
     /** Filtra por tenant (conjunto). */
     public function forCliente($clienteId)

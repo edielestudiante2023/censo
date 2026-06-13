@@ -76,6 +76,14 @@ class EmailService
         }
     }
 
+    /** Enlace de restablecimiento de contrasena. */
+    public function sendPasswordReset(string $toEmail, string $nombre, string $link): bool
+    {
+        $html = view('emails/password_reset', ['nombre' => $nombre, 'link' => $link]);
+
+        return $this->sendViaSendGrid($toEmail, 'Restablecer contrasena - Censo APP', $html);
+    }
+
     /** Email de prueba para verificar configuracion. */
     public function sendTestEmail(string $toEmail): bool
     {

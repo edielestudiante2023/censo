@@ -158,6 +158,10 @@
                 <button type="submit" class="btn">Ingresar</button>
             </form>
 
+            <div style="text-align:center; margin-top:14px;">
+                <a href="<?= base_url('forgot') ?>" style="color:#6b7280; font-size:.83rem; text-decoration:none; font-weight:600;">Olvidaste tu contrasena?</a>
+            </div>
+
             <!-- PWA: tarjeta de instalacion (no requiere sesion) -->
             <div class="pwa-install-section" id="pwaInstallSection">
                 <img src="<?= base_url('assets/icons/icon-192.png') ?>" alt="App" class="pwa-install-icon">
