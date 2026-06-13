@@ -33,6 +33,32 @@ final class ModelValidationTest extends CIUnitTestCase
     }
 
     /**
+     * @return iterable<string, array{0: class-string}>
+     */
+    public static function clienteScopedModelProvider(): iterable
+    {
+        yield 'UsuarioModel' => [App\Models\UsuarioModel::class];
+        yield 'TorreModel' => [App\Models\TorreModel::class];
+        yield 'InmuebleModel' => [App\Models\InmuebleModel::class];
+        yield 'QrCodeModel' => [App\Models\QrCodeModel::class];
+        yield 'CensoPoblacionalModel' => [App\Models\CensoPoblacionalModel::class];
+        yield 'CensoMascotaModel' => [App\Models\CensoMascotaModel::class];
+    }
+
+    /**
+     * @return iterable<string, array{0: class-string}>
+     */
+    public static function censoScopedModelProvider(): iterable
+    {
+        yield 'CensoPropietarioModel' => [App\Models\CensoPropietarioModel::class];
+        yield 'CensoArrendatarioModel' => [App\Models\CensoArrendatarioModel::class];
+        yield 'CensoResidenteModel' => [App\Models\CensoResidenteModel::class];
+        yield 'CensoVehiculoModel' => [App\Models\CensoVehiculoModel::class];
+        yield 'CensoTelefonoModel' => [App\Models\CensoTelefonoModel::class];
+        yield 'MascotaModel' => [App\Models\MascotaModel::class];
+    }
+
+    /**
      * @dataProvider businessModelProvider
      *
      * @param class-string $modelClass
@@ -44,5 +70,25 @@ final class ModelValidationTest extends CIUnitTestCase
         $this->assertArrayHasKey('validationRules', $properties);
         $this->assertIsArray($properties['validationRules']);
         $this->assertNotEmpty($properties['validationRules'], $modelClass . ' debe declarar validationRules.');
+    }
+
+    /**
+     * @dataProvider clienteScopedModelProvider
+     *
+     * @param class-string $modelClass
+     */
+    public function testClienteScopedModelsExposeForCliente(string $modelClass): void
+    {
+        $this->assertTrue(method_exists($modelClass, 'forCliente'), $modelClass . ' debe exponer forCliente().');
+    }
+
+    /**
+     * @dataProvider censoScopedModelProvider
+     *
+     * @param class-string $modelClass
+     */
+    public function testCensoScopedModelsExposeForCenso(string $modelClass): void
+    {
+        $this->assertTrue(method_exists($modelClass, 'forCenso'), $modelClass . ' debe exponer forCenso().');
     }
 }

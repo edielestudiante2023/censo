@@ -23,7 +23,7 @@
 
 **Nota de pruebas locales:** en esta máquina `localhost:8080` puede resolver a otro proyecto (`actas`); para `censo` usar `127.0.0.1:8080` si hay conflicto.
 
-**Nota de PHPUnit local:** `composer test` pasa en esta máquina (21 tests, 58 assertions). El test ejemplo de SQLite se salta automáticamente si la extensión PHP `sqlite3` no está cargada.
+**Nota de PHPUnit local:** `composer test` pasa en esta máquina (38 tests, 78 assertions). El test ejemplo de SQLite se salta automáticamente si la extensión PHP `sqlite3` no está cargada. Hay cobertura básica de filtros de acceso, validaciones de modelos y scopes multi-tenant.
 
 ### Flujo de trabajo (repetir en cada avance)
 1. Desarrollar en `cycloid`, probar en LOCAL (`php spark serve`).
