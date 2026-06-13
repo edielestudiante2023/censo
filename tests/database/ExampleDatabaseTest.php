@@ -14,6 +14,15 @@ final class ExampleDatabaseTest extends CIUnitTestCase
 
     protected $seed = ExampleSeeder::class;
 
+    public static function setUpBeforeClass(): void
+    {
+        parent::setUpBeforeClass();
+
+        if (! extension_loaded('sqlite3')) {
+            self::markTestSkipped('La extension PHP sqlite3 no esta cargada.');
+        }
+    }
+
     public function testModelFindAll(): void
     {
         $model = new ExampleModel();

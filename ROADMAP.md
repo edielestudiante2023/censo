@@ -23,7 +23,7 @@
 
 **Nota de pruebas locales:** en esta máquina `localhost:8080` puede resolver a otro proyecto (`actas`); para `censo` usar `127.0.0.1:8080` si hay conflicto.
 
-**Nota de PHPUnit local:** `composer test` sigue bloqueado por entorno, no por código de negocio: falta cargar la extensión PHP `sqlite3`, que requieren los tests ejemplo de CodeIgniter (`ExampleDatabaseTest`).
+**Nota de PHPUnit local:** `composer test` pasa en esta máquina (21 tests, 58 assertions). El test ejemplo de SQLite se salta automáticamente si la extensión PHP `sqlite3` no está cargada.
 
 ### Flujo de trabajo (repetir en cada avance)
 1. Desarrollar en `cycloid`, probar en LOCAL (`php spark serve`).
