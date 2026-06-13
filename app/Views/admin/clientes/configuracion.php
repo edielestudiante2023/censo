@@ -4,64 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configuracion - <?= esc($cliente['nombre_tercero']) ?></title>
-    <style>
-        * { box-sizing: border-box; }
-        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background: #f3f4f6; color: #111827; }
-        .topbar { background: #1f2937; color: #fff; padding: 14px 22px; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
-        .topbar h1 { font-size: 1.05rem; margin: 0; }
-        .topbar nav { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
-        .topbar a { color: #fff; text-decoration: none; font-size: .85rem; background: rgba(255,255,255,.12); padding: 7px 14px; border-radius: 8px; }
-        .wrap { max-width: 1180px; margin: 28px auto; padding: 0 18px; }
-        .header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 16px; }
-        h2 { margin: 0; font-size: 1.35rem; }
-        h3 { margin: 0 0 14px; font-size: 1rem; }
-        p { margin: 4px 0 0; color: #6b7280; font-size: .9rem; }
-        .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-        .full { grid-column: 1 / -1; }
-        .card { background: #fff; border-radius: 14px; box-shadow: 0 4px 14px rgba(0,0,0,.06); padding: 20px; }
-        .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
-        .stat { background: #fff; border-radius: 14px; padding: 16px; box-shadow: 0 4px 14px rgba(0,0,0,.06); }
-        .stat strong { display: block; font-size: 1.45rem; }
-        .stat span { color: #6b7280; font-size: .8rem; }
-        label { display: block; font-weight: 700; font-size: .82rem; color: #374151; margin-bottom: 6px; }
-        input, select {
-            width: 100%; border: 1px solid #d1d5db; border-radius: 9px; padding: 10px 12px;
-            font-size: .92rem; color: #111827; background: #fff;
-        }
-        .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-        .form-grid .full { grid-column: 1 / -1; }
-        .hint { color: #6b7280; font-size: .76rem; margin-top: 6px; line-height: 1.35; }
-        .actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; margin-top: 14px; }
-        .btn { display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 9px; padding: 10px 15px; font-weight: 700; font-size: .88rem; cursor: pointer; text-decoration: none; }
-        .btn-primary { background: #1f2937; color: #fff; }
-        .btn-muted { background: #e5e7eb; color: #111827; }
-        .btn-danger { background: #fee2e2; color: #991b1b; }
-        .alert { padding: 12px 14px; border-radius: 10px; font-size: .9rem; margin-bottom: 14px; }
-        .alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
-        .alert-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
-        .errors { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; font-size: .88rem; }
-        .errors ul { margin: 0; padding-left: 18px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 11px 12px; text-align: left; border-bottom: 1px solid #edf0f3; vertical-align: middle; font-size: .88rem; }
-        th { color: #4b5563; font-size: .76rem; text-transform: uppercase; letter-spacing: .04em; background: #f9fafb; }
-        .empty { padding: 20px; color: #6b7280; text-align: center; background: #f9fafb; border-radius: 10px; }
-        .inline-list { display: grid; gap: 8px; }
-        .torre-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid #edf0f3; }
-        .torre-row:last-child { border-bottom: 0; }
-        .muted { color: #6b7280; font-size: .82rem; }
-        @media (max-width: 840px) {
-            .topbar, .header { flex-direction: column; align-items: stretch; }
-            .grid, .stats, .form-grid { grid-template-columns: 1fr; }
-            .full, .form-grid .full { grid-column: auto; }
-            .actions { justify-content: stretch; }
-            .btn { width: 100%; }
-            table, thead, tbody, th, td, tr { display: block; }
-            thead { display: none; }
-            tr { border-bottom: 1px solid #e5e7eb; padding: 10px 0; }
-            td { border: 0; padding: 6px 12px; }
-            td[data-label]::before { content: attr(data-label); display: block; color: #6b7280; font-size: .72rem; text-transform: uppercase; margin-bottom: 3px; }
-        }
-    </style>
+    <link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
+    <link rel="icon" href="<?= base_url('favicon.ico') ?>" sizes="any">
 </head>
 <body>
     <?php $errors = session('errors') ?? []; ?>

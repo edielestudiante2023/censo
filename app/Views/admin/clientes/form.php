@@ -4,46 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= esc($title) ?> - Censo</title>
-    <style>
-        * { box-sizing: border-box; }
-        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background: #f3f4f6; color: #111827; }
-        .topbar { background: #1f2937; color: #fff; padding: 14px 22px; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
-        .topbar h1 { font-size: 1.05rem; margin: 0; }
-        .topbar nav { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
-        .topbar a { color: #fff; text-decoration: none; font-size: .85rem; background: rgba(255,255,255,.12); padding: 7px 14px; border-radius: 8px; }
-        .wrap { max-width: 960px; margin: 28px auto; padding: 0 18px; }
-        .header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 16px; }
-        h2 { margin: 0; font-size: 1.35rem; }
-        p { margin: 4px 0 0; color: #6b7280; font-size: .9rem; }
-        .card { background: #fff; border-radius: 14px; box-shadow: 0 4px 14px rgba(0,0,0,.06); padding: 22px; }
-        .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-        .full { grid-column: 1 / -1; }
-        label { display: block; font-weight: 700; font-size: .82rem; color: #374151; margin-bottom: 6px; }
-        input, select, textarea {
-            width: 100%; border: 1px solid #d1d5db; border-radius: 9px; padding: 10px 12px;
-            font-size: .92rem; color: #111827; background: #fff;
-        }
-        textarea { min-height: 150px; resize: vertical; line-height: 1.45; }
-        input[type="color"] { height: 42px; padding: 4px; }
-        input[type="file"] { padding: 9px; }
-        .hint { color: #6b7280; font-size: .76rem; margin-top: 5px; }
-        .checks { display: flex; align-items: center; gap: 9px; padding-top: 24px; }
-        .checks input { width: auto; }
-        .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; flex-wrap: wrap; }
-        .btn { display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 9px; padding: 10px 15px; font-weight: 700; font-size: .88rem; cursor: pointer; text-decoration: none; }
-        .btn-primary { background: #1f2937; color: #fff; }
-        .btn-muted { background: #e5e7eb; color: #111827; }
-        .errors { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; font-size: .88rem; }
-        .errors ul { margin: 0; padding-left: 18px; }
-        .logo-preview { display: flex; align-items: center; gap: 12px; padding: 10px; border: 1px solid #e5e7eb; border-radius: 10px; background: #f9fafb; }
-        .logo-preview img { width: 58px; height: 58px; border-radius: 10px; object-fit: cover; }
-        @media (max-width: 720px) {
-            .topbar, .header { flex-direction: column; align-items: stretch; }
-            .grid { grid-template-columns: 1fr; }
-            .actions { justify-content: stretch; }
-            .btn { width: 100%; }
-        }
-    </style>
+    <link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
+    <link rel="icon" href="<?= base_url('favicon.ico') ?>" sizes="any">
 </head>
 <body>
     <?php
