@@ -5,21 +5,25 @@
 
 ---
 
-## ESTADO ACTUAL / HANDOFF (al 2026-06-12)
+## ESTADO ACTUAL / HANDOFF (al 2026-06-13)
 
-**Hitos 0–10 COMPLETOS y DESPLEGADOS en LOCAL y PRODUCCIÓN.** App con login, backoffice, QR, formularios públicos, PDF y envío por correo. PWA (Hito 11) desplegada; solo falta auditoría Lighthouse.
+**Hitos 0–12 COMPLETOS y DESPLEGADOS en LOCAL y PRODUCCIÓN.** App con login, backoffice, QR, formularios públicos, PDF, envío por correo y PWA instalada desde login. El flujo real de punta a punta ya fue probado en producción.
 
 - **Local:** XAMPP/MariaDB base `censo`. Servir con `php spark serve` → http://localhost:8080/ . 18 tablas + seeders. Login OK con el superadmin.
-- **Producción (en `98aa47e`):** https://censo.cycloidtalent.com/ — login, PWA (`manifest_login.json`/`sw_login.js`), backoffice, formularios públicos, PDF (dompdf) y correo (SendGrid) operativos. BD DigitalOcean (SSL). aaPanel, ruta `/www/wwwroot/censo`, document root `/public`.
+- **Producción (en `6daffe5`):** https://censo.cycloidtalent.com/ — login, PWA (`manifest_login.json`/`sw_login.js`), backoffice, formularios públicos, PDF (dompdf) y correo (SendGrid) operativos. BD DigitalOcean (SSL). aaPanel, ruta `/www/wwwroot/censo`, document root `/public`.
 - **Superadmin:** `edison.cuervo@cycloidtalent.com` (contraseña en `superadmin.password` del `.env`, NO en git).
-- **Git:** `main` (estable) y `cycloid` (desarrollo) sincronizadas en `98aa47e`.
+- **Git:** `main` (estable) y `cycloid` (desarrollo) sincronizadas en `6daffe5`.
 - **`.env` de producción** ya tiene BD DigitalOcean + `superadmin.*` + `email.*` (SendGrid). Replicar cualquier var nueva ahí (no va en git).
 
-**PRÓXIMO PUNTO DE ENTRADA → Pulido / verificación.** El núcleo funcional está completo y en vivo. Pendiente menor principal: prueba end-to-end real del flujo público (crear un cliente demo, generar QR, diligenciar y confirmar PDF + correo).
+**PRÓXIMO PUNTO DE ENTRADA → Pulido / operación.** El núcleo funcional está completo y en vivo. Pendientes reales: decidir si se conserva o se archiva el cliente demo E2E de producción, revisar el `robots.txt` gestionado por Cloudflare si se quiere Lighthouse limpio al 100%, y habilitar/extender pruebas automáticas locales.
 
 **Auditoría PWA (2026-06-13):** Lighthouse 12.8.2 ejecutado contra producción y local. Producción cumple HTTPS, manifest, service worker e íconos. Se corrigieron en local avisos de SEO/accesibilidad del login (meta description, orden de encabezados, nombre accesible del botón de contraseña). `robots.txt` remoto contiene un bloque "Cloudflare Managed Content" con `Content-Signal`, que Lighthouse reporta como directiva desconocida aunque no viene del `public/robots.txt` versionado.
 
+**Prueba E2E producción (2026-06-13):** completada con cliente demo `Demo E2E 20260613115708` (`id=1`, slug `demo-e2e-20260613115708`). Se generó inmueble `Casa 1`, QR poblacional y QR mascotas, se diligenciaron ambos formularios públicos vía `/q/{token}`, se generaron PDFs desde backoffice y la BD quedó con `pdf_enviado=1` y `fecha_envio` en ambos censos. Tokens usados: poblacional `98378844504095414e586b045b6511511a06e9c1198d86d5`, mascotas `78bf91e3befc8c7400f5ae0163d90f743162a96d9c994483`.
+
 **Nota de pruebas locales:** en esta máquina `localhost:8080` puede resolver a otro proyecto (`actas`); para `censo` usar `127.0.0.1:8080` si hay conflicto.
+
+**Nota de PHPUnit local:** `composer test` sigue bloqueado por entorno, no por código de negocio: falta cargar la extensión PHP `sqlite3`, que requieren los tests ejemplo de CodeIgniter (`ExampleDatabaseTest`).
 
 ### Flujo de trabajo (repetir en cada avance)
 1. Desarrollar en `cycloid`, probar en LOCAL (`php spark serve`).
@@ -161,13 +165,14 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 - [x] Descarga desde backoffice (respuestas) con regeneración si falta: `respuestas/pdf/{instrumento}/{id}` y `admin/.../respuestas/pdf/...`
 - [x] Verificado: PDF poblacional y mascotas generados OK (con datos de prueba, luego limpiados)
 
-### Hito 10 — Correo (SendGrid) ✅ probado en local
+### Hito 10 — Correo (SendGrid) ✅ probado en local y producción
 - [x] `composer require sendgrid/sendgrid "^7.0"` (producción: `composer install` tras el pull)
 - [x] Variables `email.*` en `.env` (fromEmail `notificacion.cycloidtalent@cycloidtalent.com`, fromName `Censo APP`, SMTPPass=API key) — NO en git; replicar en `.env` del servidor
 - [x] `app/Libraries/EmailService.php` (API HTTP SDK v7, click tracking OFF, adjunto PDF)
 - [x] Vistas de email (`emails/test_email`, `emails/censo`) + comando `php spark test:email`
 - [x] Enganche en `submit()`: tras el PDF, enviar al **diligenciador** y al **cliente**; marca `pdf_enviado`/`fecha_envio`
 - [x] Verificado: `php spark test:email` entregó OK (API key + remitente verificado)
+- [x] Verificado en E2E producción: formularios poblacional y mascotas marcaron `pdf_enviado=1` con `fecha_envio`
 
 ### Hito 11 — PWA instalable desde login
 - [x] Íconos disponibles (`public/assets/icons/icon-192.png`, `icon-512.png`, `icon-192-maskable.png`, `icon-512-maskable.png`)
@@ -184,7 +189,8 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 - [x] `.env` de producción con BD DigitalOcean *(SendGrid pendiente en Hito 10)*
 - [x] Verificado `.gitignore` (no sube `.env`); proyecto completo en `main`
 - [x] Deploy base + login verificados en https://censo.cycloidtalent.com/
-- [x] Deploy Hitos 6–10 + PWA a producción (`98aa47e`): pull + `composer install` (dompdf, sendgrid) + `email.*` en `.env`; login/PWA/correo verificados en vivo
+- [x] Deploy Hitos 6–10 + PWA a producción (`6daffe5`): pull + `composer install` (dompdf, sendgrid) + `email.*` en `.env`; login/PWA/correo verificados en vivo
+- [x] Prueba end-to-end real en producción: cliente demo, generación de inmueble, QR poblacional, QR mascotas, formularios públicos, PDF y correo
 - [ ] Repetir `composer install` y/o `php spark migrate` en producción cuando se agreguen dependencias o tablas nuevas
 
 ---
