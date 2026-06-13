@@ -24,7 +24,9 @@ $val  = static fn ($v) => ($v === null || $v === '') ? '—' : $v;
     .pet table { width: 100%; border-collapse: collapse; }
     .pet td { padding: 2px 6px; font-size: 10px; vertical-align: top; }
     .pet td.k { width: 22%; color: #555; font-weight: bold; }
-    .fotos img { height: 70px; margin-right: 8px; border: 1px solid #ccc; }
+    .photos { margin-top: 8px; border-collapse: collapse; }
+    .photos td { padding: 0 10px 0 0; text-align: center; vertical-align: top; font-size: 8.5px; color: #555; }
+    .photos img { height: 82px; max-width: 96px; border: 1px solid #ccc; display: block; margin-bottom: 3px; }
     .firma-box { border: 1px solid #ddd; border-radius: 4px; padding: 8px; width: 260px; }
     .firma-img { height: 70px; }
     .foot { margin-top: 18px; font-size: 8.5px; color: #999; border-top: 1px solid #eee; padding-top: 6px; }
@@ -89,11 +91,13 @@ $val  = static fn ($v) => ($v === null || $v === '') ? '—' : $v;
             </tr>
         </table>
         <?php if ($m['foto_data'] || $m['foto_carne_data'] || $m['foto_poliza_data']): ?>
-        <div class="fotos" style="margin-top:6px;">
-            <?php if ($m['foto_data']): ?><img src="<?= $m['foto_data'] ?>" alt="foto"><?php endif; ?>
-            <?php if ($m['foto_carne_data']): ?><img src="<?= $m['foto_carne_data'] ?>" alt="carne"><?php endif; ?>
-            <?php if ($m['foto_poliza_data']): ?><img src="<?= $m['foto_poliza_data'] ?>" alt="poliza"><?php endif; ?>
-        </div>
+        <table class="photos">
+            <tr>
+                <?php if ($m['foto_data']): ?><td><img src="<?= $m['foto_data'] ?>" alt="">Foto</td><?php endif; ?>
+                <?php if ($m['foto_carne_data']): ?><td><img src="<?= $m['foto_carne_data'] ?>" alt="">Carne</td><?php endif; ?>
+                <?php if ($m['foto_poliza_data']): ?><td><img src="<?= $m['foto_poliza_data'] ?>" alt="">Poliza</td><?php endif; ?>
+            </tr>
+        </table>
         <?php endif; ?>
     </div>
     <?php endforeach; ?>
