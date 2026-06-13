@@ -12,6 +12,9 @@ use Dompdf\Options;
  */
 class CensoPdf
 {
+    private const PDF_IMAGE_MAX_DIMENSION = 480;
+    private const PDF_IMAGE_JPEG_QUALITY = 76;
+
     public function generate(string $instrumento, int $censoId): ?string
     {
         if ($instrumento === 'poblacional') {
@@ -143,7 +146,7 @@ class CensoPdf
         return preg_match('/^#?[0-9a-fA-F]{6}$/', $color) ? (str_starts_with($color, '#') ? $color : '#' . $color) : '#1f2937';
     }
 
-    /** Lee una imagen (cualquier formato GD) y la devuelve como data URI PNG, o null. */
+    /** Lee una imagen y la devuelve como data URI JPEG reducido, o null. */
     private function imageDataUri(string $absolutePath): ?string
     {
         if ($absolutePath === '' || ! is_file($absolutePath)) {
@@ -160,12 +163,23 @@ class CensoPdf
             return null;
         }
 
-        imagesavealpha($img, true);
-        ob_start();
-        imagepng($img);
-        $png = (string) ob_get_clean();
-        imagedestroy($img);
+        $width = imagesx($img);
+        $height = imagesy($img);
+        $scale = min(1, self::PDF_IMAGE_MAX_DIMENSION / max($width, $height));
+        $targetWidth = max(1, (int) round($width * $scale));
+        $targetHeight = max(1, (int) round($height * $scale));
 
-        return 'data:image/png;base64,' . base64_encode($png);
+        $target = imagecreatetruecolor($targetWidth, $targetHeight);
+        $white = imagecolorallocate($target, 255, 255, 255);
+        imagefilledrectangle($target, 0, 0, $targetWidth, $targetHeight, $white);
+        imagecopyresampled($target, $img, 0, 0, 0, 0, $targetWidth, $targetHeight, $width, $height);
+
+        ob_start();
+        imagejpeg($target, null, self::PDF_IMAGE_JPEG_QUALITY);
+        $jpeg = (string) ob_get_clean();
+        imagedestroy($img);
+        imagedestroy($target);
+
+        return 'data:image/jpeg;base64,' . base64_encode($jpeg);
     }
 }

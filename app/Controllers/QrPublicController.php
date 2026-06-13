@@ -19,6 +19,9 @@ use App\Models\TipoVehiculoModel;
 
 class QrPublicController extends BaseController
 {
+    private const IMAGE_UPLOAD_MAX_DIMENSION = 1600;
+    private const IMAGE_UPLOAD_JPEG_QUALITY = 82;
+
     public function resolve(string $token)
     {
         $context = $this->context($token);
@@ -509,10 +512,74 @@ class QrPublicController extends BaseController
             mkdir($absoluteDir, 0775, true);
         }
 
+        if (str_starts_with((string) $file->getMimeType(), 'image/')) {
+            return $this->storeOptimizedImage((string) $file->getTempName(), $dir, $absoluteDir);
+        }
+
         $name = $file->getRandomName();
         $file->move($absoluteDir, $name);
 
         return $dir . '/' . $name;
+    }
+
+    private function storeOptimizedImage(string $sourcePath, string $relativeDir, string $absoluteDir): ?string
+    {
+        $raw = @file_get_contents($sourcePath);
+        if ($raw === false) {
+            return null;
+        }
+
+        $image = @imagecreatefromstring($raw);
+        if ($image === false) {
+            return null;
+        }
+
+        $image = $this->applyJpegOrientation($image, $sourcePath);
+        $width = imagesx($image);
+        $height = imagesy($image);
+        $scale = min(1, self::IMAGE_UPLOAD_MAX_DIMENSION / max($width, $height));
+        $targetWidth = max(1, (int) round($width * $scale));
+        $targetHeight = max(1, (int) round($height * $scale));
+
+        $target = imagecreatetruecolor($targetWidth, $targetHeight);
+        $white = imagecolorallocate($target, 255, 255, 255);
+        imagefilledrectangle($target, 0, 0, $targetWidth, $targetHeight, $white);
+        imagecopyresampled($target, $image, 0, 0, 0, 0, $targetWidth, $targetHeight, $width, $height);
+
+        $name = bin2hex(random_bytes(12)) . '.jpg';
+        $absolutePath = $absoluteDir . DIRECTORY_SEPARATOR . $name;
+        $saved = imagejpeg($target, $absolutePath, self::IMAGE_UPLOAD_JPEG_QUALITY);
+
+        imagedestroy($image);
+        imagedestroy($target);
+
+        return $saved ? $relativeDir . '/' . $name : null;
+    }
+
+    /**
+     * Corrige la orientacion EXIF comun de fotos tomadas desde celular.
+     *
+     * @param resource|\GdImage $image
+     *
+     * @return resource|\GdImage
+     */
+    private function applyJpegOrientation($image, string $sourcePath)
+    {
+        if (! function_exists('exif_read_data')) {
+            return $image;
+        }
+
+        $exif = @exif_read_data($sourcePath);
+        $orientation = (int) ($exif['Orientation'] ?? 1);
+
+        $rotated = match ($orientation) {
+            3 => imagerotate($image, 180, 0),
+            6 => imagerotate($image, -90, 0),
+            8 => imagerotate($image, 90, 0),
+            default => $image,
+        };
+
+        return $rotated ?: $image;
     }
 
     private function nullablePost(string $key): ?string
