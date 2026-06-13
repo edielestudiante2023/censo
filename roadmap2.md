@@ -35,11 +35,17 @@ Hitos 0–11 implementados, verificados y **en vivo** en local y producción.
 
 ---
 
-## EN CURSO / PRÓXIMO
+## COMPLETADO recientemente
 
-- [ ] **Recuperación de contraseña** (forgot/reset por correo con SendGrid).
-- [ ] **Dashboard de inteligencia de negocio**: segmentación por inmueble, torre, sexo y demás parámetros; filtros persistentes; gráficos filtrables y clickeables (cross-filter).
-  - NOTA: el campo **sexo NO se captura hoy** (residentes: nombre, documento, parentesco_id, edad). Requiere migración para agregar `sexo` a `residentes` (y opcionalmente a propietarios/responsable) + ajuste de los formularios públicos.
+- [x] **Recuperación de contraseña** (forgot/reset por correo, SendGrid). `PasswordController`, rutas `/forgot` `/reset/{token}`, columnas `reset_token`/`reset_expires` en `usuarios`. Token un solo uso, expira 1h.
+- [x] **Dashboard de inteligencia de negocio** (`InteligenciaController`, `app/Views/inteligencia/index.php`, Chart.js local en `public/assets/js/`). Rutas: `/inteligencia` (cliente) y `/admin/clientes/{id}/inteligencia` (admin). KPIs + gráficos con **cross-filter server-side**, filtros persistentes por URL y chips. Segmenta por sexo, torre, edad, parentesco, tipo de inmueble; mascotas por tipo.
+  - Se agregó `sexo` (M/F/Otro) a `censo_residentes` + selector en el formulario poblacional (`partials/resident_row.php`). Registros previos quedan 'Sin dato'.
+
+## PRÓXIMO / IDEAS
+
+- [ ] Capturar `sexo` también en propietarios/arrendatarios/responsable si se quiere ampliar la segmentación.
+- [ ] Más gráficos BI (vehículos por tipo, parqueadero, vive/no vive, mascotas vacunadas/esterilizadas).
+- [ ] Exportar el dashboard a PDF/imagen.
 
 ## PENDIENTES (pulido)
 
