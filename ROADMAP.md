@@ -15,15 +15,15 @@
 - **Git:** `main` (estable) y `cycloid` (desarrollo) sincronizadas; ver `git log -1 --oneline` para el SHA actual.
 - **`.env` de producción** ya tiene BD DigitalOcean + `superadmin.*` + `email.*` (SendGrid). Replicar cualquier var nueva ahí (no va en git).
 
-**PRÓXIMO PUNTO DE ENTRADA → Pulido / operación.** El núcleo funcional está completo y en vivo. Pendientes reales: revisar el `robots.txt` gestionado por Cloudflare si se quiere Lighthouse limpio al 100% y seguir ampliando pruebas automáticas de flujos críticos.
+**PRÓXIMO PUNTO DE ENTRADA → Pulido / operación.** El núcleo funcional está completo y en vivo. Pendiente externo: ajustar en Cloudflare el bloque gestionado de `robots.txt` si se quiere Lighthouse limpio al 100%. Desde el repo, `public/robots.txt` ya es valido.
 
-**Auditoría PWA (2026-06-13):** Lighthouse 12.8.2 ejecutado contra producción y local. Producción cumple HTTPS, manifest, service worker e íconos. Se corrigieron en local avisos de SEO/accesibilidad del login (meta description, orden de encabezados, nombre accesible del botón de contraseña). `robots.txt` remoto contiene un bloque "Cloudflare Managed Content" con `Content-Signal`, que Lighthouse reporta como directiva desconocida aunque no viene del `public/robots.txt` versionado.
+**Auditoría PWA (2026-06-13):** Lighthouse 12.8.2 ejecutado contra producción y local. Producción cumple HTTPS, manifest, service worker e íconos. Se corrigieron en local avisos de SEO/accesibilidad del login (meta description, orden de encabezados, nombre accesible del botón de contraseña). `robots.txt` remoto contiene un bloque "Cloudflare Managed Content" con `Content-Signal`, que Lighthouse reporta como directiva desconocida aunque no viene del `public/robots.txt` versionado. Verificado: `public/robots.txt` solo contiene directivas estándar; el ajuste debe hacerse en Cloudflare, no en la app.
 
 **Prueba E2E producción (2026-06-13):** completada con cliente demo `Demo E2E 20260613115708` (`id=1`, slug `demo-e2e-20260613115708`). Se generó inmueble `Casa 1`, QR poblacional y QR mascotas, se diligenciaron ambos formularios públicos vía `/q/{token}`, se generaron PDFs desde backoffice y la BD quedó con `pdf_enviado=1` y `fecha_envio` en ambos censos. Tokens usados: poblacional `98378844504095414e586b045b6511511a06e9c1198d86d5`, mascotas `78bf91e3befc8c7400f5ae0163d90f743162a96d9c994483`. El cliente demo fue archivado después de la prueba desde la ruta admin; los QR públicos ahora muestran "QR no disponible".
 
 **Nota de pruebas locales:** en esta máquina `localhost:8080` puede resolver a otro proyecto (`actas`); para `censo` usar `127.0.0.1:8080` si hay conflicto.
 
-**Nota de PHPUnit local:** `composer test` pasa en esta máquina (38 tests, 78 assertions). El test ejemplo de SQLite se salta automáticamente si la extensión PHP `sqlite3` no está cargada. Hay cobertura básica de filtros de acceso, validaciones de modelos y scopes multi-tenant.
+**Nota de PHPUnit local:** `composer test` pasa en esta máquina (40 tests, 85 assertions). El test ejemplo de SQLite se salta automáticamente si la extensión PHP `sqlite3` no está cargada. Hay cobertura básica de filtros de acceso, validaciones de modelos, scopes multi-tenant y lógica de envío de correo con PDF.
 
 ### Flujo de trabajo (repetir en cada avance)
 1. Desarrollar en `cycloid`, probar en LOCAL (`php spark serve`).
