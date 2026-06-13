@@ -1,6 +1,6 @@
 {
     "id": "/login",
-    "name": "Censo PWA - Propiedad Horizontal",
+    "name": "Censo APP - Propiedad Horizontal",
     "short_name": "Censo",
     "description": "Censos poblacionales y de mascotas en propiedad horizontal.",
     "start_url": "/login",

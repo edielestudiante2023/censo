@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel - Censo</title>
+    <title>Panel · Censo APP</title>
+    <link rel="icon" href="<?= base_url('favicon.ico') ?>" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?= base_url('favicon-32x32.png') ?>">
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background: #f3f4f6; color: #111827; }
@@ -27,7 +29,7 @@
 </head>
 <body>
     <div class="topbar">
-        <h1>Censo PWA</h1>
+        <h1>Censo APP</h1>
         <a href="<?= base_url('logout') ?>">Cerrar sesion</a>
     </div>
     <div class="wrap">
@@ -62,5 +64,8 @@
             <?php endif; ?>
         </div>
     </div>
+    <footer style="text-align:center; color:#9ca3af; font-size:.75rem; padding:10px 18px 26px;">
+        Censo APP · Desarrollado por <strong>Enterprisesst</strong> · empowered by <strong>Cycloid Talent SAS</strong>
+    </footer>
 </body>
 </html>

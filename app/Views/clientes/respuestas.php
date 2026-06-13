@@ -51,7 +51,7 @@
     ?>
 
     <div class="topbar">
-        <h1>Censo PWA</h1>
+        <h1>Censo APP</h1>
         <nav>
             <?php if ($isAdmin): ?>
                 <a href="<?= base_url('admin/clientes/' . $cliente['id'] . '/tablero') ?>">Tablero</a>

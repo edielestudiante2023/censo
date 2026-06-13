@@ -151,8 +151,9 @@ $val  = static fn ($v) => ($v === null || $v === '') ? '—' : $v;
 </tr></table>
 
 <div class="foot">
-    Documento generado automaticamente por Censo PWA — Cliente: <?= esc($cliente['nombre_tercero']) ?> ·
+    Documento generado automaticamente por Censo APP — Cliente: <?= esc($cliente['nombre_tercero']) ?> ·
     Registro #<?= esc($censo['id']) ?> · IP: <?= esc($val($censo['ip'])) ?> · Fecha respuesta: <?= esc($val($censo['created_at'])) ?>
+    <br>Desarrollado por Enterprisesst · empowered by Cycloid Talent SAS
 </div>
 
 </body>

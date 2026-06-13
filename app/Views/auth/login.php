@@ -169,7 +169,10 @@
                 </div>
             </div>
 
-            <div class="foot">&copy; <?= date('Y') ?> Censo APP · Cycloid Talent</div>
+            <div class="foot">
+                &copy; <?= date('Y') ?> Censo APP<br>
+                Desarrollado por <strong>Enterprisesst</strong> · empowered by <strong>Cycloid Talent SAS</strong>
+            </div>
         </div>
     </div>
 

@@ -52,7 +52,7 @@
     ?>
 
     <div class="topbar">
-        <h1>Censo PWA</h1>
+        <h1>Censo APP</h1>
         <nav>
             <a href="<?= base_url('admin/clientes') ?>">Clientes</a>
             <a href="<?= base_url('dashboard') ?>">Dashboard</a>
