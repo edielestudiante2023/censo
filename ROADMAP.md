@@ -15,7 +15,9 @@
 - **Git:** `main` (estable) y `cycloid` (desarrollo) sincronizadas en `98aa47e`.
 - **`.env` de producción** ya tiene BD DigitalOcean + `superadmin.*` + `email.*` (SendGrid). Replicar cualquier var nueva ahí (no va en git).
 
-**PRÓXIMO PUNTO DE ENTRADA → Pulido / verificación.** El núcleo funcional está completo y en vivo. Pendientes menores: (1) auditoría PWA con Lighthouse/DevTools en producción (Hito 11); (2) prueba end-to-end real del flujo público (crear un cliente demo, generar QR, diligenciar y confirmar PDF + correo).
+**PRÓXIMO PUNTO DE ENTRADA → Pulido / verificación.** El núcleo funcional está completo y en vivo. Pendiente menor principal: prueba end-to-end real del flujo público (crear un cliente demo, generar QR, diligenciar y confirmar PDF + correo).
+
+**Auditoría PWA (2026-06-13):** Lighthouse 12.8.2 ejecutado contra producción y local. Producción cumple HTTPS, manifest, service worker e íconos. Se corrigieron en local avisos de SEO/accesibilidad del login (meta description, orden de encabezados, nombre accesible del botón de contraseña). `robots.txt` remoto contiene un bloque "Cloudflare Managed Content" con `Content-Signal`, que Lighthouse reporta como directiva desconocida aunque no viene del `public/robots.txt` versionado.
 
 **Nota de pruebas locales:** en esta máquina `localhost:8080` puede resolver a otro proyecto (`actas`); para `censo` usar `127.0.0.1:8080` si hay conflicto.
 
@@ -174,7 +176,7 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 - [x] Tarjeta de instalación + modal iOS en la vista de login
 - [x] Meta tags PWA + registro del SW
 - [x] Desplegado en producción: `manifest_login.json` y `sw_login.js` responden 200 en HTTPS
-- [ ] Verificar instalabilidad con auditoría Lighthouse / DevTools (pendiente)
+- [x] Verificar instalabilidad con auditoría Lighthouse / DevTools
 
 ### Hito 12 — Despliegue (pipeline ya probado de punta a punta)
 - [x] Migrar en LOCAL (`php spark migrate`) y validar

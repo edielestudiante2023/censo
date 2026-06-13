@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Censo APP para administrar censos poblacionales y de mascotas en propiedad horizontal.">
     <title>Iniciar sesion · Censo APP</title>
 
     <!-- Favicon -->
@@ -101,7 +102,7 @@
         .pwa-install-section.visible { display: flex; align-items: center; gap: 13px; }
         .pwa-install-icon { width: 50px; height: 50px; border-radius: 12px; box-shadow: 0 6px 14px rgba(0,0,0,0.18); flex-shrink: 0; }
         .pwa-install-info { flex: 1; min-width: 0; }
-        .pwa-install-info h5 { margin: 0 0 3px; font-size: .9rem; font-weight: 700; color: var(--ink); }
+        .pwa-install-info h2 { margin: 0 0 3px; font-size: .9rem; font-weight: 700; color: var(--ink); }
         .pwa-install-info p { margin: 0 0 8px; font-size: .76rem; color: var(--muted); line-height: 1.3; }
         .btn-pwa-install {
             background: var(--gold); border: 0; border-radius: 9px; color: #1a1304; font-weight: 700; font-size: .82rem;
@@ -150,7 +151,7 @@
                     <div class="control">
                         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
                         <input type="password" id="password" name="password" placeholder="Tu contrasena" required>
-                        <button type="button" class="toggle" id="pwToggle" aria-label="Mostrar contrasena">Ver</button>
+                        <button type="button" class="toggle" id="pwToggle" aria-label="Ver contrasena">Ver</button>
                     </div>
                 </div>
 
@@ -161,7 +162,7 @@
             <div class="pwa-install-section" id="pwaInstallSection">
                 <img src="<?= base_url('assets/icons/icon-192.png') ?>" alt="App" class="pwa-install-icon">
                 <div class="pwa-install-info">
-                    <h5>Instala la app</h5>
+                    <h2>Instala la app</h2>
                     <p>Acceso rapido desde la pantalla de inicio de tu dispositivo.</p>
                     <button type="button" class="btn-pwa-install" id="pwaInstallBtn">
                         <span id="pwaInstallBtnText">Descargar app</span>
@@ -198,6 +199,7 @@
                 var show = pw.type === 'password';
                 pw.type = show ? 'text' : 'password';
                 tg.textContent = show ? 'Ocultar' : 'Ver';
+                tg.setAttribute('aria-label', show ? 'Ocultar contrasena' : 'Ver contrasena');
             });
         }
     })();
