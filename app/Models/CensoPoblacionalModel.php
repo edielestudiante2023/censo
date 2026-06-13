@@ -19,6 +19,31 @@ class CensoPoblacionalModel extends Model
         'discapacidad_descripcion', 'tiene_parqueadero', 'observaciones', 'firmante_nombre',
         'firma_imagen', 'pdf_ruta', 'pdf_enviado', 'fecha_envio', 'ip', 'user_agent',
     ];
+    protected $validationRules  = [
+        'cliente_id'             => 'required|is_natural_no_zero',
+        'qr_id'                  => 'permit_empty|is_natural_no_zero',
+        'inmueble_id'            => 'required|is_natural_no_zero',
+        'autorizacion_datos'     => 'required|in_list[0,1]',
+        'fecha_autorizacion'     => 'permit_empty|valid_date[Y-m-d H:i:s]',
+        'vive_en_copropiedad'    => 'permit_empty|in_list[0,1]',
+        'direccion_notificacion' => 'permit_empty|max_length[255]',
+        'quien_vive'             => 'permit_empty|max_length[100]',
+        'administrado_por'       => 'permit_empty|in_list[inmobiliaria,persona_natural]',
+        'inmobiliaria_nombre'    => 'permit_empty|max_length[191]',
+        'inmobiliaria_telefono'  => 'permit_empty|max_length[50]',
+        'inmobiliaria_correo'    => 'permit_empty|valid_email|max_length[191]',
+        'correo_contacto'        => 'permit_empty|valid_email|max_length[191]',
+        'discapacidad_descripcion' => 'permit_empty',
+        'tiene_parqueadero'      => 'permit_empty|in_list[0,1]',
+        'observaciones'          => 'permit_empty',
+        'firmante_nombre'        => 'permit_empty|max_length[191]',
+        'firma_imagen'           => 'permit_empty|max_length[255]',
+        'pdf_ruta'               => 'permit_empty|max_length[255]',
+        'pdf_enviado'            => 'permit_empty|in_list[0,1]',
+        'fecha_envio'            => 'permit_empty|valid_date[Y-m-d H:i:s]',
+        'ip'                     => 'permit_empty|max_length[45]',
+        'user_agent'             => 'permit_empty|max_length[255]',
+    ];
 
     public function forCliente($clienteId)
     {

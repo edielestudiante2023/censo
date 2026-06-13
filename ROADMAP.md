@@ -15,7 +15,7 @@
 - **Git:** `main` (estable) y `cycloid` (desarrollo) sincronizadas en `98aa47e`.
 - **`.env` de producción** ya tiene BD DigitalOcean + `superadmin.*` + `email.*` (SendGrid). Replicar cualquier var nueva ahí (no va en git).
 
-**PRÓXIMO PUNTO DE ENTRADA → Pulido / verificación.** El núcleo funcional está completo y en vivo. Pendientes menores: (1) auditoría PWA con Lighthouse/DevTools en producción (Hito 11); (2) prueba end-to-end real del flujo público (crear un cliente demo, generar QR, diligenciar y confirmar PDF + correo); (3) afinar validaciones por modelo.
+**PRÓXIMO PUNTO DE ENTRADA → Pulido / verificación.** El núcleo funcional está completo y en vivo. Pendientes menores: (1) auditoría PWA con Lighthouse/DevTools en producción (Hito 11); (2) prueba end-to-end real del flujo público (crear un cliente demo, generar QR, diligenciar y confirmar PDF + correo).
 
 **Nota de pruebas locales:** en esta máquina `localhost:8080` puede resolver a otro proyecto (`actas`); para `censo` usar `127.0.0.1:8080` si hay conflicto.
 
@@ -117,7 +117,7 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 ### Hito 4 — Modelos y entidades ✅ (18 models, sin errores de sintaxis)
 - [x] Models CI4 por tabla (núcleo, estructura, catálogos, QR, censos + hijas)
 - [x] Filtro/scope multi-tenant por `cliente_id` (`forCliente()`); hijas con `forCenso()`
-- [ ] Validaciones por modelo (se afinan al construir formularios/CRUD)
+- [x] Validaciones por modelo (`validationRules` en núcleo, estructura, catálogos, QR, censos + hijas)
 
 ### Hito 5 — Autenticación y autorización ✅ probado en local
 - [x] Login (`AuthController`) con `password_verify`, sesión y `last_login`
@@ -126,7 +126,7 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 - [x] Rutas: `/`, `/login` (GET/POST), `/logout`, `/dashboard` (protegida)
 - [x] `indexPage` vacío (URLs limpias para nginx)
 - [x] Verificado: superadmin entra → dashboard muestra rol y nombre
-- [ ] Aislamiento de datos por cliente (se aplica al construir el Hito 6)
+- [x] Aislamiento de datos por cliente en rutas cliente/consejo/comité (`session()->cliente_id` + filtros `cliente_id`)
 
 ### Hito 6 — Panel administración (backoffice)
 - [x] CRUD clientes (superadmin/admin) con logo y colores (branding)

@@ -12,4 +12,8 @@ class TipoDocumentoModel extends Model
     protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';
     protected $allowedFields = ['nombre', 'activo'];
+    protected $validationRules = [
+        'nombre' => 'required|max_length[100]',
+        'activo' => 'required|in_list[0,1]',
+    ];
 }
