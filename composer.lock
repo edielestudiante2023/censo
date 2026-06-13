@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "03da9775e06e4c72c721b99f734d6f2c",
+    "content-hash": "f6fb752ebecf0cc982357ad6bc7e9648",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -672,6 +672,129 @@
                 "source": "https://github.com/MyIntervals/PHP-CSS-Parser/tree/v9.3.0"
             },
             "time": "2026-03-03T17:31:43+00:00"
+        },
+        {
+            "name": "sendgrid/php-http-client",
+            "version": "3.14.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/sendgrid/php-http-client.git",
+                "reference": "6d589564522be290c7d7c18e51bcd8b03aeaf0b6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/sendgrid/php-http-client/zipball/6d589564522be290c7d7c18e51bcd8b03aeaf0b6",
+                "reference": "6d589564522be290c7d7c18e51bcd8b03aeaf0b6",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "ext-mbstring": "*",
+                "php": ">=5.6"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^2.16",
+                "phpunit/phpunit": "^5.7 || ^6.5",
+                "sebastian/version": "^1.0.6",
+                "squizlabs/php_codesniffer": "~2.0"
+            },
+            "suggest": {
+                "composer/ca-bundle": "Including this library will ensure that a valid CA bundle is available for secure connections"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "SendGrid\\": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Matt Bernier",
+                    "email": "mbernier@twilio.com"
+                },
+                {
+                    "name": "Elmer Thomas",
+                    "email": "ethomas@twilio.com"
+                }
+            ],
+            "description": "HTTP REST client, simplified for PHP",
+            "homepage": "http://github.com/sendgrid/php-http-client",
+            "keywords": [
+                "api",
+                "fluent",
+                "http",
+                "rest",
+                "sendgrid"
+            ],
+            "support": {
+                "issues": "https://github.com/sendgrid/php-http-client/issues",
+                "source": "https://github.com/sendgrid/php-http-client/tree/3.14.4"
+            },
+            "time": "2022-03-09T20:21:55+00:00"
+        },
+        {
+            "name": "sendgrid/sendgrid",
+            "version": "7.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/sendgrid/sendgrid-php.git",
+                "reference": "b659d96f19f69bcef6807300f88ac7a1b2449328"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/sendgrid/sendgrid-php/zipball/b659d96f19f69bcef6807300f88ac7a1b2449328",
+                "reference": "b659d96f19f69bcef6807300f88ac7a1b2449328",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "ext-mbstring": "*",
+                "php": ">=5.6",
+                "sendgrid/php-http-client": "~3.9"
+            },
+            "replace": {
+                "sendgrid/sendgrid-php": "*"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^5.7.9 || ^6.4.3",
+                "squizlabs/php_codesniffer": "3.*",
+                "swaggest/json-diff": "^3.4"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "lib/SendGrid.php"
+                ],
+                "psr-4": {
+                    "SendGrid\\": "lib/",
+                    "SendGrid\\Mail\\": "lib/mail/",
+                    "SendGrid\\Stats\\": "lib/stats/",
+                    "SendGrid\\Contacts\\": "lib/contacts/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "This library allows you to quickly and easily send emails through SendGrid using PHP.",
+            "homepage": "http://github.com/sendgrid/sendgrid-php",
+            "keywords": [
+                "email",
+                "grid",
+                "send",
+                "sendgrid"
+            ],
+            "support": {
+                "issues": "https://github.com/sendgrid/sendgrid-php/issues",
+                "source": "https://github.com/sendgrid/sendgrid-php/tree/master"
+            },
+            "time": "2018-05-19T16:38:14+00:00"
         },
         {
             "name": "thecodingmachine/safe",

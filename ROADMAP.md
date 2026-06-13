@@ -160,12 +160,13 @@ Parámetros: `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`.
 - [x] Descarga desde backoffice (respuestas) con regeneración si falta: `respuestas/pdf/{instrumento}/{id}` y `admin/.../respuestas/pdf/...`
 - [x] Verificado: PDF poblacional y mascotas generados OK (con datos de prueba, luego limpiados)
 
-### Hito 10 — Correo (SendGrid)
-- [ ] `composer require sendgrid/sendgrid "^7.0" -W`
-- [ ] Variables `email.*` en `.env` / `.env.example`
-- [ ] `app/Libraries/EmailService.php` (API HTTP, click tracking OFF)
-- [ ] Vistas de email + comando `php spark test:email`
-- [ ] Al finalizar: enviar PDF al **diligenciador** y al **cliente**
+### Hito 10 — Correo (SendGrid) ✅ probado en local
+- [x] `composer require sendgrid/sendgrid "^7.0"` (producción: `composer install` tras el pull)
+- [x] Variables `email.*` en `.env` (fromEmail `notificacion.cycloidtalent@cycloidtalent.com`, fromName `Censo APP`, SMTPPass=API key) — NO en git; replicar en `.env` del servidor
+- [x] `app/Libraries/EmailService.php` (API HTTP SDK v7, click tracking OFF, adjunto PDF)
+- [x] Vistas de email (`emails/test_email`, `emails/censo`) + comando `php spark test:email`
+- [x] Enganche en `submit()`: tras el PDF, enviar al **diligenciador** y al **cliente**; marca `pdf_enviado`/`fecha_envio`
+- [x] Verificado: `php spark test:email` entregó OK (API key + remitente verificado)
 
 ### Hito 11 — PWA instalable desde login
 - [x] Íconos disponibles (`public/assets/icons/icon-192.png`, `icon-512.png`, `icon-192-maskable.png`, `icon-512-maskable.png`)

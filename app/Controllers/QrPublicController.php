@@ -102,6 +102,7 @@ class QrPublicController extends BaseController
 
         // Generar PDF (fuera de la transaccion). Si falla, el censo igual quedo guardado.
         $pdfReady = false;
+        $path     = null;
         try {
             $path = (new \App\Libraries\CensoPdf())->generate($instrumento, $censoId);
             if ($path !== null) {
@@ -110,6 +111,39 @@ class QrPublicController extends BaseController
             }
         } catch (\Throwable $e) {
             log_message('error', 'PDF censo {id}: {msg}', ['id' => $censoId, 'msg' => $e->getMessage()]);
+        }
+
+        // Enviar el PDF por correo al diligenciador y al cliente (Hito 10).
+        if ($pdfReady && $path !== null) {
+            try {
+                $recipients    = [];
+                $diligenciador = $instrumento === 'mascotas'
+                    ? $this->nullablePost('responsable_correo')
+                    : $this->nullablePost('correo_contacto');
+                if ($diligenciador !== null) {
+                    $recipients[] = $diligenciador;
+                }
+                if (! empty($context['cliente']['email'])) {
+                    $recipients[] = $context['cliente']['email'];
+                }
+
+                $sent = (new \App\Libraries\EmailService())->sendCensoPdf(
+                    $recipients,
+                    $context['cliente'],
+                    $instrumento,
+                    WRITEPATH . $path
+                );
+
+                if ($sent > 0) {
+                    $table = $instrumento === 'poblacional' ? 'censos_poblacionales' : 'censos_mascotas';
+                    db_connect()->table($table)->where('id', $censoId)->update([
+                        'pdf_enviado' => 1,
+                        'fecha_envio' => date('Y-m-d H:i:s'),
+                    ]);
+                }
+            } catch (\Throwable $e) {
+                log_message('error', 'Email censo {id}: {msg}', ['id' => $censoId, 'msg' => $e->getMessage()]);
+            }
         }
 
         return view('public/thanks', $context + ['inmueble' => $inmueble, 'pdfReady' => $pdfReady]);
