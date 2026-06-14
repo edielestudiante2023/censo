@@ -3,9 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= esc($cliente['nombre_tercero']) ?> - Censo</title>
+    <title><?= esc($cliente['nombre_tercero']) ?> · Censo APP</title>
     <link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
     <link rel="icon" href="<?= base_url('favicon.ico') ?>" sizes="any">
+    <style>
+        .sections { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; }
+        .section-card { display:block; text-decoration:none; color:#111827; border:1px solid #e6e9ed; border-radius:13px;
+            padding:15px 16px; background:#fafbfc; transition:border-color .15s, background .15s, transform .12s; }
+        .section-card:hover { border-color:#1f2937; background:#fff; transform:translateY(-2px); }
+        .section-card strong { display:block; color:#0f1623; font-size:.96rem; }
+        .section-card span { color:#6b7280; font-size:.79rem; line-height:1.35; }
+        dl { margin:0; display:grid; grid-template-columns:140px 1fr; gap:10px 14px; }
+        dt { color:#6b7280; font-weight:700; font-size:.82rem; }
+        dd { margin:0; font-size:.9rem; }
+        .avatar-lg { width:64px; height:64px; border-radius:14px; object-fit:contain; background:#fff; border:1px solid #e5e7eb; display:block; margin-bottom:12px; }
+        .avatar-lg-fb { width:64px; height:64px; border-radius:14px; display:flex; align-items:center; justify-content:center;
+            background:linear-gradient(160deg,#1f2937,#0f1623); color:#c9a227; font-weight:800; font-size:1.6rem; margin-bottom:12px; }
+    </style>
 </head>
 <body>
     <div class="topbar">
@@ -21,17 +35,9 @@
         <div class="header">
             <div>
                 <h2><?= esc($cliente['nombre_tercero']) ?></h2>
-                <p><?= esc($cliente['slug']) ?></p>
+                <p><?= esc($cliente['ciudad'] ?: $cliente['slug']) ?></p>
             </div>
-            <div class="actions" style="margin-top:0;">
-                <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/usuarios') ?>">Usuarios</a>
-                <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/tablero') ?>">Tablero</a>
-                <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/respuestas') ?>">Respuestas</a>
-                <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/inteligencia') ?>">Inteligencia</a>
-                <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/qr') ?>">QR</a>
-                <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/config') ?>">Configurar conjunto</a>
-                <a class="btn btn-primary" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/edit') ?>">Editar cliente</a>
-            </div>
+            <a class="btn btn-primary" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/edit') ?>">Editar cliente</a>
         </div>
 
         <?php if (session('error')): ?>
@@ -41,12 +47,24 @@
             <div class="alert alert-success"><?= esc(session('success')) ?></div>
         <?php endif; ?>
 
+        <section class="card">
+            <h3 style="margin:0 0 12px;">Gestion del conjunto</h3>
+            <div class="sections">
+                <a class="section-card" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/config') ?>"><strong>Configurar conjunto</strong><span>Tipo, torres e inmuebles (generador).</span></a>
+                <a class="section-card" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/qr') ?>"><strong>Codigos QR</strong><span>Generar QR por instrumento y pieza grafica.</span></a>
+                <a class="section-card" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/usuarios') ?>"><strong>Usuarios</strong><span>Accesos del conjunto (cliente/consejo/comite).</span></a>
+                <a class="section-card" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/tablero') ?>"><strong>Tablero</strong><span>Avance del censo y faltantes.</span></a>
+                <a class="section-card" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/respuestas') ?>"><strong>Respuestas</strong><span>Censos recibidos, PDF y export CSV.</span></a>
+                <a class="section-card" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/inteligencia') ?>"><strong>Inteligencia</strong><span>Estadisticas y graficos con filtros.</span></a>
+            </div>
+        </section>
+
         <div class="grid">
             <aside class="card">
                 <?php if (! empty($cliente['logo'])): ?>
-                    <img class="logo" src="<?= base_url($cliente['logo']) ?>" alt="<?= esc($cliente['nombre_tercero']) ?>">
+                    <img class="avatar-lg" src="<?= base_url($cliente['logo']) ?>" alt="<?= esc($cliente['nombre_tercero']) ?>">
                 <?php else: ?>
-                    <span class="logo"></span>
+                    <span class="avatar-lg-fb"><?= esc(strtoupper(substr((string) $cliente['nombre_tercero'], 0, 1))) ?></span>
                 <?php endif; ?>
 
                 <?php if ((int) $cliente['activo'] === 1): ?>
@@ -60,7 +78,7 @@
                     <span class="swatch" title="Color secundario" style="background: <?= esc($cliente['color_secundario'] ?: '#0f766e') ?>"></span>
                 </div>
 
-                <div class="actions">
+                <div class="actions" style="margin-top:16px;">
                     <?php if (! empty($cliente['logo'])): ?>
                         <form method="post" action="<?= base_url('admin/clientes/' . $cliente['id'] . '/logo/delete') ?>">
                             <?= csrf_field() ?>
@@ -76,29 +94,14 @@
 
             <section class="card">
                 <dl>
-                    <dt>Documento</dt>
-                    <dd><?= esc($cliente['tipo_documento']) ?> <?= esc($cliente['documento'] ?? '') ?></dd>
-
-                    <dt>Tipo conjunto</dt>
-                    <dd><?= esc($cliente['tipo_conjunto']) ?></dd>
-
-                    <dt>Contacto</dt>
-                    <dd><?= esc($cliente['persona_contacto'] ?? 'Sin contacto') ?></dd>
-
-                    <dt>Correo</dt>
-                    <dd><?= esc($cliente['email'] ?? 'Sin correo') ?></dd>
-
-                    <dt>Telefono</dt>
-                    <dd><?= esc($cliente['telefono'] ?? 'Sin telefono') ?></dd>
-
-                    <dt>Ciudad</dt>
-                    <dd><?= esc($cliente['ciudad'] ?? 'Sin ciudad') ?></dd>
-
-                    <dt>Direccion</dt>
-                    <dd><?= esc($cliente['direccion'] ?? 'Sin direccion') ?></dd>
-
-                    <dt>Creado</dt>
-                    <dd><?= esc($cliente['created_at'] ?? '') ?></dd>
+                    <dt>Documento</dt><dd><?= esc($cliente['tipo_documento']) ?> <?= esc($cliente['documento'] ?? '') ?></dd>
+                    <dt>Tipo conjunto</dt><dd style="text-transform:capitalize;"><?= esc($cliente['tipo_conjunto']) ?></dd>
+                    <dt>Contacto</dt><dd><?= esc($cliente['persona_contacto'] ?? 'Sin contacto') ?></dd>
+                    <dt>Correo</dt><dd><?= esc($cliente['email'] ?? 'Sin correo') ?></dd>
+                    <dt>Telefono</dt><dd><?= esc($cliente['telefono'] ?? 'Sin telefono') ?></dd>
+                    <dt>Ciudad</dt><dd><?= esc($cliente['ciudad'] ?? 'Sin ciudad') ?></dd>
+                    <dt>Direccion</dt><dd><?= esc($cliente['direccion'] ?? 'Sin direccion') ?></dd>
+                    <dt>Creado</dt><dd><?= esc($cliente['created_at'] ?? '') ?></dd>
                 </dl>
             </section>
 
