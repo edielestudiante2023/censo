@@ -39,7 +39,7 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
         .panel { background:#fff; border-radius:14px; box-shadow:0 4px 14px rgba(0,0,0,.06); padding:16px; margin-bottom:16px; }
         .filters { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; align-items:end; }
         label { display:block; font-weight:700; font-size:.74rem; color:#374151; margin-bottom:5px; }
-        select, input[type="date"] { width:100%; border:1px solid #d1d5db; border-radius:9px; padding:9px 10px; font-size:.86rem; background:#fff; }
+        select, input[type="date"] { width:100%; min-width:0; max-width:100%; border:1px solid #d1d5db; border-radius:9px; padding:9px 10px; font-size:.86rem; background:#fff; }
         .btn { display:inline-flex; align-items:center; justify-content:center; border:0; border-radius:9px; padding:9px 13px; font-weight:700; font-size:.84rem; cursor:pointer; text-decoration:none; }
         .btn-primary { background:#0f1623; color:#fff; } .btn-muted { background:#e5e7eb; color:#111827; }
         .btn-clear { background:#fee2e2; color:#991b1b; }
@@ -57,7 +57,9 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
         table.summary th { color:#374151; font-size:.74rem; text-transform:uppercase; letter-spacing:.03em; }
         table.summary td:last-child, table.summary th:last-child { text-align:right; font-weight:700; }
         .empty { padding:40px; text-align:center; color:#6b7280; }
-        @media (max-width:980px){ .filters{ grid-template-columns:repeat(2,1fr);} }
+        .filters > div { min-width:0; }
+        @media (max-width:980px){ .filters{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
+        @media (max-width:620px){ .filters{ grid-template-columns:1fr; } }
     </style>
 </head>
 <body>
