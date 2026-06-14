@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Libraries\HabeasData;
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
 
@@ -36,7 +37,7 @@ class DemoSeed extends BaseCommand
             'direccion' => 'Calle 123 #45-67', 'ciudad' => 'Bogota', 'telefono' => '6011234567',
             'persona_contacto' => 'Administracion Demo', 'email' => 'edison.cuervo@cycloidtalent.com',
             'tipo_conjunto' => 'apartamentos', 'slug' => $this->slug, 'color_primario' => '#0d6efd',
-            'texto_habeas_data' => 'Autorizo el tratamiento de mis datos a {NOMBRE_CONJUNTO} (NIT {NIT}) conforme a la Ley 1581 de 2012.',
+            'texto_habeas_data' => HabeasData::standard(),
             'activo' => 1, 'created_at' => $now, 'updated_at' => $now,
         ]);
         $cid = (int) $db->insertID();

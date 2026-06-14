@@ -120,18 +120,7 @@
             <section class="card" style="grid-column:1 / -1;">
                 <h3 style="margin:0 0 4px;">Autorizacion de tratamiento de datos (Habeas Data)</h3>
                 <p class="muted" style="margin:0 0 12px;">Texto de consentimiento que ve quien diligencia el censo (Ley 1581/2012). Se edita en <a href="<?= base_url('admin/clientes/' . $cliente['id'] . '/edit') ?>">Editar cliente</a>.</p>
-                <?php
-                    $habeas = strtr((string) ($cliente['texto_habeas_data'] ?? ''), [
-                        '{NOMBRE_CONJUNTO}' => (string) $cliente['nombre_tercero'],
-                        '{NIT}'             => (string) ($cliente['documento'] ?? ''),
-                        '{CORREO_ADMIN}'    => (string) ($cliente['email'] ?? ''),
-                    ]);
-                ?>
-                <?php if (trim($habeas) !== ''): ?>
-                    <div class="habeas"><?= esc($habeas) ?></div>
-                <?php else: ?>
-                    <div class="empty">Este cliente aun no tiene texto de Habeas Data. Agregalo en "Editar cliente".</div>
-                <?php endif; ?>
+                <div class="habeas"><?= esc(\App\Libraries\HabeasData::resolve($cliente)) ?></div>
             </section>
         </div>
     </main>

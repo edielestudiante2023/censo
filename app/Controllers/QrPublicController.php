@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Libraries\HabeasData;
 use App\Models\CensoArrendatarioModel;
 use App\Models\CensoMascotaModel;
 use App\Models\CensoPoblacionalModel;
@@ -465,11 +466,7 @@ class QrPublicController extends BaseController
 
     private function habeasData(array $cliente): string
     {
-        return strtr((string) $cliente['texto_habeas_data'], [
-            '{NOMBRE_CONJUNTO}' => (string) $cliente['nombre_tercero'],
-            '{NIT}' => (string) ($cliente['documento'] ?? ''),
-            '{CORREO_ADMIN}' => (string) ($cliente['email'] ?? ''),
-        ]);
+        return HabeasData::resolve($cliente);
     }
 
     private function saveSignature(string $dataUri, int $clienteId): ?string

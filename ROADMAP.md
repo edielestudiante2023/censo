@@ -23,9 +23,11 @@
 
 **Prueba PDF con imagenes WhatsApp (2026-06-13):** completada en producción con cliente demo activo `Demo Imagenes E2E 20260613145137` (`id=3`, slug `demo-img-e2e-20260613145137`). Se diligenció el censo de mascotas con 3 imágenes `.jpeg` de `D:\Descargas` en los campos `foto_0`, `foto_carne_0` y `foto_poliza_0`; la BD guardó las tres rutas y generó PDF `mascotas/2` con `pdf_enviado=1`. Copia local descargada para revisión: `D:\Descargas\censo-mascotas-whatsapp-e2e-20260613145137.pdf` (5.263.064 bytes). Luego se optimizó el manejo de imágenes: las fotos subidas se guardan como JPEG máximo 1600 px y el PDF usa miniaturas JPEG máximo 480 px; repetición `mascotas/3` bajó a 127.420 bytes con las mismas imágenes y rótulos Foto/Carne/Poliza. Copia final: `D:\Descargas\censo-mascotas-whatsapp-optimizado-rotulado-e2e-20260613145137.pdf`. Mantener el cliente demo activo hasta que el usuario termine de revisar los PDFs.
 
+**Habeas Data (2026-06-14):** texto estándar centralizado en `App\Libraries\HabeasData` con variables `{NOMBRE_CONJUNTO}`, `{NIT}`, `{CORREO_ADMIN}`. Crear/editar cliente ya no exige redactarlo: el campo queda como "avanzado, opcional", precargado con el estándar. Clientes existentes con `texto_habeas_data` vacío usan el estándar automáticamente en detalle admin y formularios públicos.
+
 **Nota de pruebas locales:** en esta máquina `localhost:8080` puede resolver a otro proyecto (`actas`); para `censo` usar `127.0.0.1:8080` si hay conflicto.
 
-**Nota de PHPUnit local:** `composer test` pasa en esta máquina (40 tests, 85 assertions). El test ejemplo de SQLite se salta automáticamente si la extensión PHP `sqlite3` no está cargada. Hay cobertura básica de filtros de acceso, validaciones de modelos, scopes multi-tenant y lógica de envío de correo con PDF.
+**Nota de PHPUnit local:** `composer test` pasa en esta máquina (43 tests, 93 assertions). El test ejemplo de SQLite se salta automáticamente si la extensión PHP `sqlite3` no está cargada. Hay cobertura básica de filtros de acceso, validaciones de modelos, scopes multi-tenant, lógica de envío de correo con PDF y fallback de Habeas Data.
 
 ### Flujo de trabajo (repetir en cada avance)
 1. Desarrollar en `cycloid`, probar en LOCAL (`php spark serve`).

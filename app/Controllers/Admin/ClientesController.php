@@ -3,12 +3,11 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
+use App\Libraries\HabeasData;
 use App\Models\ClienteModel;
 
 class ClientesController extends BaseController
 {
-    private const DEFAULT_HABEAS_DATA = 'Autorización para el Tratamiento de Datos Personales. En cumplimiento de la Ley 1581 de 2012, el Decreto 1377 de 2013 y demás normas concordantes, autorizo de manera previa, expresa e informada a {NOMBRE_CONJUNTO}, identificado con NIT {NIT}, en calidad de Responsable del Tratamiento, para recolectar, almacenar, usar, actualizar y suprimir los datos personales aquí suministrados. La finalidad es la gestión administrativa de la copropiedad: actualización del censo de residentes, comunicación con propietarios y residentes, control de acceso y parqueaderos, atención de emergencias y convivencia, y el cumplimiento de las obligaciones propias de la propiedad horizontal. Declaro que la información es veraz y que, como Titular, conozco mi derecho a conocer, actualizar, rectificar y suprimir mis datos y a revocar esta autorización, escribiendo a {CORREO_ADMIN}. El suministro de datos de terceros (otros residentes) se realiza bajo mi responsabilidad, manifestando contar con su autorización. Esta autorización se entiende otorgada al enviar el presente formulario.';
-
     public function index()
     {
         $clienteModel = new ClienteModel();
@@ -35,10 +34,11 @@ class ClientesController extends BaseController
     public function new()
     {
         return view('admin/clientes/form', [
-            'cliente' => $this->emptyCliente(),
-            'action'  => base_url('admin/clientes'),
-            'method'  => 'post',
-            'title'   => 'Nuevo cliente',
+            'cliente'            => $this->emptyCliente(),
+            'action'             => base_url('admin/clientes'),
+            'method'             => 'post',
+            'title'              => 'Nuevo cliente',
+            'habeasDataStandard' => HabeasData::standard(),
         ]);
     }
 
@@ -82,10 +82,11 @@ class ClientesController extends BaseController
         }
 
         return view('admin/clientes/form', [
-            'cliente' => $cliente,
-            'action'  => base_url('admin/clientes/' . $id),
-            'method'  => 'post',
-            'title'   => 'Editar cliente',
+            'cliente'            => $cliente,
+            'action'             => base_url('admin/clientes/' . $id),
+            'method'             => 'post',
+            'title'              => 'Editar cliente',
+            'habeasDataStandard' => HabeasData::standard(),
         ]);
     }
 
@@ -161,7 +162,7 @@ class ClientesController extends BaseController
             'color_secundario'  => $this->nullablePost('color_secundario') ?: '#0f766e',
             'tipo_conjunto'     => $this->request->getPost('tipo_conjunto') ?: 'apartamentos',
             'slug'              => $this->uniqueSlug($slug !== '' ? $slug : 'cliente', $id),
-            'texto_habeas_data' => $this->nullablePost('texto_habeas_data') ?: self::DEFAULT_HABEAS_DATA,
+            'texto_habeas_data' => HabeasData::customOrStandard($this->nullablePost('texto_habeas_data')),
             'activo'            => $this->request->getPost('activo') ? 1 : 0,
         ];
     }
@@ -268,7 +269,7 @@ class ClientesController extends BaseController
             'color_secundario'  => '#0f766e',
             'tipo_conjunto'     => 'apartamentos',
             'slug'              => '',
-            'texto_habeas_data' => self::DEFAULT_HABEAS_DATA,
+            'texto_habeas_data' => HabeasData::standard(),
             'activo'            => 1,
         ];
     }

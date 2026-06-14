@@ -9,7 +9,7 @@
 </head>
 <body>
     <?php
-        $value = static fn (string $key, mixed $default = '') => old($key, $cliente[$key] ?? $default);
+        $value = static fn (string $key, mixed $default = '') => old($key, ($cliente[$key] ?? null) !== null && $cliente[$key] !== '' ? $cliente[$key] : $default);
         $errors = session('errors') ?? [];
     ?>
 
@@ -130,9 +130,9 @@
                     </div>
 
                     <div class="full">
-                        <label for="texto_habeas_data">Texto Habeas Data</label>
-                        <textarea id="texto_habeas_data" name="texto_habeas_data"><?= esc($value('texto_habeas_data')) ?></textarea>
-                        <div class="hint">Variables disponibles: {NOMBRE_CONJUNTO}, {NIT}, {CORREO_ADMIN}.</div>
+                        <label for="texto_habeas_data">Texto Habeas Data (avanzado, opcional)</label>
+                        <textarea id="texto_habeas_data" name="texto_habeas_data"><?= esc($value('texto_habeas_data', $habeasDataStandard ?? '')) ?></textarea>
+                        <div class="hint">La app ya incluye un texto conforme a la Ley 1581. Editalo solo si tu conjunto requiere algo distinto. Variables disponibles: {NOMBRE_CONJUNTO}, {NIT}, {CORREO_ADMIN}.</div>
                     </div>
 
                     <div class="full checks">
