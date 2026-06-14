@@ -114,7 +114,7 @@ $val  = static fn ($v) => ($v === null || $v === '') ? '—' : $v;
     <?php endforeach; ?>
 <?php else: ?><div class="empty">Sin mascotas registradas.</div><?php endif; ?>
 
-<h2>Firma del diligenciamiento</h2>
+<h2>Firma de quien diligencia</h2>
 <table width="100%"><tr>
     <td>
         <div class="firma-box">

@@ -173,7 +173,7 @@ $sx   = static fn ($v) => $v === 'M' ? 'Masculino' : ($v === 'F' ? 'Femenino' : 
 <h2>Observaciones</h2>
 <div style="font-size:10px;"><?= esc($val($censo['observaciones'])) ?></div>
 
-<h2>Firma del diligenciamiento</h2>
+<h2>Firma de quien diligencia</h2>
 <table width="100%"><tr>
     <td>
         <div class="firma-box">
