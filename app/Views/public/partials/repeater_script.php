@@ -14,6 +14,14 @@
                 field.value = '';
             });
             target.appendChild(clone);
+
+            var index = target.children.length - 1;
+            clone.querySelectorAll('[data-indexed-name]').forEach(function(field) {
+                field.name = field.getAttribute('data-indexed-name') + '[' + index + ']';
+            });
+            clone.querySelectorAll('[data-file-prefix]').forEach(function(field) {
+                field.name = field.getAttribute('data-file-prefix') + '_' + index;
+            });
         });
     });
 })();

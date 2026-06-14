@@ -197,6 +197,7 @@ class QrPublicController extends BaseController
             'inmobiliaria_correo' => $this->nullablePost('inmobiliaria_correo'),
             'correo_contacto' => $this->nullablePost('correo_contacto'),
             'discapacidad_descripcion' => $this->nullablePost('discapacidad_descripcion'),
+            'tiene_mascotas' => $this->nullableBoolPost('tiene_mascotas'),
             'tiene_parqueadero' => $this->nullableBoolPost('tiene_parqueadero'),
             'observaciones' => $this->nullablePost('observaciones'),
             'firmante_nombre' => $this->nullablePost('firmante_nombre'),
@@ -209,6 +210,7 @@ class QrPublicController extends BaseController
         $this->savePeopleRows(new CensoPropietarioModel(), $censoId, 'propietarios');
         $this->savePeopleRows(new CensoArrendatarioModel(), $censoId, 'arrendatarios');
         $this->saveResidents($censoId);
+        $this->savePetRows($clienteId, null, $censoId);
         $this->saveVehicles($censoId);
         $this->savePhones($censoId);
 
@@ -221,22 +223,6 @@ class QrPublicController extends BaseController
 
         if ($this->nullablePost('firmante_nombre') === null) {
             $errors[] = 'El nombre de quien firma es obligatorio.';
-        }
-
-        if ($type !== 'mascotas') {
-            return $errors;
-        }
-
-        if ($this->nullablePost('responsable_nombre') === null) {
-            $errors[] = 'El nombre del responsable es obligatorio.';
-        }
-
-        if ($this->nullablePost('responsable_documento') === null) {
-            $errors[] = 'El documento del responsable es obligatorio.';
-        }
-
-        if (! $this->hasPetRow()) {
-            $errors[] = 'Registra al menos una mascota.';
         }
 
         foreach ($this->request->getFiles() as $key => $file) {
@@ -257,6 +243,22 @@ class QrPublicController extends BaseController
                 $errors[] = 'Los archivos deben ser imagen o PDF.';
                 break;
             }
+        }
+
+        if ($type !== 'mascotas') {
+            return $errors;
+        }
+
+        if ($this->nullablePost('responsable_nombre') === null) {
+            $errors[] = 'El nombre del responsable es obligatorio.';
+        }
+
+        if ($this->nullablePost('responsable_documento') === null) {
+            $errors[] = 'El documento del responsable es obligatorio.';
+        }
+
+        if (! $this->hasPetRow()) {
+            $errors[] = 'Registra al menos una mascota.';
         }
 
         return $errors;
@@ -296,6 +298,13 @@ class QrPublicController extends BaseController
         ]);
 
         $censoId = (int) $model->getInsertID();
+        $this->savePetRows($clienteId, $censoId, null);
+
+        return $censoId;
+    }
+
+    private function savePetRows(int $clienteId, ?int $censoMascotaId, ?int $censoPoblacionalId): void
+    {
         $names   = (array) $this->request->getPost('mascota_nombre');
         $types   = (array) $this->request->getPost('tipo_mascota_id');
         $ages    = (array) $this->request->getPost('mascota_edad');
@@ -305,12 +314,18 @@ class QrPublicController extends BaseController
 
         foreach ($names as $index => $name) {
             $name = trim((string) $name);
-            if ($name === '' && empty($types[$index]) && empty($raza[$index])) {
+            if (
+                $name === ''
+                && empty($types[$index])
+                && empty($raza[$index])
+                && ! $this->hasUploadedPetFile((int) $index)
+            ) {
                 continue;
             }
 
             (new MascotaModel())->insert([
-                'censo_mascota_id' => $censoId,
+                'censo_mascota_id' => $censoMascotaId,
+                'censo_poblacional_id' => $censoPoblacionalId,
                 'nombre' => $name ?: null,
                 'tipo_mascota_id' => ! empty($types[$index]) ? (int) $types[$index] : null,
                 'edad' => $this->arrayValue($ages, $index),
@@ -322,8 +337,6 @@ class QrPublicController extends BaseController
                 'foto_poliza_ruta' => $this->saveUpload('foto_poliza_' . $index, $clienteId),
             ]);
         }
-
-        return $censoId;
     }
 
     private function savePeopleRows($model, int $censoId, string $prefix): void
@@ -416,6 +429,18 @@ class QrPublicController extends BaseController
                 'orden' => $index + 1,
             ]);
         }
+    }
+
+    private function hasUploadedPetFile(int $index): bool
+    {
+        foreach (['foto_', 'foto_carne_', 'foto_poliza_'] as $prefix) {
+            $file = $this->request->getFile($prefix . $index);
+            if ($file && $file->getError() !== UPLOAD_ERR_NO_FILE) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function context(string $token): ?array

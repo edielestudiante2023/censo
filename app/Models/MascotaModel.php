@@ -12,11 +12,12 @@ class MascotaModel extends Model
     protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';
     protected $allowedFields = [
-        'censo_mascota_id', 'nombre', 'tipo_mascota_id', 'edad', 'raza_color',
+        'censo_mascota_id', 'censo_poblacional_id', 'nombre', 'tipo_mascota_id', 'edad', 'raza_color',
         'vacunacion_completa', 'esterilizada', 'foto_ruta', 'foto_carne_ruta', 'foto_poliza_ruta',
     ];
     protected $validationRules = [
-        'censo_mascota_id'    => 'required|is_natural_no_zero',
+        'censo_mascota_id'    => 'permit_empty|is_natural_no_zero',
+        'censo_poblacional_id' => 'permit_empty|is_natural_no_zero',
         'nombre'              => 'permit_empty|max_length[100]',
         'tipo_mascota_id'     => 'permit_empty|is_natural_no_zero',
         'edad'                => 'permit_empty|max_length[30]',
@@ -31,5 +32,10 @@ class MascotaModel extends Model
     public function forCenso($censoMascotaId)
     {
         return $this->where('censo_mascota_id', $censoMascotaId);
+    }
+
+    public function forCensoPoblacional($censoPoblacionalId)
+    {
+        return $this->where('censo_poblacional_id', $censoPoblacionalId);
     }
 }

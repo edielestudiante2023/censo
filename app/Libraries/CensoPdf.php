@@ -88,6 +88,7 @@ class CensoPdf
                 ->select('cv.*, tv.nombre AS tipo_vehiculo')
                 ->join('tipos_vehiculo tv', 'tv.id = cv.tipo_vehiculo_id', 'left')
                 ->where('cv.censo_id', $censoId)->get()->getResultArray(),
+            'mascotas'     => $this->mascotasFor('censo_poblacional_id', $censoId),
             'telefonos'    => $db->table('censo_telefonos')->where('censo_id', $censoId)->orderBy('orden', 'ASC')->get()->getResultArray(),
             'logo'         => $this->imageDataUri(FCPATH . ($cliente['logo'] ?? '')),
             'firma'        => $this->imageDataUri(WRITEPATH . ($censo['firma_imagen'] ?? '')),
@@ -106,10 +107,26 @@ class CensoPdf
         $cliente  = (new ClienteModel())->find((int) $censo['cliente_id']);
         $inmueble = $this->inmueble((int) $censo['inmueble_id']);
 
-        $mascotas = $db->table('mascotas m')
+        return [
+            'cliente'  => $cliente,
+            'censo'    => $censo,
+            'inmueble' => $inmueble,
+            'mascotas' => $this->mascotasFor('censo_mascota_id', $censoId),
+            'logo'     => $this->imageDataUri(FCPATH . ($cliente['logo'] ?? '')),
+            'firma'    => $this->imageDataUri(WRITEPATH . ($censo['firma_imagen'] ?? '')),
+            'color'    => $this->color($cliente),
+        ];
+    }
+
+    private function mascotasFor(string $foreignKey, int $censoId): array
+    {
+        $mascotas = db_connect()->table('mascotas m')
             ->select('m.*, tm.nombre AS tipo_mascota')
             ->join('tipos_mascota tm', 'tm.id = m.tipo_mascota_id', 'left')
-            ->where('m.censo_mascota_id', $censoId)->get()->getResultArray();
+            ->where('m.' . $foreignKey, $censoId)
+            ->orderBy('m.id', 'ASC')
+            ->get()
+            ->getResultArray();
 
         foreach ($mascotas as &$m) {
             $m['foto_data']        = $this->imageDataUri(WRITEPATH . ($m['foto_ruta'] ?? ''));
@@ -118,15 +135,7 @@ class CensoPdf
         }
         unset($m);
 
-        return [
-            'cliente'  => $cliente,
-            'censo'    => $censo,
-            'inmueble' => $inmueble,
-            'mascotas' => $mascotas,
-            'logo'     => $this->imageDataUri(FCPATH . ($cliente['logo'] ?? '')),
-            'firma'    => $this->imageDataUri(WRITEPATH . ($censo['firma_imagen'] ?? '')),
-            'color'    => $this->color($cliente),
-        ];
+        return $mascotas;
     }
 
     private function inmueble(int $inmuebleId): ?array

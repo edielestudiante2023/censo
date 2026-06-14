@@ -91,4 +91,15 @@ final class ModelValidationTest extends CIUnitTestCase
     {
         $this->assertTrue(method_exists($modelClass, 'forCenso'), $modelClass . ' debe exponer forCenso().');
     }
+
+    public function testPoblacionalSupportsPetFields(): void
+    {
+        $censoProperties = (new ReflectionClass(App\Models\CensoPoblacionalModel::class))->getDefaultProperties();
+        $petProperties   = (new ReflectionClass(App\Models\MascotaModel::class))->getDefaultProperties();
+
+        $this->assertContains('tiene_mascotas', $censoProperties['allowedFields']);
+        $this->assertContains('censo_poblacional_id', $petProperties['allowedFields']);
+        $this->assertArrayHasKey('censo_poblacional_id', $petProperties['validationRules']);
+        $this->assertTrue(method_exists(App\Models\MascotaModel::class, 'forCensoPoblacional'));
+    }
 }

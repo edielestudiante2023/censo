@@ -47,59 +47,9 @@
 
             <h2>Mascotas</h2>
             <div id="mascotas" class="repeat">
-                <div class="row grid" data-pet-row>
-                    <div>
-                        <label>Nombre</label>
-                        <input name="mascota_nombre[]" required>
-                    </div>
-                    <div>
-                        <label>Tipo</label>
-                        <select name="tipo_mascota_id[]">
-                            <option value="">Selecciona...</option>
-                            <?php foreach ($catalogos['tiposMascota'] as $tipo): ?>
-                                <option value="<?= esc($tipo['id']) ?>"><?= esc($tipo['nombre']) ?></option>
-                            <?php endforeach ?>
-                        </select>
-                    </div>
-                    <div>
-                        <label>Edad</label>
-                        <input name="mascota_edad[]" placeholder="Ej. 3 anos">
-                    </div>
-                    <div>
-                        <label>Raza / color</label>
-                        <input name="raza_color[]">
-                    </div>
-                    <div>
-                        <label>Vacunacion completa</label>
-                        <select name="vacunacion_completa[0]" data-indexed-name="vacunacion_completa">
-                            <option value="">Selecciona...</option>
-                            <option value="1">Si</option>
-                            <option value="0">No</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label>Esterilizada</label>
-                        <select name="esterilizada[0]" data-indexed-name="esterilizada">
-                            <option value="">Selecciona...</option>
-                            <option value="1">Si</option>
-                            <option value="0">No</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label>Foto mascota</label>
-                        <input type="file" name="foto_0" data-file-prefix="foto" accept="image/png,image/jpeg,image/webp">
-                    </div>
-                    <div>
-                        <label>Carne vacunas</label>
-                        <input type="file" name="foto_carne_0" data-file-prefix="foto_carne" accept="image/png,image/jpeg,image/webp,application/pdf">
-                    </div>
-                    <div class="full">
-                        <label>Poliza</label>
-                        <input type="file" name="foto_poliza_0" data-file-prefix="foto_poliza" accept="image/png,image/jpeg,image/webp,application/pdf">
-                    </div>
-                </div>
+                <?= view('public/partials/pet_row', ['tiposMascota' => $catalogos['tiposMascota'], 'required' => true]) ?>
             </div>
-            <div class="actions"><button class="btn btn-muted" type="button" id="addPet">Agregar mascota</button></div>
+            <div class="actions"><button class="btn btn-muted" type="button" data-add="mascotas">Agregar mascota</button></div>
 
             <h2>Firma</h2>
             <canvas id="signaturePad" class="signature"></canvas>
@@ -110,30 +60,7 @@
         </form>
     </main>
 
-    <script>
-    (function() {
-        var list = document.getElementById('mascotas');
-        var add = document.getElementById('addPet');
-
-        function refresh(row, index) {
-            row.querySelectorAll('[data-indexed-name]').forEach(function(field) {
-                field.name = field.getAttribute('data-indexed-name') + '[' + index + ']';
-            });
-            row.querySelectorAll('[data-file-prefix]').forEach(function(field) {
-                field.name = field.getAttribute('data-file-prefix') + '_' + index;
-            });
-        }
-
-        add.addEventListener('click', function() {
-            var clone = list.firstElementChild.cloneNode(true);
-            clone.querySelectorAll('input, select, textarea').forEach(function(field) {
-                field.value = '';
-            });
-            list.appendChild(clone);
-            refresh(clone, list.children.length - 1);
-        });
-    })();
-    </script>
+    <?= view('public/partials/repeater_script') ?>
     <?= view('public/partials/signature_script') ?>
 </body>
 </html>

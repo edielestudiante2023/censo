@@ -31,6 +31,12 @@ $sx   = static fn ($v) => $v === 'M' ? 'Masculino' : ($v === 'F' ? 'Femenino' : 
     .firma-name { border-top: 1px solid #9ca3af; margin-top: 6px; padding-top: 4px; font-size: 10px; font-weight: bold; }
     .foot { margin-top: 20px; font-size: 8px; color: #9ca3af; border-top: 1px solid #eef0f2; padding-top: 7px; line-height: 1.5; }
     .empty { color: #9ca3af; font-style: italic; font-size: 9.5px; padding: 2px 0; }
+    .pet-card { border: 1px solid #e3e6ea; border-radius: 6px; padding: 8px; margin-bottom: 9px; page-break-inside: avoid; }
+    .pet-title { font-size: 10.5px; font-weight: bold; margin-bottom: 5px; color: #111827; }
+    .photos { width: 100%; border-collapse: collapse; margin-top: 7px; }
+    .photos td { width: 33.333%; text-align: center; vertical-align: top; padding: 3px; border: 0; }
+    .photo { max-width: 145px; max-height: 110px; border: 1px solid #e5e7eb; border-radius: 4px; }
+    .photo-cap { font-size: 8px; color: #6b7280; margin-top: 2px; text-transform: uppercase; font-weight: bold; }
 </style>
 </head>
 <body>
@@ -66,6 +72,10 @@ $sx   = static fn ($v) => $v === 'M' ? 'Masculino' : ($v === 'F' ? 'Femenino' : 
     <tr>
         <td class="k">Vive en la copropiedad</td><td><?= esc($bool($censo['vive_en_copropiedad'])) ?></td>
         <td class="k">Tiene/aspira parqueadero</td><td><?= esc($bool($censo['tiene_parqueadero'])) ?></td>
+    </tr>
+    <tr>
+        <td class="k">Tiene mascotas</td><td><?= esc($bool($censo['tiene_mascotas'] ?? null)) ?></td>
+        <td class="k"></td><td></td>
     </tr>
     <tr>
         <td class="k">Direccion notificacion</td><td><?= esc($val($censo['direccion_notificacion'])) ?></td>
@@ -110,6 +120,32 @@ $sx   = static fn ($v) => $v === 'M' ? 'Masculino' : ($v === 'F' ? 'Femenino' : 
     <?php endforeach; ?>
 </table>
 <?php else: ?><div class="empty">Sin registros.</div><?php endif; ?>
+
+<h2>Mascotas</h2>
+<?php if ($mascotas): ?>
+    <?php foreach ($mascotas as $i => $m): ?>
+        <div class="pet-card">
+            <div class="pet-title">Mascota <?= esc($i + 1) ?>: <?= esc($val($m['nombre'])) ?></div>
+            <table class="kv">
+                <tr>
+                    <td class="k">Tipo</td><td><?= esc($val($m['tipo_mascota'])) ?></td>
+                    <td class="k">Edad</td><td><?= esc($val($m['edad'])) ?></td>
+                </tr>
+                <tr>
+                    <td class="k">Raza / Color</td><td><?= esc($val($m['raza_color'])) ?></td>
+                    <td class="k">Vacunacion / Esteril.</td><td><?= esc($bool($m['vacunacion_completa'])) ?> / <?= esc($bool($m['esterilizada'])) ?></td>
+                </tr>
+            </table>
+            <table class="photos">
+                <tr>
+                    <td><?php if ($m['foto_data']): ?><img src="<?= $m['foto_data'] ?>" class="photo" alt=""><?php endif; ?><div class="photo-cap">Foto de la mascota</div></td>
+                    <td><?php if ($m['foto_carne_data']): ?><img src="<?= $m['foto_carne_data'] ?>" class="photo" alt=""><?php endif; ?><div class="photo-cap">Carne de vacunas</div></td>
+                    <td><?php if ($m['foto_poliza_data']): ?><img src="<?= $m['foto_poliza_data'] ?>" class="photo" alt=""><?php endif; ?><div class="photo-cap">Poliza</div></td>
+                </tr>
+            </table>
+        </div>
+    <?php endforeach; ?>
+<?php else: ?><div class="empty">Sin mascotas registradas.</div><?php endif; ?>
 
 <h2>Vehiculos</h2>
 <?php if ($vehiculos): ?>

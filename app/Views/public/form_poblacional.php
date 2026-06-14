@@ -16,7 +16,7 @@
             </div>
         </header>
 
-        <form method="post" action="<?= base_url('q/' . $token . '/submit') ?>">
+        <form method="post" action="<?= base_url('q/' . $token . '/submit') ?>" enctype="multipart/form-data">
             <?= csrf_field() ?>
             <input type="hidden" name="inmueble_id" value="<?= esc($inmueble['id']) ?>">
             <input type="hidden" name="autorizacion_datos" value="1">
@@ -42,6 +42,14 @@
                 <div>
                     <label for="tiene_parqueadero">Tiene parqueadero</label>
                     <select id="tiene_parqueadero" name="tiene_parqueadero">
+                        <option value="">Selecciona...</option>
+                        <option value="1">Si</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="tiene_mascotas">Tiene mascotas</label>
+                    <select id="tiene_mascotas" name="tiene_mascotas">
                         <option value="">Selecciona...</option>
                         <option value="1">Si</option>
                         <option value="0">No</option>
@@ -96,6 +104,12 @@
             <h2>Residentes</h2>
             <div id="residentes" class="repeat"><?= view('public/partials/resident_row', ['parentescos' => $catalogos['parentescos']]) ?></div>
             <div class="actions"><button class="btn btn-muted" type="button" data-add="residentes">Agregar residente</button></div>
+
+            <h2>Mascotas</h2>
+            <div id="mascotas" class="repeat">
+                <?= view('public/partials/pet_row', ['tiposMascota' => $catalogos['tiposMascota'], 'required' => false]) ?>
+            </div>
+            <div class="actions"><button class="btn btn-muted" type="button" data-add="mascotas">Agregar mascota</button></div>
 
             <h2>Vehiculos</h2>
             <div id="vehiculos" class="repeat"><?= view('public/partials/vehicle_row', ['tiposVehiculo' => $catalogos['tiposVehiculo']]) ?></div>

@@ -16,7 +16,7 @@ class CensoPoblacionalModel extends Model
         'cliente_id', 'qr_id', 'inmueble_id', 'autorizacion_datos', 'fecha_autorizacion',
         'vive_en_copropiedad', 'direccion_notificacion', 'quien_vive', 'administrado_por',
         'inmobiliaria_nombre', 'inmobiliaria_telefono', 'inmobiliaria_correo', 'correo_contacto',
-        'discapacidad_descripcion', 'tiene_parqueadero', 'observaciones', 'firmante_nombre',
+        'discapacidad_descripcion', 'tiene_mascotas', 'tiene_parqueadero', 'observaciones', 'firmante_nombre',
         'firma_imagen', 'pdf_ruta', 'pdf_enviado', 'fecha_envio', 'ip', 'user_agent',
     ];
     protected $validationRules  = [
@@ -34,6 +34,7 @@ class CensoPoblacionalModel extends Model
         'inmobiliaria_correo'    => 'permit_empty|valid_email|max_length[191]',
         'correo_contacto'        => 'permit_empty|valid_email|max_length[191]',
         'discapacidad_descripcion' => 'permit_empty',
+        'tiene_mascotas'         => 'permit_empty|in_list[0,1]',
         'tiene_parqueadero'      => 'permit_empty|in_list[0,1]',
         'observaciones'          => 'permit_empty',
         'firmante_nombre'        => 'permit_empty|max_length[191]',
