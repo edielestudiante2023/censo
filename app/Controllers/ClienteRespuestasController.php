@@ -177,6 +177,192 @@ class ClienteRespuestasController extends BaseController
             ->setBody($xlsx);
     }
 
+    public function completoAdmin(int $clienteId)
+    {
+        $cliente = $this->findCliente($clienteId);
+        if (! $cliente) {
+            return redirect()->to('/admin/clientes')->with('error', 'Cliente no encontrado.');
+        }
+
+        return $this->exportCompleto($cliente);
+    }
+
+    public function completoMine()
+    {
+        $clienteId = session()->get('cliente_id');
+        if (! $clienteId) {
+            return redirect()->to('/dashboard')->with('error', 'Tu usuario no tiene un cliente asignado.');
+        }
+        $cliente = $this->findCliente((int) $clienteId);
+        if (! $cliente) {
+            return redirect()->to('/dashboard')->with('error', 'Cliente no encontrado.');
+        }
+
+        return $this->exportCompleto($cliente);
+    }
+
+    /** Matriz completa del censo (una fila por hogar, n-items en columnas). Respeta filtros. */
+    private function exportCompleto(array $cliente)
+    {
+        $cid     = (int) $cliente['id'];
+        $f       = $this->filters();
+        $sheets  = [];
+
+        if ($f['instrumento'] === '' || $f['instrumento'] === 'poblacional') {
+            $m = $this->poblacionalMatrix($cid, $f);
+            $sheets[] = ['name' => 'Poblacional', 'headers' => $m['headers'], 'rows' => $m['rows']];
+        }
+        if ($f['instrumento'] === '' || $f['instrumento'] === 'mascotas') {
+            $m = $this->mascotasMatrix($cid, $f);
+            $sheets[] = ['name' => 'Mascotas', 'headers' => $m['headers'], 'rows' => $m['rows']];
+        }
+
+        $xlsx     = \App\Libraries\Excel::build($sheets);
+        $filename = 'censo-completo-' . $cliente['slug'] . '-' . ($f['instrumento'] ?: 'todos') . '-' . date('Ymd-His') . '.xlsx';
+
+        return $this->response
+            ->setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->setBody($xlsx);
+    }
+
+    private function poblacionalMatrix(int $cid, array $f): array
+    {
+        $db = db_connect();
+        $q  = $db->table('censos_poblacionales cp')
+            ->select("cp.*, i.tipo AS i_tipo, i.identificador AS i_ident, i.piso AS i_piso, COALESCE(t.nombre,'') AS torre", false)
+            ->join('inmuebles i', 'i.id = cp.inmueble_id')
+            ->join('torres t', 't.id = i.torre_id', 'left')
+            ->where('cp.cliente_id', $cid)->where('cp.deleted_at', null);
+        $this->applyMatrixFilters($q, $f, 'cp');
+        $censos = $q->orderBy('cp.created_at', 'DESC')->get()->getResultArray();
+
+        if ($censos === []) {
+            return ['headers' => ['Sin respuestas con los filtros seleccionados'], 'rows' => []];
+        }
+
+        $ids  = array_column($censos, 'id');
+        $prop = $this->groupByKey($db->table('censo_propietarios')->whereIn('censo_id', $ids)->orderBy('id')->get()->getResultArray(), 'censo_id');
+        $arr  = $this->groupByKey($db->table('censo_arrendatarios')->whereIn('censo_id', $ids)->orderBy('id')->get()->getResultArray(), 'censo_id');
+        $res  = $this->groupByKey($db->table('censo_residentes cr')->select("cr.*, COALESCE(p.nombre,'') AS parentesco", false)->join('parentescos p', 'p.id = cr.parentesco_id', 'left')->whereIn('cr.censo_id', $ids)->orderBy('cr.id')->get()->getResultArray(), 'censo_id');
+        $veh  = $this->groupByKey($db->table('censo_vehiculos cv')->select("cv.*, COALESCE(tv.nombre,'') AS tipo_vehiculo", false)->join('tipos_vehiculo tv', 'tv.id = cv.tipo_vehiculo_id', 'left')->whereIn('cv.censo_id', $ids)->orderBy('cv.id')->get()->getResultArray(), 'censo_id');
+        $tel  = $this->groupByKey($db->table('censo_telefonos')->whereIn('censo_id', $ids)->orderBy('orden')->get()->getResultArray(), 'censo_id');
+
+        $maxP = $this->maxPer($prop);
+        $maxA = $this->maxPer($arr);
+        $maxR = $this->maxPer($res);
+        $maxV = $this->maxPer($veh);
+        $maxT = $this->maxPer($tel);
+
+        $h = ['Fecha respuesta', 'Torre', 'Tipo inmueble', 'Inmueble', 'Piso', 'Autorizo datos', 'Fecha autorizacion', 'Vive en copropiedad', 'Direccion notificacion', 'Quien vive', 'Administrado por', 'Inmobiliaria', 'Inmobiliaria telefono', 'Inmobiliaria correo', 'Correo contacto', 'Tiene parqueadero', 'Discapacidad', 'Observaciones', 'Firmante'];
+        for ($i = 1; $i <= $maxP; $i++) { array_push($h, "Propietario $i Nombre", "Propietario $i Documento", "Propietario $i Telefono", "Propietario $i Correo"); }
+        for ($i = 1; $i <= $maxA; $i++) { array_push($h, "Arrendatario $i Nombre", "Arrendatario $i Documento", "Arrendatario $i Telefono", "Arrendatario $i Correo"); }
+        for ($i = 1; $i <= $maxR; $i++) { array_push($h, "Residente $i Nombre", "Residente $i Documento", "Residente $i Sexo", "Residente $i Parentesco", "Residente $i Edad"); }
+        for ($i = 1; $i <= $maxV; $i++) { array_push($h, "Vehiculo $i Tipo", "Vehiculo $i Marca", "Vehiculo $i Linea", "Vehiculo $i Modelo", "Vehiculo $i Color", "Vehiculo $i Placa"); }
+        for ($i = 1; $i <= $maxT; $i++) { array_push($h, "Telefono contacto $i"); }
+
+        $bool = static fn ($v) => $v === null || $v === '' ? '' : ((int) $v === 1 ? 'Si' : 'No');
+        $sx   = static fn ($v) => $v === 'M' ? 'Masculino' : ($v === 'F' ? 'Femenino' : ($v === 'Otro' ? 'Otro' : ''));
+
+        $rows = [];
+        foreach ($censos as $c) {
+            $id  = $c['id'];
+            $row = [
+                $c['created_at'], $c['torre'], ucfirst((string) $c['i_tipo']), $c['i_ident'], $c['i_piso'],
+                $bool($c['autorizacion_datos']), $c['fecha_autorizacion'], $bool($c['vive_en_copropiedad']),
+                $c['direccion_notificacion'], $c['quien_vive'], $c['administrado_por'], $c['inmobiliaria_nombre'],
+                $c['inmobiliaria_telefono'], $c['inmobiliaria_correo'], $c['correo_contacto'], $bool($c['tiene_parqueadero']),
+                $c['discapacidad_descripcion'], $c['observaciones'], $c['firmante_nombre'],
+            ];
+            for ($i = 0; $i < $maxP; $i++) { $x = $prop[$id][$i] ?? null; array_push($row, $x['nombre'] ?? '', $x['documento'] ?? '', $x['telefono'] ?? '', $x['correo'] ?? ''); }
+            for ($i = 0; $i < $maxA; $i++) { $x = $arr[$id][$i] ?? null; array_push($row, $x['nombre'] ?? '', $x['documento'] ?? '', $x['telefono'] ?? '', $x['correo'] ?? ''); }
+            for ($i = 0; $i < $maxR; $i++) { $x = $res[$id][$i] ?? null; array_push($row, $x['nombre'] ?? '', $x['documento'] ?? '', $x ? $sx($x['sexo']) : '', $x['parentesco'] ?? '', $x['edad'] ?? ''); }
+            for ($i = 0; $i < $maxV; $i++) { $x = $veh[$id][$i] ?? null; array_push($row, $x['tipo_vehiculo'] ?? '', $x['marca'] ?? '', $x['linea'] ?? '', $x['modelo'] ?? '', $x['color'] ?? '', $x['placa'] ?? ''); }
+            for ($i = 0; $i < $maxT; $i++) { $x = $tel[$id][$i] ?? null; array_push($row, $x['numero'] ?? ''); }
+            $rows[] = $row;
+        }
+
+        return ['headers' => $h, 'rows' => $rows];
+    }
+
+    private function mascotasMatrix(int $cid, array $f): array
+    {
+        $db = db_connect();
+        $q  = $db->table('censos_mascotas cm')
+            ->select("cm.*, i.tipo AS i_tipo, i.identificador AS i_ident, i.piso AS i_piso, COALESCE(t.nombre,'') AS torre", false)
+            ->join('inmuebles i', 'i.id = cm.inmueble_id')
+            ->join('torres t', 't.id = i.torre_id', 'left')
+            ->where('cm.cliente_id', $cid)->where('cm.deleted_at', null);
+        $this->applyMatrixFilters($q, $f, 'cm');
+        $censos = $q->orderBy('cm.created_at', 'DESC')->get()->getResultArray();
+
+        if ($censos === []) {
+            return ['headers' => ['Sin respuestas con los filtros seleccionados'], 'rows' => []];
+        }
+
+        $ids  = array_column($censos, 'id');
+        $masc = $this->groupByKey($db->table('mascotas m')->select("m.*, COALESCE(tm.nombre,'') AS tipo_mascota", false)->join('tipos_mascota tm', 'tm.id = m.tipo_mascota_id', 'left')->whereIn('m.censo_mascota_id', $ids)->orderBy('m.id')->get()->getResultArray(), 'censo_mascota_id');
+        $maxM = $this->maxPer($masc);
+
+        $bool = static fn ($v) => $v === null || $v === '' ? '' : ((int) $v === 1 ? 'Si' : 'No');
+
+        $h = ['Fecha respuesta', 'Torre', 'Tipo inmueble', 'Inmueble', 'Piso', 'Autorizo datos', 'Fecha autorizacion', 'Responsable Nombre', 'Responsable Documento', 'Responsable Telefono', 'Responsable Correo', 'Firmante'];
+        for ($i = 1; $i <= $maxM; $i++) { array_push($h, "Mascota $i Nombre", "Mascota $i Tipo", "Mascota $i Edad", "Mascota $i Raza/Color", "Mascota $i Vacunada", "Mascota $i Esterilizada", "Mascota $i Foto", "Mascota $i Carne", "Mascota $i Poliza"); }
+
+        $rows = [];
+        foreach ($censos as $c) {
+            $id  = $c['id'];
+            $row = [
+                $c['created_at'], $c['torre'], ucfirst((string) $c['i_tipo']), $c['i_ident'], $c['i_piso'],
+                $bool($c['autorizacion_datos']), $c['fecha_autorizacion'], $c['responsable_nombre'], $c['responsable_documento'],
+                $c['responsable_telefono'], $c['responsable_correo'], $c['firmante_nombre'],
+            ];
+            for ($i = 0; $i < $maxM; $i++) {
+                $x = $masc[$id][$i] ?? null;
+                array_push($row, $x['nombre'] ?? '', $x['tipo_mascota'] ?? '', $x['edad'] ?? '', $x['raza_color'] ?? '', $x ? $bool($x['vacunacion_completa']) : '', $x ? $bool($x['esterilizada']) : '', $x['foto_ruta'] ?? '', $x['foto_carne_ruta'] ?? '', $x['foto_poliza_ruta'] ?? '');
+            }
+            $rows[] = $row;
+        }
+
+        return ['headers' => $h, 'rows' => $rows];
+    }
+
+    private function applyMatrixFilters($q, array $f, string $alias): void
+    {
+        if ($f['torre_id'] !== null) {
+            $q->where('i.torre_id', $f['torre_id']);
+        }
+        if ($f['inmueble_id'] !== null) {
+            $q->where($alias . '.inmueble_id', $f['inmueble_id']);
+        }
+        if ($f['desde'] !== null) {
+            $q->where($alias . '.created_at >=', $f['desde'] . ' 00:00:00');
+        }
+        if ($f['hasta'] !== null) {
+            $q->where($alias . '.created_at <=', $f['hasta'] . ' 23:59:59');
+        }
+    }
+
+    private function groupByKey(array $rows, string $key): array
+    {
+        $g = [];
+        foreach ($rows as $r) {
+            $g[$r[$key]][] = $r;
+        }
+
+        return $g;
+    }
+
+    private function maxPer(array $grouped): int
+    {
+        $m = 0;
+        foreach ($grouped as $arr) {
+            $m = max($m, count($arr));
+        }
+
+        return $m;
+    }
+
     private function exportCsv(array $cliente)
     {
         $filters = $this->filters();

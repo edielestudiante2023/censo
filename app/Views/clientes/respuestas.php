@@ -36,8 +36,10 @@
                 <p><?= esc($cliente['nombre_tercero']) ?></p>
             </div>
             <div class="actions" style="margin-top:0;">
-                <a class="btn btn-primary" href="<?= base_url($basePath . '/excel') . ($query ? '?' . http_build_query($query) : '') ?>">Exportar Excel</a>
-                <a class="btn btn-muted" href="<?= base_url($exportPath) . ($query ? '?' . http_build_query($query) : '') ?>">CSV</a>
+                <?php $qs = $query ? '?' . http_build_query($query) : ''; ?>
+                <a class="btn btn-primary" href="<?= base_url($basePath . '/completo') . $qs ?>">Censo completo (Excel)</a>
+                <a class="btn btn-muted" href="<?= base_url($basePath . '/excel') . $qs ?>">Resumen</a>
+                <a class="btn btn-muted" href="<?= base_url($exportPath) . $qs ?>">CSV</a>
             </div>
         </div>
 
