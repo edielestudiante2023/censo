@@ -27,6 +27,7 @@ $routes->get('respuestas', 'ClienteRespuestasController::mine', ['filter' => 'ro
 $routes->get('respuestas/exportar', 'ClienteRespuestasController::exportMine', ['filter' => 'role:cliente,consejo,comite']);
 $routes->get('respuestas/pdf/(:segment)/(:num)', 'ClienteRespuestasController::pdfMine/$1/$2', ['filter' => 'role:cliente,consejo,comite']);
 $routes->get('inteligencia', 'InteligenciaController::mine', ['filter' => 'role:cliente,consejo,comite']);
+$routes->get('inteligencia/exportar', 'InteligenciaController::exportMine', ['filter' => 'role:cliente,consejo,comite']);
 
 $routes->group('admin', ['filter' => 'role:superadmin,admin'], static function ($routes) {
     $routes->get('clientes', 'Admin\ClientesController::index');
@@ -37,6 +38,7 @@ $routes->group('admin', ['filter' => 'role:superadmin,admin'], static function (
     $routes->get('clientes/(:num)/respuestas/exportar', 'ClienteRespuestasController::exportAdmin/$1');
     $routes->get('clientes/(:num)/respuestas/pdf/(:segment)/(:num)', 'ClienteRespuestasController::pdfAdmin/$1/$2/$3');
     $routes->get('clientes/(:num)/inteligencia', 'InteligenciaController::admin/$1');
+    $routes->get('clientes/(:num)/inteligencia/exportar', 'InteligenciaController::exportAdmin/$1');
     $routes->get('clientes/(:num)/qr', 'Admin\ClienteQrController::index/$1');
     $routes->post('clientes/(:num)/qr', 'Admin\ClienteQrController::create/$1');
     $routes->post('clientes/(:num)/qr/(:num)', 'Admin\ClienteQrController::update/$1/$2');

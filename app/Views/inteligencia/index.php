@@ -1,7 +1,7 @@
 <?php
 $q = function (array $extra = [], array $remove = []) use ($filters) {
     $base = [];
-    foreach (['torre_id', 'tipo', 'sexo', 'edad', 'parentesco_id'] as $k) {
+    foreach (['torre_id', 'tipo', 'sexo', 'edad', 'parentesco_id', 'fecha_desde', 'fecha_hasta', 'tiene_mascotas', 'tiene_parqueadero', 'tiene_discapacidad'] as $k) {
         if ($filters[$k] !== null) {
             $base[$k] = $filters[$k];
         }
@@ -37,9 +37,9 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
         .kpi .l { font-size:.78rem; color:#6b7280; text-transform:uppercase; letter-spacing:.03em; margin-top:3px; }
         .kpi .gold { color:#c9a227; }
         .panel { background:#fff; border-radius:14px; box-shadow:0 4px 14px rgba(0,0,0,.06); padding:16px; margin-bottom:16px; }
-        .filters { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:10px; align-items:end; }
+        .filters { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; align-items:end; }
         label { display:block; font-weight:700; font-size:.74rem; color:#374151; margin-bottom:5px; }
-        select { width:100%; border:1px solid #d1d5db; border-radius:9px; padding:9px 10px; font-size:.86rem; background:#fff; }
+        select, input[type="date"] { width:100%; border:1px solid #d1d5db; border-radius:9px; padding:9px 10px; font-size:.86rem; background:#fff; }
         .btn { display:inline-flex; align-items:center; justify-content:center; border:0; border-radius:9px; padding:9px 13px; font-weight:700; font-size:.84rem; cursor:pointer; text-decoration:none; }
         .btn-primary { background:#0f1623; color:#fff; } .btn-muted { background:#e5e7eb; color:#111827; }
         .chips { display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 0; }
@@ -50,6 +50,11 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
         .chart-card h3 { margin:0 0 4px; font-size:.98rem; }
         .chart-card .hint { font-size:.72rem; color:#9ca3af; margin-bottom:8px; }
         .chart-box { position:relative; height:260px; }
+        .summary-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin-top:16px; }
+        table.summary { width:100%; border-collapse:collapse; font-size:.86rem; }
+        table.summary th, table.summary td { border-bottom:1px solid #edf0f3; padding:9px 6px; text-align:left; }
+        table.summary th { color:#374151; font-size:.74rem; text-transform:uppercase; letter-spacing:.03em; }
+        table.summary td:last-child, table.summary th:last-child { text-align:right; font-weight:700; }
         .empty { padding:40px; text-align:center; color:#6b7280; }
         @media (max-width:980px){ .filters{ grid-template-columns:repeat(2,1fr);} }
     </style>
@@ -79,8 +84,10 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
             <div class="kpi"><div class="n"><?= esc($kpis['personas']) ?></div><div class="l">Personas</div></div>
             <div class="kpi"><div class="n"><?= esc($kpis['hogares']) ?></div><div class="l">Hogares respondidos</div></div>
             <div class="kpi"><div class="n gold"><?= esc($kpis['cobertura']) ?>%</div><div class="l">Cobertura (<?= esc($kpis['respondidos']) ?>/<?= esc($kpis['inmuebles']) ?> inmuebles)</div></div>
-            <div class="kpi"><div class="n"><?= esc($kpis['mascotas']) ?></div><div class="l">Mascotas</div></div>
+            <div class="kpi"><div class="n"><?= esc($kpis['mascotas']) ?></div><div class="l">Mascotas (<?= esc($kpis['mascotas_poblacional']) ?> pob. / <?= esc($kpis['mascotas_independiente']) ?> indep.)</div></div>
             <div class="kpi"><div class="n"><?= esc($kpis['vehiculos']) ?></div><div class="l">Vehiculos</div></div>
+            <div class="kpi"><div class="n"><?= esc($kpis['parqueaderos']) ?></div><div class="l">Hogares con parqueadero</div></div>
+            <div class="kpi"><div class="n"><?= esc($kpis['discapacidad']) ?></div><div class="l">Hogares con condicion especial</div></div>
         </div>
 
         <div class="panel">
@@ -129,9 +136,42 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
                         <?php endforeach; ?>
                     </select>
                 </div>
+                <div>
+                    <label>Desde</label>
+                    <input type="date" name="fecha_desde" value="<?= esc($filters['fecha_desde'] ?? '') ?>">
+                </div>
+                <div>
+                    <label>Hasta</label>
+                    <input type="date" name="fecha_hasta" value="<?= esc($filters['fecha_hasta'] ?? '') ?>">
+                </div>
+                <div>
+                    <label>Con mascotas</label>
+                    <select name="tiene_mascotas">
+                        <option value="">Todos</option>
+                        <option value="1" <?= $filters['tiene_mascotas'] === '1' ? 'selected' : '' ?>>Si</option>
+                        <option value="0" <?= $filters['tiene_mascotas'] === '0' ? 'selected' : '' ?>>No</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Con parqueadero</label>
+                    <select name="tiene_parqueadero">
+                        <option value="">Todos</option>
+                        <option value="1" <?= $filters['tiene_parqueadero'] === '1' ? 'selected' : '' ?>>Si</option>
+                        <option value="0" <?= $filters['tiene_parqueadero'] === '0' ? 'selected' : '' ?>>No</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Condicion especial</label>
+                    <select name="tiene_discapacidad">
+                        <option value="">Todos</option>
+                        <option value="1" <?= $filters['tiene_discapacidad'] === '1' ? 'selected' : '' ?>>Si</option>
+                        <option value="0" <?= $filters['tiene_discapacidad'] === '0' ? 'selected' : '' ?>>No</option>
+                    </select>
+                </div>
                 <div style="display:flex; gap:8px;">
                     <button class="btn btn-primary" type="submit">Aplicar</button>
                     <a class="btn btn-muted" href="<?= base_url($basePath) ?>">Limpiar</a>
+                    <a class="btn btn-muted" href="<?= base_url($exportPath . $q()) ?>">CSV</a>
                 </div>
             </form>
 
@@ -157,6 +197,36 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
                     <div class="chart-box"><canvas id="chart<?= $i ?>"></canvas></div>
                 </div>
             <?php endforeach; ?>
+        </div>
+
+        <div class="summary-grid">
+            <div class="panel">
+                <h3 style="margin-top:0;">Cobertura por torre</h3>
+                <table class="summary">
+                    <tr><th>Torre</th><th>%</th></tr>
+                    <?php foreach ($summary['torres'] as $row): ?>
+                        <tr><td><?= esc($row['k']) ?></td><td><?= esc($row['c']) ?>%</td></tr>
+                    <?php endforeach; ?>
+                </table>
+            </div>
+            <div class="panel">
+                <h3 style="margin-top:0;">Vehiculos</h3>
+                <table class="summary">
+                    <tr><th>Tipo</th><th>Total</th></tr>
+                    <?php foreach ($summary['vehiculos'] as $row): ?>
+                        <tr><td><?= esc($row['label']) ?></td><td><?= esc($row['total']) ?></td></tr>
+                    <?php endforeach; ?>
+                </table>
+            </div>
+            <div class="panel">
+                <h3 style="margin-top:0;">Mascotas</h3>
+                <table class="summary">
+                    <tr><th>Tipo</th><th>Total</th></tr>
+                    <?php foreach ($summary['mascotas'] as $row): ?>
+                        <tr><td><?= esc($row['k']) ?></td><td><?= esc($row['c']) ?></td></tr>
+                    <?php endforeach; ?>
+                </table>
+            </div>
         </div>
     </main>
 
