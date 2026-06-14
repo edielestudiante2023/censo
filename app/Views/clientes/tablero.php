@@ -31,13 +31,13 @@
             </div>
             <?php if ($isAdmin): ?>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                    <a class="btn btn-primary" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/inteligencia') ?>">Ver inteligencia</a>
+                    <a class="btn btn-primary" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/inteligencia') ?>">Ver estadisticas</a>
                     <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/respuestas') ?>">Ver respuestas</a>
                     <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id']) ?>">Volver al cliente</a>
                 </div>
             <?php else: ?>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                    <a class="btn btn-primary" href="<?= base_url('inteligencia') ?>">Ver inteligencia</a>
+                    <a class="btn btn-primary" href="<?= base_url('inteligencia') ?>">Ver estadisticas</a>
                     <a class="btn btn-muted" href="<?= base_url('respuestas') ?>">Ver respuestas</a>
                 </div>
             <?php endif; ?>

@@ -89,7 +89,7 @@ class InteligenciaController extends BaseController
         $charts = $this->charts($cid, $f);
 
         $resumen = [
-            ['Inteligencia de negocio', $cliente['nombre_tercero']],
+            ['Estadisticas', $cliente['nombre_tercero']],
             ['Generado', date('Y-m-d H:i')],
             [],
             ['KPI', 'Valor'],
@@ -132,7 +132,7 @@ class InteligenciaController extends BaseController
             ['name' => 'Personas', 'headers' => $pHeaders, 'rows' => $pRows],
         ]);
 
-        $filename = 'inteligencia-' . $cliente['slug'] . '-' . date('Ymd-His') . '.xlsx';
+        $filename = 'estadisticas-' . $cliente['slug'] . '-' . date('Ymd-His') . '.xlsx';
 
         return $this->response
             ->setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -557,7 +557,7 @@ class InteligenciaController extends BaseController
     {
         $f = $this->filters();
         $data = $this->build($cliente, str_starts_with((string) current_url(), base_url('admin/')));
-        $filename = 'inteligencia-' . $cliente['slug'] . '-' . date('Ymd-His') . '.csv';
+        $filename = 'estadisticas-' . $cliente['slug'] . '-' . date('Ymd-His') . '.csv';
         $handle = fopen('php://temp', 'r+');
 
         fputcsv($handle, ['seccion', 'metrica', 'valor']);
