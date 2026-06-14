@@ -87,6 +87,7 @@
                         <span class="swatch" title="Color primario: <?= esc($cliente['color_primario'] ?: '#1f2937') ?>" style="background: <?= esc($cliente['color_primario'] ?: '#1f2937') ?>"></span>
                         <span class="swatch" title="Color secundario: <?= esc($cliente['color_secundario'] ?: '#0f766e') ?>" style="background: <?= esc($cliente['color_secundario'] ?: '#0f766e') ?>"></span>
                     </div>
+                    <p class="muted" style="font-size:.74rem; margin:8px 0 0;">Se aplican en los PDF, formularios publicos y la pieza grafica del QR de este conjunto.</p>
                 </div>
 
                 <div class="aside-actions">
@@ -117,8 +118,20 @@
             </section>
 
             <section class="card" style="grid-column:1 / -1;">
-                <h3 style="margin-top:0;">Texto Habeas Data</h3>
-                <div class="habeas"><?= esc($cliente['texto_habeas_data'] ?? '') ?></div>
+                <h3 style="margin:0 0 4px;">Autorizacion de tratamiento de datos (Habeas Data)</h3>
+                <p class="muted" style="margin:0 0 12px;">Texto de consentimiento que ve quien diligencia el censo (Ley 1581/2012). Se edita en <a href="<?= base_url('admin/clientes/' . $cliente['id'] . '/edit') ?>">Editar cliente</a>.</p>
+                <?php
+                    $habeas = strtr((string) ($cliente['texto_habeas_data'] ?? ''), [
+                        '{NOMBRE_CONJUNTO}' => (string) $cliente['nombre_tercero'],
+                        '{NIT}'             => (string) ($cliente['documento'] ?? ''),
+                        '{CORREO_ADMIN}'    => (string) ($cliente['email'] ?? ''),
+                    ]);
+                ?>
+                <?php if (trim($habeas) !== ''): ?>
+                    <div class="habeas"><?= esc($habeas) ?></div>
+                <?php else: ?>
+                    <div class="empty">Este cliente aun no tiene texto de Habeas Data. Agregalo en "Editar cliente".</div>
+                <?php endif; ?>
             </section>
         </div>
     </main>
