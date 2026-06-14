@@ -47,4 +47,19 @@ final class HabeasDataTest extends CIUnitTestCase
 
         $this->assertSame('Texto propio para Conjunto Custom con correo custom@example.com.', $resolved);
     }
+
+    public function testLegacyDefaultTextIsReplacedByCurrentStandard(): void
+    {
+        $resolved = HabeasData::resolve([
+            'nombre_tercero'     => 'Conjunto Legacy',
+            'documento'          => '903',
+            'email'              => 'legacy@example.com',
+            'texto_habeas_data'  => 'Autorizo el tratamiento de mis datos a {NOMBRE_CONJUNTO} (NIT {NIT}) conforme a la Ley 1581 de 2012.',
+        ]);
+
+        $this->assertStringContainsString('Decreto 1377 de 2013', $resolved);
+        $this->assertStringContainsString('Conjunto Legacy', $resolved);
+        $this->assertStringContainsString('legacy@example.com', $resolved);
+        $this->assertStringNotContainsString('Autorizo el tratamiento de mis datos a', $resolved);
+    }
 }

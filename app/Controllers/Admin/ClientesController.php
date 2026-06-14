@@ -81,6 +81,8 @@ class ClientesController extends BaseController
             return redirect()->to('/admin/clientes')->with('error', 'Cliente no encontrado.');
         }
 
+        $cliente['texto_habeas_data'] = HabeasData::customOrStandard($cliente['texto_habeas_data'] ?? null);
+
         return view('admin/clientes/form', [
             'cliente'            => $cliente,
             'action'             => base_url('admin/clientes/' . $id),
