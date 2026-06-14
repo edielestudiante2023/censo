@@ -13,12 +13,17 @@
         .section-card:hover { border-color:#1f2937; background:#fff; transform:translateY(-2px); }
         .section-card strong { display:block; color:#0f1623; font-size:.96rem; }
         .section-card span { color:#6b7280; font-size:.79rem; line-height:1.35; }
-        dl { margin:0; display:grid; grid-template-columns:140px 1fr; gap:10px 14px; }
+        dl { margin:0; display:grid; grid-template-columns:130px minmax(0,1fr); gap:10px 14px; }
         dt { color:#6b7280; font-weight:700; font-size:.82rem; }
-        dd { margin:0; font-size:.9rem; }
-        .avatar-lg { width:64px; height:64px; border-radius:14px; object-fit:contain; background:#fff; border:1px solid #e5e7eb; display:block; margin-bottom:12px; }
+        dd { margin:0; font-size:.9rem; word-break:break-word; overflow-wrap:anywhere; }
+        .avatar-lg { width:64px; height:64px; border-radius:14px; object-fit:contain; background:#fff; border:1px solid #e5e7eb; display:block; margin:0 auto 14px; }
         .avatar-lg-fb { width:64px; height:64px; border-radius:14px; display:flex; align-items:center; justify-content:center;
-            background:linear-gradient(160deg,#1f2937,#0f1623); color:#c9a227; font-weight:800; font-size:1.6rem; margin-bottom:12px; }
+            background:linear-gradient(160deg,#1f2937,#0f1623); color:#c9a227; font-weight:800; font-size:1.6rem; margin:0 auto 14px; }
+        .aside-block { margin-bottom:16px; }
+        .lbl { display:block; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:#9ca3af; margin-bottom:6px; }
+        .aside-actions { border-top:1px solid #eef0f2; padding-top:14px; display:flex; flex-direction:column; gap:8px; }
+        .aside-actions form { margin:0; }
+        .aside-actions .btn { width:100%; }
     </style>
 </head>
 <body>
@@ -60,34 +65,40 @@
         </section>
 
         <div class="grid">
-            <aside class="card">
+            <aside class="card" style="text-align:center;">
                 <?php if (! empty($cliente['logo'])): ?>
                     <img class="avatar-lg" src="<?= base_url($cliente['logo']) ?>" alt="<?= esc($cliente['nombre_tercero']) ?>">
                 <?php else: ?>
-                    <span class="avatar-lg-fb"><?= esc(strtoupper(substr((string) $cliente['nombre_tercero'], 0, 1))) ?></span>
+                    <span class="avatar-lg-fb" style="margin-left:auto;margin-right:auto;"><?= esc(strtoupper(substr((string) $cliente['nombre_tercero'], 0, 1))) ?></span>
                 <?php endif; ?>
 
-                <?php if ((int) $cliente['activo'] === 1): ?>
-                    <span class="badge badge-on">Activo</span>
-                <?php else: ?>
-                    <span class="badge badge-off">Inactivo</span>
-                <?php endif; ?>
-
-                <div class="swatches">
-                    <span class="swatch" title="Color primario" style="background: <?= esc($cliente['color_primario'] ?: '#1f2937') ?>"></span>
-                    <span class="swatch" title="Color secundario" style="background: <?= esc($cliente['color_secundario'] ?: '#0f766e') ?>"></span>
+                <div class="aside-block">
+                    <span class="lbl">Estado del cliente</span>
+                    <?php if ((int) $cliente['activo'] === 1): ?>
+                        <span class="badge badge-on">Activo</span>
+                    <?php else: ?>
+                        <span class="badge badge-off">Archivado</span>
+                    <?php endif; ?>
                 </div>
 
-                <div class="actions" style="margin-top:16px;">
+                <div class="aside-block">
+                    <span class="lbl">Colores de marca</span>
+                    <div class="swatches" style="justify-content:center;">
+                        <span class="swatch" title="Color primario: <?= esc($cliente['color_primario'] ?: '#1f2937') ?>" style="background: <?= esc($cliente['color_primario'] ?: '#1f2937') ?>"></span>
+                        <span class="swatch" title="Color secundario: <?= esc($cliente['color_secundario'] ?: '#0f766e') ?>" style="background: <?= esc($cliente['color_secundario'] ?: '#0f766e') ?>"></span>
+                    </div>
+                </div>
+
+                <div class="aside-actions">
                     <?php if (! empty($cliente['logo'])): ?>
                         <form method="post" action="<?= base_url('admin/clientes/' . $cliente['id'] . '/logo/delete') ?>">
                             <?= csrf_field() ?>
                             <button class="btn btn-muted" type="submit">Eliminar logo</button>
                         </form>
                     <?php endif; ?>
-                    <form method="post" action="<?= base_url('admin/clientes/' . $cliente['id'] . '/delete') ?>" onsubmit="return confirm('Archivar este cliente?');">
+                    <form method="post" action="<?= base_url('admin/clientes/' . $cliente['id'] . '/delete') ?>" onsubmit="return confirm('Archivar este cliente? Dejara de estar activo.');">
                         <?= csrf_field() ?>
-                        <button class="btn btn-danger" type="submit">Archivar</button>
+                        <button class="btn btn-danger" type="submit">Archivar cliente</button>
                     </form>
                 </div>
             </aside>
