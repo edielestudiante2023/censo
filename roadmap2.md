@@ -40,6 +40,15 @@ Hitos 0–11 implementados, verificados y **en vivo** en local y producción.
 - [x] **Recuperación de contraseña** (forgot/reset por correo, SendGrid). `PasswordController`, rutas `/forgot` `/reset/{token}`, columnas `reset_token`/`reset_expires` en `usuarios`. Token un solo uso, expira 1h.
 - [x] **Dashboard de inteligencia de negocio** (`InteligenciaController`, `app/Views/inteligencia/index.php`, Chart.js local en `public/assets/js/`). Rutas: `/inteligencia` (cliente) y `/admin/clientes/{id}/inteligencia` (admin). KPIs + gráficos con **cross-filter server-side**, filtros persistentes por URL y chips. Segmenta por sexo, torre, edad, parentesco, tipo de inmueble; mascotas por tipo.
   - Se agregó `sexo` (M/F/Otro) a `censo_residentes` + selector en el formulario poblacional (`partials/resident_row.php`). Registros previos quedan 'Sin dato'.
+- [x] **Rediseño de PDFs** (`app/Views/pdf/*`): fotos de mascotas grandes y etiquetadas, columna Sexo en residentes, tablas con franjas, header refinado.
+- [x] **Rediseño del backoffice** con `public/assets/css/app.css` (sistema de diseño compartido) enlazado en vistas admin/cliente.
+- [x] **Páginas de error 404/500** con branding (`app/Views/errors/html/`).
+- [x] **Formularios públicos** pulidos (logo del cliente en header, focos con color de marca).
+- [x] **Comandos demo** (`demo:seed`, `demo:users`): cliente demo "Conjunto Residencial Demo" (slug `demo-muestra`) + usuarios de prueba por rol (pass `Demo2026*`). Borrar con `demo:seed clean` / `demo:users clean`.
+
+### Credenciales de prueba (producción, sobre el cliente demo)
+- superadmin: `edison.cuervo@cycloidtalent.com` / `Colombia2026+`
+- admin: `admin@demo.test` · cliente: `cliente@demo.test` · consejo: `consejo@demo.test` · comité: `comite@demo.test` — todos `Demo2026*`
 
 ## PRÓXIMO / IDEAS
 
