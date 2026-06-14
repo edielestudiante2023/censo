@@ -9,8 +9,11 @@
 <body>
     <main class="wrap">
         <header class="top">
-            <h1>Censo de mascotas</h1>
-            <p><?= esc($cliente['nombre_tercero']) ?> · <?= esc(($inmueble['torre_nombre'] ?? '') ? $inmueble['torre_nombre'] . ' - ' . $inmueble['identificador'] : $inmueble['identificador']) ?></p>
+            <?php if (! empty($cliente['logo'])): ?><img class="logo" src="<?= base_url($cliente['logo']) ?>" alt=""><?php endif; ?>
+            <div>
+                <h1>Censo de mascotas</h1>
+                <p><?= esc($cliente['nombre_tercero']) ?> · <?= esc(($inmueble['torre_nombre'] ?? '') ? $inmueble['torre_nombre'] . ' - ' . $inmueble['identificador'] : $inmueble['identificador']) ?></p>
+            </div>
         </header>
 
         <form method="post" action="<?= base_url('q/' . $token . '/submit') ?>" enctype="multipart/form-data">
