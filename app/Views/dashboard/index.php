@@ -61,8 +61,12 @@
                         <span>Ver y exportar los censos recibidos del conjunto.</span>
                     </a>
                     <a class="module" href="<?= base_url('inteligencia') ?>">
-                        <strong>Inteligencia</strong>
-                        <span>Estadisticas y graficos: sexo, torre, edad, parentesco y mas, con filtros.</span>
+                        <strong>Estadisticas</strong>
+                        <span>Graficos: sexo, torre, edad, parentesco y mas, con filtros.</span>
+                    </a>
+                    <a class="module" href="<?= base_url('qr') ?>">
+                        <strong>Codigos QR</strong>
+                        <span>Genera el QR de tu conjunto para imprimir y pegar en las torres.</span>
                     </a>
                 </div>
             <?php endif; ?>

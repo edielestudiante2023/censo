@@ -32,6 +32,14 @@ $routes->get('inteligencia', 'InteligenciaController::mine', ['filter' => 'role:
 $routes->get('inteligencia/exportar', 'InteligenciaController::exportMine', ['filter' => 'role:cliente,consejo,comite']);
 $routes->get('inteligencia/excel', 'InteligenciaController::excelMine', ['filter' => 'role:cliente,consejo,comite']);
 
+// QR del propio conjunto (cliente/consejo/comite)
+$routes->get('qr', 'ClienteQrController::mine', ['filter' => 'role:cliente,consejo,comite']);
+$routes->post('qr', 'ClienteQrController::create', ['filter' => 'role:cliente,consejo,comite']);
+$routes->post('qr/(:num)/regenerate', 'ClienteQrController::regenerate/$1', ['filter' => 'role:cliente,consejo,comite']);
+$routes->get('qr/(:num).svg', 'ClienteQrController::svg/$1', ['filter' => 'role:cliente,consejo,comite']);
+$routes->get('qr/(:num)/pieza', 'ClienteQrController::pieza/$1', ['filter' => 'role:cliente,consejo,comite']);
+$routes->post('qr/(:num)', 'ClienteQrController::update/$1', ['filter' => 'role:cliente,consejo,comite']);
+
 $routes->group('admin', ['filter' => 'role:superadmin,admin'], static function ($routes) {
     $routes->get('clientes', 'Admin\ClientesController::index');
     $routes->get('clientes/new', 'Admin\ClientesController::new');

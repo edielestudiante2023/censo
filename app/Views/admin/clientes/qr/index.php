@@ -1,18 +1,30 @@
+<?php
+$basePath  = $basePath ?? ('admin/clientes/' . $cliente['id'] . '/qr');
+$isAdminQr = $isAdminQr ?? true;
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR - <?= esc($cliente['nombre_tercero']) ?></title>
+    <title>Codigos QR · <?= esc($cliente['nombre_tercero']) ?></title>
     <link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
     <link rel="icon" href="<?= base_url('favicon.ico') ?>" sizes="any">
+    <style>
+        .qr-item p { margin: 4px 0; }
+        .qr-url { word-break: break-all; font-size: .78rem; color: #6b7280; background: #f9fafb; border: 1px solid #eef0f3; border-radius: 8px; padding: 7px 9px; }
+    </style>
 </head>
 <body>
     <div class="topbar">
         <h1>Censo APP</h1>
         <nav>
-            <a href="<?= base_url('admin/clientes/' . $cliente['id']) ?>">Cliente</a>
-            <a href="<?= base_url('admin/clientes') ?>">Clientes</a>
+            <?php if ($isAdminQr): ?>
+                <a href="<?= base_url('admin/clientes/' . $cliente['id']) ?>">Cliente</a>
+                <a href="<?= base_url('admin/clientes') ?>">Clientes</a>
+            <?php else: ?>
+                <a href="<?= base_url('dashboard') ?>">Inicio</a>
+            <?php endif; ?>
             <a href="<?= base_url('logout') ?>">Cerrar sesion</a>
         </nav>
     </div>
@@ -21,9 +33,9 @@
         <div class="header">
             <div>
                 <h2>Codigos QR</h2>
-                <p><?= esc($cliente['nombre_tercero']) ?></p>
+                <p>Genera el QR de cada instrumento para imprimir y pegar en las torres. <?= esc($cliente['nombre_tercero']) ?></p>
             </div>
-            <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id']) ?>">Volver al cliente</a>
+            <a class="btn btn-muted" href="<?= base_url($isAdminQr ? 'admin/clientes/' . $cliente['id'] : 'dashboard') ?>">Volver</a>
         </div>
 
         <?php if (session('error')): ?>
@@ -35,8 +47,8 @@
 
         <section class="grid">
             <div class="card">
-                <h3>Generar QR</h3>
-                <form method="post" action="<?= base_url('admin/clientes/' . $cliente['id'] . '/qr') ?>">
+                <h3 style="margin-top:0;">Generar QR</h3>
+                <form method="post" action="<?= base_url($basePath) ?>">
                     <?= csrf_field() ?>
                     <div class="field">
                         <label for="tipo_instrumento">Instrumento</label>
@@ -54,23 +66,23 @@
             </div>
 
             <div class="card">
-                <h3>QR generados</h3>
+                <h3 style="margin-top:0;">QR generados</h3>
                 <?php if (empty($qrCodes)): ?>
-                    <div class="empty">Aun no hay QR generados para este cliente.</div>
+                    <div class="empty">Aun no hay QR generados.</div>
                 <?php else: ?>
                     <div class="qr-list">
                         <?php foreach ($qrCodes as $qr): ?>
                             <article class="qr-item">
                                 <div class="qr-preview">
-                                    <img src="<?= base_url('admin/clientes/' . $cliente['id'] . '/qr/' . $qr['id'] . '.svg') ?>" alt="<?= esc($qr['titulo'] ?: $qr['tipo_instrumento']) ?>">
+                                    <img src="<?= base_url($basePath . '/' . $qr['id'] . '.svg') ?>" alt="<?= esc($qr['titulo'] ?: $qr['tipo_instrumento']) ?>">
                                 </div>
                                 <div>
                                     <span class="badge <?= (int) $qr['activo'] === 1 ? 'badge-on' : 'badge-off' ?>"><?= (int) $qr['activo'] === 1 ? 'Activo' : 'Inactivo' ?></span>
-                                    <h3 style="margin-top:10px;"><?= esc($qr['titulo'] ?: $qr['tipo_instrumento']) ?></h3>
-                                    <p><?= esc($qr['tipo_instrumento']) ?></p>
-                                    <p class="muted"><?= esc(base_url('q/' . $qr['token'])) ?></p>
+                                    <h3 style="margin:10px 0 2px;"><?= esc($qr['titulo'] ?: $qr['tipo_instrumento']) ?></h3>
+                                    <p class="muted" style="text-transform:capitalize;"><?= esc($qr['tipo_instrumento']) ?></p>
+                                    <p class="qr-url"><?= esc(base_url('q/' . $qr['token'])) ?></p>
 
-                                    <form method="post" action="<?= base_url('admin/clientes/' . $cliente['id'] . '/qr/' . $qr['id']) ?>">
+                                    <form method="post" action="<?= base_url($basePath . '/' . $qr['id']) ?>">
                                         <?= csrf_field() ?>
                                         <div class="field">
                                             <label for="titulo_<?= esc($qr['id']) ?>">Titulo</label>
@@ -83,11 +95,11 @@
                                         </div>
                                         <div class="actions">
                                             <button class="btn btn-muted" type="submit">Guardar</button>
-                                            <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/qr/' . $qr['id'] . '.svg') ?>" target="_blank">SVG</a>
-                                            <a class="btn btn-primary" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/qr/' . $qr['id'] . '/pieza') ?>" target="_blank">Pieza</a>
+                                            <a class="btn btn-muted" href="<?= base_url($basePath . '/' . $qr['id'] . '.svg') ?>" target="_blank" rel="noopener">SVG</a>
+                                            <a class="btn btn-primary" href="<?= base_url($basePath . '/' . $qr['id'] . '/pieza') ?>" target="_blank" rel="noopener">Pieza grafica</a>
                                         </div>
                                     </form>
-                                    <form method="post" action="<?= base_url('admin/clientes/' . $cliente['id'] . '/qr/' . $qr['id'] . '/regenerate') ?>" onsubmit="return confirm('Regenerar el token invalidara el QR anterior. Continuar?');">
+                                    <form method="post" action="<?= base_url($basePath . '/' . $qr['id'] . '/regenerate') ?>" onsubmit="return confirm('Regenerar el token invalidara el QR anterior. Continuar?');">
                                         <?= csrf_field() ?>
                                         <button class="btn btn-danger" type="submit" style="margin-top:8px;">Regenerar token</button>
                                     </form>

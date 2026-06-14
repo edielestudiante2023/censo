@@ -18,7 +18,7 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inteligencia · <?= esc($cliente['nombre_tercero']) ?></title>
+    <title>Estadisticas · <?= esc($cliente['nombre_tercero']) ?></title>
     <link rel="icon" href="<?= base_url('favicon.ico') ?>" sizes="any">
     <style>
         * { box-sizing: border-box; }
@@ -62,7 +62,7 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
 </head>
 <body>
     <div class="topbar">
-        <h1>Censo APP · Inteligencia</h1>
+        <h1>Censo APP · Estadisticas</h1>
         <nav>
             <?php if ($isAdmin): ?>
                 <a href="<?= base_url('admin/clientes/' . $cliente['id'] . '/tablero') ?>">Tablero</a>
@@ -78,7 +78,7 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
     </div>
 
     <main class="wrap">
-        <h2>Inteligencia de negocio</h2>
+        <h2>Estadisticas</h2>
         <p class="muted"><?= esc($cliente['nombre_tercero']) ?> · datos del censo poblacional</p>
 
         <div class="kpis">
