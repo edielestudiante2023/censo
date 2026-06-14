@@ -42,6 +42,7 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
         select, input[type="date"] { width:100%; border:1px solid #d1d5db; border-radius:9px; padding:9px 10px; font-size:.86rem; background:#fff; }
         .btn { display:inline-flex; align-items:center; justify-content:center; border:0; border-radius:9px; padding:9px 13px; font-weight:700; font-size:.84rem; cursor:pointer; text-decoration:none; }
         .btn-primary { background:#0f1623; color:#fff; } .btn-muted { background:#e5e7eb; color:#111827; }
+        .btn-clear { background:#fee2e2; color:#991b1b; }
         .chips { display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 0; }
         .chip { background:#eef2ff; color:#3730a3; border-radius:999px; padding:5px 12px; font-size:.78rem; font-weight:600; text-decoration:none; display:inline-flex; gap:7px; align-items:center; }
         .chip b { font-weight:800; }
@@ -170,7 +171,7 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
                 </div>
                 <div style="display:flex; gap:8px;">
                     <button class="btn btn-primary" type="submit">Aplicar</button>
-                    <a class="btn btn-muted" href="<?= base_url($basePath) ?>">Limpiar</a>
+                    <a class="btn btn-clear" href="<?= base_url($basePath) ?>">Borrar filtros</a>
                     <a class="btn btn-muted" href="<?= base_url($exportPath . $q()) ?>">CSV</a>
                 </div>
             </form>
@@ -181,6 +182,7 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
                     <?php foreach ($chips as $c): ?>
                         <a class="chip" href="<?= base_url($basePath . $q([], [$c['key']])) ?>"><?= esc($c['label']) ?> <b>&times;</b></a>
                     <?php endforeach; ?>
+                    <a class="btn btn-clear" href="<?= base_url($basePath) ?>">Borrar todos</a>
                 </div>
             <?php endif; ?>
         </div>
