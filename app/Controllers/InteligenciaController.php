@@ -61,6 +61,85 @@ class InteligenciaController extends BaseController
         return $this->exportCsv($cliente);
     }
 
+    public function excelMine()
+    {
+        $cliente = $this->currentCliente();
+        if (! $cliente) {
+            return redirect()->to('/dashboard')->with('error', 'Cliente no encontrado.');
+        }
+
+        return $this->exportExcel($cliente);
+    }
+
+    public function excelAdmin(int $clienteId)
+    {
+        $cliente = (new ClienteModel())->find($clienteId);
+        if (! $cliente) {
+            return redirect()->to('/admin/clientes')->with('error', 'Cliente no encontrado.');
+        }
+
+        return $this->exportExcel($cliente);
+    }
+
+    private function exportExcel(array $cliente)
+    {
+        $cid    = (int) $cliente['id'];
+        $f      = $this->filters();
+        $kpis   = $this->kpis($cid, $f);
+        $charts = $this->charts($cid, $f);
+
+        $resumen = [
+            ['Inteligencia de negocio', $cliente['nombre_tercero']],
+            ['Generado', date('Y-m-d H:i')],
+            [],
+            ['KPI', 'Valor'],
+            ['Personas', $kpis['personas']],
+            ['Hogares respondidos', $kpis['hogares']],
+            ['Cobertura %', $kpis['cobertura']],
+            ['Inmuebles respondidos', $kpis['respondidos'] . ' / ' . $kpis['inmuebles']],
+            ['Mascotas', $kpis['mascotas']],
+            ['Vehiculos', $kpis['vehiculos']],
+            ['Parqueaderos', $kpis['parqueaderos'] ?? ''],
+            ['Condicion especial', $kpis['discapacidad'] ?? ''],
+            [],
+        ];
+        foreach ($charts as $ch) {
+            $resumen[] = [$ch['title']];
+            $resumen[] = ['Categoria', 'Cantidad'];
+            foreach ($ch['labels'] as $i => $lbl) {
+                $resumen[] = [$lbl, $ch['data'][$i] ?? 0];
+            }
+            $resumen[] = [];
+        }
+
+        $personas = $this->baseResidentes($cid, $f)
+            ->join('parentescos p', 'p.id = cr.parentesco_id', 'left')
+            ->select("COALESCE(t.nombre,'Sin torre') AS torre, i.identificador AS inmueble, i.tipo, cr.nombre, cr.documento, cr.sexo, cr.edad, COALESCE(p.nombre,'') AS parentesco", false)
+            ->orderBy('t.nombre')->orderBy('i.identificador')->get()->getResultArray();
+
+        $sexoMap  = ['M' => 'Masculino', 'F' => 'Femenino', 'Otro' => 'Otro'];
+        $pHeaders = ['Torre', 'Inmueble', 'Tipo', 'Nombre', 'Documento', 'Sexo', 'Edad', 'Parentesco'];
+        $pRows    = [];
+        foreach ($personas as $p) {
+            $pRows[] = [
+                $p['torre'], $p['inmueble'], ucfirst((string) $p['tipo']), $p['nombre'], $p['documento'],
+                $sexoMap[$p['sexo']] ?? 'Sin dato', $p['edad'], $p['parentesco'],
+            ];
+        }
+
+        $xlsx = \App\Libraries\Excel::build([
+            ['name' => 'Resumen', 'headers' => [], 'rows' => $resumen],
+            ['name' => 'Personas', 'headers' => $pHeaders, 'rows' => $pRows],
+        ]);
+
+        $filename = 'inteligencia-' . $cliente['slug'] . '-' . date('Ymd-His') . '.xlsx';
+
+        return $this->response
+            ->setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->setBody($xlsx);
+    }
+
     private function currentCliente(): ?array
     {
         $clienteId = session()->get('cliente_id');

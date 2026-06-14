@@ -124,5 +124,6 @@
             </section>
         </div>
     </main>
+    <?= view('partials/home_fab') ?>
 </body>
 </html>

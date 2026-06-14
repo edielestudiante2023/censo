@@ -35,7 +35,10 @@
                 <h2>Respuestas</h2>
                 <p><?= esc($cliente['nombre_tercero']) ?></p>
             </div>
-            <a class="btn btn-primary" href="<?= base_url($exportPath) . ($query ? '?' . http_build_query($query) : '') ?>">Exportar CSV</a>
+            <div class="actions" style="margin-top:0;">
+                <a class="btn btn-primary" href="<?= base_url($basePath . '/excel') . ($query ? '?' . http_build_query($query) : '') ?>">Exportar Excel</a>
+                <a class="btn btn-muted" href="<?= base_url($exportPath) . ($query ? '?' . http_build_query($query) : '') ?>">CSV</a>
+            </div>
         </div>
 
         <section class="card">
@@ -120,5 +123,6 @@
             <?php endif; ?>
         </section>
     </main>
+    <?= view('partials/home_fab') ?>
 </body>
 </html>

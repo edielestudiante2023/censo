@@ -143,5 +143,6 @@
             }
         });
     </script>
+    <?= view('partials/home_fab') ?>
 </body>
 </html>

@@ -172,6 +172,7 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
                 <div style="display:flex; gap:8px;">
                     <button class="btn btn-primary" type="submit">Aplicar</button>
                     <a class="btn btn-clear" href="<?= base_url($basePath) ?>">Borrar filtros</a>
+                    <a class="btn btn-primary" href="<?= base_url($basePath . '/excel' . $q()) ?>">Excel</a>
                     <a class="btn btn-muted" href="<?= base_url($exportPath . $q()) ?>">CSV</a>
                 </div>
             </form>
@@ -270,5 +271,6 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
             });
         });
     </script>
+    <?= view('partials/home_fab') ?>
 </body>
 </html>

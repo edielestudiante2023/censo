@@ -122,6 +122,61 @@ class ClienteRespuestasController extends BaseController
         ];
     }
 
+    public function excelAdmin(int $clienteId)
+    {
+        $cliente = $this->findCliente($clienteId);
+        if (! $cliente) {
+            return redirect()->to('/admin/clientes')->with('error', 'Cliente no encontrado.');
+        }
+
+        return $this->exportExcel($cliente);
+    }
+
+    public function excelMine()
+    {
+        $clienteId = session()->get('cliente_id');
+        if (! $clienteId) {
+            return redirect()->to('/dashboard')->with('error', 'Tu usuario no tiene un cliente asignado.');
+        }
+        $cliente = $this->findCliente((int) $clienteId);
+        if (! $cliente) {
+            return redirect()->to('/dashboard')->with('error', 'Cliente no encontrado.');
+        }
+
+        return $this->exportExcel($cliente);
+    }
+
+    private function exportExcel(array $cliente)
+    {
+        $filters = $this->filters();
+        $rows    = $this->queryRespuestas((int) $cliente['id'], $filters)->get()->getResultArray();
+
+        $headers = ['Instrumento', 'Torre', 'Tipo inmueble', 'Inmueble', 'Piso', 'Fecha respuesta', 'Fecha autorizacion', 'Firmante', 'Contacto', 'Correo enviado'];
+        $data    = [];
+        foreach ($rows as $row) {
+            $data[] = [
+                $row['instrumento'],
+                $row['torre_nombre'] ?: 'N/A',
+                $row['tipo_inmueble'],
+                $row['identificador'],
+                $row['piso'] ?: 'N/A',
+                $row['created_at'],
+                $row['fecha_autorizacion'],
+                $row['firmante_nombre'],
+                $row['contacto'],
+                (int) $row['pdf_enviado'] === 1 ? 'si' : 'no',
+            ];
+        }
+
+        $xlsx     = \App\Libraries\Excel::build([['name' => 'Respuestas', 'headers' => $headers, 'rows' => $data]]);
+        $filename = 'respuestas-' . $cliente['slug'] . '-' . ($filters['instrumento'] ?: 'todos') . '-' . date('Ymd-His') . '.xlsx';
+
+        return $this->response
+            ->setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->setBody($xlsx);
+    }
+
     private function exportCsv(array $cliente)
     {
         $filters = $this->filters();

@@ -82,5 +82,6 @@
             <?php endif; ?>
         </section>
     </main>
+    <?= view('partials/home_fab') ?>
 </body>
 </html>
