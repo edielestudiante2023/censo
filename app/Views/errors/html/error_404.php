@@ -1,84 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="utf-8">
-    <title><?= lang('Errors.pageNotFound') ?></title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= lang('Errors.pageNotFound') ?> · Censo APP</title>
     <style>
-        div.logo {
-            height: 200px;
-            width: 155px;
-            display: inline-block;
-            opacity: 0.08;
-            position: absolute;
-            top: 2rem;
-            left: 50%;
-            margin-left: -73px;
-        }
-        body {
-            height: 100%;
-            background: #fafafa;
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            color: #777;
-            font-weight: 300;
-        }
-        h1 {
-            font-weight: lighter;
-            letter-spacing: normal;
-            font-size: 3rem;
-            margin-top: 0;
-            margin-bottom: 0;
-            color: #222;
-        }
-        .wrap {
-            max-width: 1024px;
-            margin: 5rem auto;
-            padding: 2rem;
-            background: #fff;
-            text-align: center;
-            border: 1px solid #efefef;
-            border-radius: 0.5rem;
-            position: relative;
-        }
-        pre {
-            white-space: normal;
-            margin-top: 1.5rem;
-        }
-        code {
-            background: #fafafa;
-            border: 1px solid #efefef;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            display: block;
-        }
-        p {
-            margin-top: 1.5rem;
-        }
-        .footer {
-            margin-top: 2rem;
-            border-top: 1px solid #efefef;
-            padding: 1em 2em 0 2em;
-            font-size: 85%;
-            color: #999;
-        }
-        a:active,
-        a:link,
-        a:visited {
-            color: #dd4814;
-        }
+        *{box-sizing:border-box;}
+        body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#fff;
+            background:radial-gradient(900px 500px at 12% -8%,rgba(201,162,39,.20),transparent 60%),
+                       linear-gradient(135deg,#0f1623 0%,#1a2535 55%,#0b111c 100%);}
+        .box{text-align:center;max-width:460px;}
+        .code{font-size:6rem;font-weight:800;line-height:1;color:#c9a227;letter-spacing:2px;}
+        h1{font-size:1.4rem;margin:6px 0 10px;}
+        p{color:#c7ccd6;font-size:.95rem;margin:0 0 22px;line-height:1.5;}
+        .btn{display:inline-block;background:#c9a227;color:#1a1304;text-decoration:none;font-weight:700;
+            padding:12px 24px;border-radius:11px;font-size:.95rem;}
+        .btn:hover{background:#e3bd45;}
+        .foot{margin-top:26px;font-size:.72rem;color:#7b8190;}
+        code{display:block;margin-top:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+            padding:10px 12px;border-radius:8px;color:#e3bd45;font-size:.8rem;word-break:break-word;}
     </style>
 </head>
 <body>
-    <div class="wrap">
-        <h1>404</h1>
-
-        <p>
-            <?php if (ENVIRONMENT !== 'production') : ?>
-                <?= nl2br(esc($message)) ?>
-            <?php else : ?>
-                <?= lang('Errors.sorryCannotFind') ?>
-            <?php endif; ?>
-        </p>
+    <div class="box">
+        <div class="code">404</div>
+        <h1>Pagina no encontrada</h1>
+        <p>La direccion que buscas no existe o fue movida.</p>
+        <?php if (ENVIRONMENT !== 'production' && ! empty($message) && $message !== '(null)') : ?>
+            <code><?= nl2br(esc($message)) ?></code>
+        <?php endif; ?>
+        <div style="margin-top:22px;"><a class="btn" href="<?= site_url('/') ?>">Volver al inicio</a></div>
+        <div class="foot">Censo APP · Desarrollado por Enterprisesst &middot; empowered by Cycloid Talent SAS</div>
     </div>
 </body>
 </html>
