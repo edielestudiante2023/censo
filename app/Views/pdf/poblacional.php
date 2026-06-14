@@ -1,6 +1,7 @@
 <?php
 $bool = static fn ($v) => $v === null || $v === '' ? '—' : ((int) $v === 1 ? 'Si' : 'No');
 $val  = static fn ($v) => ($v === null || $v === '') ? '—' : $v;
+$sx   = static fn ($v) => $v === 'M' ? 'Masculino' : ($v === 'F' ? 'Femenino' : ($v === 'Otro' ? 'Otro' : '—'));
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -8,40 +9,42 @@ $val  = static fn ($v) => ($v === null || $v === '') ? '—' : $v;
 <meta charset="UTF-8">
 <style>
     * { font-family: "DejaVu Sans", sans-serif; }
-    body { margin: 0; color: #222; font-size: 11px; }
-    .header { border-bottom: 3px solid <?= esc($color) ?>; padding-bottom: 10px; margin-bottom: 14px; }
+    @page { margin: 34px 38px; }
+    body { margin: 0; color: #1f2430; font-size: 10.5px; }
+    .header { width: 100%; border-bottom: 2.5px solid <?= esc($color) ?>; padding-bottom: 12px; margin-bottom: 16px; }
     .header td { vertical-align: middle; }
-    .logo { height: 56px; }
-    .title { font-size: 18px; font-weight: bold; color: <?= esc($color) ?>; }
-    .subtitle { font-size: 11px; color: #666; }
-    .cliente-name { font-size: 13px; font-weight: bold; }
-    h2 { font-size: 12px; color: #fff; background: <?= esc($color) ?>; padding: 5px 8px; margin: 14px 0 6px; border-radius: 3px; }
-    table.data { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
-    table.data th, table.data td { border: 1px solid #ddd; padding: 4px 6px; text-align: left; font-size: 10px; }
-    table.data th { background: #f3f4f6; font-weight: bold; }
+    .logo { height: 54px; }
+    .cliente-name { font-size: 14px; font-weight: bold; color: #111827; }
+    .subtitle { font-size: 10px; color: #6b7280; }
+    .doc-title { font-size: 19px; font-weight: bold; color: <?= esc($color) ?>; }
+    .doc-meta { font-size: 9.5px; color: #6b7280; }
+    h2 { font-size: 11px; color: #fff; background: <?= esc($color) ?>; padding: 6px 10px; margin: 16px 0 7px; border-radius: 4px; letter-spacing: .3px; }
+    table.data { width: 100%; border-collapse: collapse; }
+    table.data th, table.data td { border: 1px solid #e3e6ea; padding: 5px 7px; text-align: left; font-size: 9.5px; }
+    table.data th { background: #f3f4f6; font-weight: bold; color: #374151; }
+    table.data tr:nth-child(even) td { background: #fafbfc; }
     .kv { width: 100%; border-collapse: collapse; }
-    .kv td { padding: 3px 6px; font-size: 10.5px; vertical-align: top; }
-    .kv td.k { width: 38%; color: #555; font-weight: bold; }
-    .firma-box { border: 1px solid #ddd; border-radius: 4px; padding: 8px; width: 260px; }
-    .firma-img { height: 70px; }
-    .foot { margin-top: 18px; font-size: 8.5px; color: #999; border-top: 1px solid #eee; padding-top: 6px; }
-    .empty { color: #999; font-style: italic; }
+    .kv td { padding: 4px 7px; font-size: 10px; vertical-align: top; border-bottom: 1px solid #f0f1f3; }
+    .kv td.k { width: 24%; color: #6b7280; font-weight: bold; }
+    .firma-box { border: 1px solid #e3e6ea; border-radius: 6px; padding: 10px; width: 270px; }
+    .firma-img { height: 66px; }
+    .firma-name { border-top: 1px solid #9ca3af; margin-top: 6px; padding-top: 4px; font-size: 10px; font-weight: bold; }
+    .foot { margin-top: 20px; font-size: 8px; color: #9ca3af; border-top: 1px solid #eef0f2; padding-top: 7px; line-height: 1.5; }
+    .empty { color: #9ca3af; font-style: italic; font-size: 9.5px; padding: 2px 0; }
 </style>
 </head>
 <body>
 
-<table class="header" width="100%">
+<table class="header">
     <tr>
-        <td width="70">
-            <?php if ($logo): ?><img src="<?= $logo ?>" class="logo" alt=""><?php endif; ?>
-        </td>
+        <td width="64"><?php if ($logo): ?><img src="<?= $logo ?>" class="logo" alt=""><?php endif; ?></td>
         <td>
             <div class="cliente-name"><?= esc($cliente['nombre_tercero']) ?></div>
             <div class="subtitle">NIT/Doc: <?= esc($val($cliente['documento'] ?? null)) ?></div>
         </td>
         <td align="right">
-            <div class="title">Censo Poblacional</div>
-            <div class="subtitle">Generado: <?= esc(date('Y-m-d H:i')) ?></div>
+            <div class="doc-title">Censo Poblacional</div>
+            <div class="doc-meta">Generado: <?= esc(date('Y-m-d H:i')) ?> · Registro #<?= esc($censo['id']) ?></div>
         </td>
     </tr>
 </table>
@@ -65,7 +68,7 @@ $val  = static fn ($v) => ($v === null || $v === '') ? '—' : $v;
         <td class="k">Tiene/aspira parqueadero</td><td><?= esc($bool($censo['tiene_parqueadero'])) ?></td>
     </tr>
     <tr>
-        <td class="k">Direccion de notificacion</td><td><?= esc($val($censo['direccion_notificacion'])) ?></td>
+        <td class="k">Direccion notificacion</td><td><?= esc($val($censo['direccion_notificacion'])) ?></td>
         <td class="k">Quien vive</td><td><?= esc($val($censo['quien_vive'])) ?></td>
     </tr>
     <tr>
@@ -101,9 +104,9 @@ $val  = static fn ($v) => ($v === null || $v === '') ? '—' : $v;
 <h2>Residentes</h2>
 <?php if ($residentes): ?>
 <table class="data">
-    <tr><th>Nombre</th><th>Documento</th><th>Parentesco</th><th>Edad</th></tr>
+    <tr><th>Nombre</th><th>Documento</th><th>Sexo</th><th>Parentesco</th><th>Edad</th></tr>
     <?php foreach ($residentes as $r): ?>
-    <tr><td><?= esc($val($r['nombre'])) ?></td><td><?= esc($val($r['documento'])) ?></td><td><?= esc($val($r['parentesco'])) ?></td><td><?= esc($val($r['edad'])) ?></td></tr>
+    <tr><td><?= esc($val($r['nombre'])) ?></td><td><?= esc($val($r['documento'])) ?></td><td><?= esc($sx($r['sexo'] ?? null)) ?></td><td><?= esc($val($r['parentesco'])) ?></td><td><?= esc($val($r['edad'])) ?></td></tr>
     <?php endforeach; ?>
 </table>
 <?php else: ?><div class="empty">Sin registros.</div><?php endif; ?>
@@ -121,7 +124,7 @@ $val  = static fn ($v) => ($v === null || $v === '') ? '—' : $v;
 <h2>Telefonos de contacto</h2>
 <?php if ($telefonos): ?>
 <table class="data">
-    <tr><th>#</th><th>Numero</th></tr>
+    <tr><th width="40">#</th><th>Numero</th></tr>
     <?php foreach ($telefonos as $t): ?>
     <tr><td><?= esc($val($t['orden'])) ?></td><td><?= esc($val($t['numero'])) ?></td></tr>
     <?php endforeach; ?>
@@ -129,30 +132,28 @@ $val  = static fn ($v) => ($v === null || $v === '') ? '—' : $v;
 <?php else: ?><div class="empty">Sin registros.</div><?php endif; ?>
 
 <h2>Condicion de discapacidad</h2>
-<div><?= esc($val($censo['discapacidad_descripcion'])) ?></div>
+<div style="font-size:10px;"><?= esc($val($censo['discapacidad_descripcion'])) ?></div>
 
 <h2>Observaciones</h2>
-<div><?= esc($val($censo['observaciones'])) ?></div>
+<div style="font-size:10px;"><?= esc($val($censo['observaciones'])) ?></div>
 
-<h2>Firma</h2>
+<h2>Firma del diligenciamiento</h2>
 <table width="100%"><tr>
     <td>
         <div class="firma-box">
             <?php if ($firma): ?><img src="<?= $firma ?>" class="firma-img" alt=""><?php endif; ?>
-            <div style="border-top:1px solid #999; margin-top:4px; padding-top:3px; font-size:10px;">
-                <?= esc($val($censo['firmante_nombre'])) ?>
-            </div>
+            <div class="firma-name"><?= esc($val($censo['firmante_nombre'])) ?></div>
         </div>
     </td>
-    <td valign="bottom" align="right" style="font-size:9px; color:#666;">
-        Autorizacion Habeas Data (Ley 1581/2012): <?= esc($bool($censo['autorizacion_datos'])) ?><br>
+    <td valign="bottom" align="right" style="font-size:9px; color:#6b7280;">
+        Autorizacion Habeas Data (Ley 1581/2012): <strong><?= esc($bool($censo['autorizacion_datos'])) ?></strong><br>
         Fecha autorizacion: <?= esc($val($censo['fecha_autorizacion'])) ?>
     </td>
 </tr></table>
 
 <div class="foot">
     Documento generado automaticamente por Censo APP — Cliente: <?= esc($cliente['nombre_tercero']) ?> ·
-    Registro #<?= esc($censo['id']) ?> · IP: <?= esc($val($censo['ip'])) ?> · Fecha respuesta: <?= esc($val($censo['created_at'])) ?>
+    IP: <?= esc($val($censo['ip'])) ?> · Fecha respuesta: <?= esc($val($censo['created_at'])) ?>
     <br>Desarrollado por Enterprisesst · empowered by Cycloid Talent SAS
 </div>
 
