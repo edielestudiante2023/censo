@@ -79,7 +79,7 @@ class AddMascotasToPoblacional extends Migration
             'SELECT 1 FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
              WHERE TABLE_SCHEMA = DATABASE()
                AND CONSTRAINT_NAME = ?
-               AND CONSTRAINT_TYPE = "FOREIGN KEY"',
+               AND CONSTRAINT_TYPE = \'FOREIGN KEY\'',
             [$constraintName]
         )->getRowArray();
     }
