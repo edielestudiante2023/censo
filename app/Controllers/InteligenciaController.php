@@ -8,7 +8,8 @@ class InteligenciaController extends BaseController
 {
     private const FILTER_KEYS = [
         'anio', 'torre_id', 'tipo', 'sexo', 'edad', 'parentesco_id',
-        'fecha_desde', 'fecha_hasta', 'tiene_mascotas', 'tiene_parqueadero', 'tiene_discapacidad',
+        'fecha_desde', 'fecha_hasta', 'tiene_mascotas', 'tipo_mascota_id',
+        'tiene_vehiculos', 'tipo_vehiculo_id', 'tiene_parqueadero', 'tiene_discapacidad',
     ];
 
     /** Buckets de edad: clave => [min, max|null]. */
@@ -166,6 +167,8 @@ class InteligenciaController extends BaseController
             'anios'     => $this->anios($cid),
             'torres'   => $this->torres($cid),
             'parentescos' => db_connect()->table('parentescos')->select('id, nombre')->where('activo', 1)->orderBy('nombre')->get()->getResultArray(),
+            'tiposMascota' => $this->tiposMascota(),
+            'tiposVehiculo' => $this->tiposVehiculo(),
             'kpis'     => $this->kpis($cid, $f),
             'charts'   => $this->charts($cid, $f),
             'summary'  => $this->summary($cid, $f),
@@ -181,6 +184,7 @@ class InteligenciaController extends BaseController
         $sexo              = $g('sexo');
         $edad              = $g('edad');
         $tieneMascotas     = $g('tiene_mascotas');
+        $tieneVehiculos    = $g('tiene_vehiculos');
         $tieneParqueadero  = $g('tiene_parqueadero');
         $tieneDiscapacidad = $g('tiene_discapacidad');
 
@@ -194,6 +198,9 @@ class InteligenciaController extends BaseController
             'fecha_desde'   => $this->validDate($g('fecha_desde')),
             'fecha_hasta'   => $this->validDate($g('fecha_hasta')),
             'tiene_mascotas' => in_array($tieneMascotas, ['0', '1'], true) ? $tieneMascotas : null,
+            'tipo_mascota_id' => $g('tipo_mascota_id') !== '' ? (int) $g('tipo_mascota_id') : null,
+            'tiene_vehiculos' => in_array($tieneVehiculos, ['0', '1'], true) ? $tieneVehiculos : null,
+            'tipo_vehiculo_id' => $g('tipo_vehiculo_id') !== '' ? (int) $g('tipo_vehiculo_id') : null,
             'tiene_parqueadero' => in_array($tieneParqueadero, ['0', '1'], true) ? $tieneParqueadero : null,
             'tiene_discapacidad' => in_array($tieneDiscapacidad, ['0', '1'], true) ? $tieneDiscapacidad : null,
         ];
@@ -286,15 +293,61 @@ class InteligenciaController extends BaseController
                 $b->groupStart()
                     ->where('cp.tiene_mascotas', 1)
                     ->orWhere('EXISTS (SELECT 1 FROM mascotas mp WHERE mp.censo_poblacional_id = cp.id)', null, false)
+                    ->orWhere('EXISTS (' . $this->mascotaIndependienteExistsSql($f, null) . ')', null, false)
                     ->groupEnd();
             } else {
                 $b->groupStart()
                     ->where('cp.tiene_mascotas !=', 1)
                     ->orWhere('cp.tiene_mascotas', null)
                     ->groupEnd()
-                    ->where('NOT EXISTS (SELECT 1 FROM mascotas mp WHERE mp.censo_poblacional_id = cp.id)', null, false);
+                    ->where('NOT EXISTS (SELECT 1 FROM mascotas mp WHERE mp.censo_poblacional_id = cp.id)', null, false)
+                    ->where('NOT EXISTS (' . $this->mascotaIndependienteExistsSql($f, null) . ')', null, false);
             }
         }
+        if (! in_array('tipo_mascota_id', $exclude, true) && $f['tipo_mascota_id'] !== null) {
+            $tipoMascotaId = (int) $f['tipo_mascota_id'];
+            $b->where(
+                '(EXISTS (SELECT 1 FROM mascotas mp WHERE mp.censo_poblacional_id = cp.id AND mp.tipo_mascota_id = ' . $tipoMascotaId . ')'
+                . ' OR EXISTS (' . $this->mascotaIndependienteExistsSql($f, $tipoMascotaId) . '))',
+                null,
+                false
+            );
+        }
+        if (! in_array('tiene_vehiculos', $exclude, true) && $f['tiene_vehiculos'] !== null) {
+            $exists = 'EXISTS (SELECT 1 FROM censo_vehiculos cvf WHERE cvf.censo_id = cp.id)';
+            $b->where(($f['tiene_vehiculos'] === '1' ? '' : 'NOT ') . $exists, null, false);
+        }
+        if (! in_array('tipo_vehiculo_id', $exclude, true) && $f['tipo_vehiculo_id'] !== null) {
+            $b->where(
+                'EXISTS (SELECT 1 FROM censo_vehiculos cvf WHERE cvf.censo_id = cp.id AND cvf.tipo_vehiculo_id = ' . (int) $f['tipo_vehiculo_id'] . ')',
+                null,
+                false
+            );
+        }
+    }
+
+    private function mascotaIndependienteExistsSql(array $f, ?int $tipoMascotaId): string
+    {
+        $sql = 'SELECT 1 FROM censos_mascotas cmf'
+            . ' JOIN mascotas mif ON mif.censo_mascota_id = cmf.id'
+            . ' WHERE cmf.inmueble_id = cp.inmueble_id'
+            . ' AND cmf.cliente_id = cp.cliente_id'
+            . ' AND cmf.deleted_at IS NULL';
+
+        if ($f['anio'] !== null) {
+            $sql .= ' AND cmf.anio = ' . (int) $f['anio'];
+        }
+        if ($f['fecha_desde'] !== null) {
+            $sql .= ' AND cmf.created_at >= ' . db_connect()->escape($f['fecha_desde'] . ' 00:00:00');
+        }
+        if ($f['fecha_hasta'] !== null) {
+            $sql .= ' AND cmf.created_at <= ' . db_connect()->escape($f['fecha_hasta'] . ' 23:59:59');
+        }
+        if ($tipoMascotaId !== null) {
+            $sql .= ' AND mif.tipo_mascota_id = ' . $tipoMascotaId;
+        }
+
+        return $sql;
     }
 
     private function kpis(int $cid, array $f): array
@@ -377,29 +430,33 @@ class InteligenciaController extends BaseController
         $charts[] = $this->pack('tipo', 'Personas por tipo de inmueble', 'doughnut', $rows,
             fn ($k) => ucfirst((string) $k), fn ($k) => $k);
 
-        $charts[] = $this->pack('', 'Cobertura por torre', 'bar', $this->coverageByTower($cid, $f),
-            fn ($k) => $k, fn ($k) => null);
-        $charts[] = $this->pack('tiene_mascotas', 'Hogares con mascotas', 'doughnut', $this->houseBoolRows($cid, $f, 'mascotas'),
+        $charts[] = $this->packKV('torre_id', 'Cobertura por torre', 'bar', $this->coverageByTower($cid, $f, ['torre_id']),
+            fn ($r) => $r['k'], fn ($r) => $r['v']);
+        $charts[] = $this->pack('tiene_mascotas', 'Hogares con mascotas', 'doughnut', $this->houseBoolRows($cid, $f, 'mascotas', ['tiene_mascotas']),
             fn ($k) => $k, fn ($k) => $k === 'Si' ? 1 : 0);
-        $charts[] = $this->pack('tiene_parqueadero', 'Hogares con parqueadero', 'doughnut', $this->houseBoolRows($cid, $f, 'parqueadero'),
+        $charts[] = $this->pack('tiene_parqueadero', 'Hogares con parqueadero', 'doughnut', $this->houseBoolRows($cid, $f, 'parqueadero', ['tiene_parqueadero']),
             fn ($k) => $k, fn ($k) => $k === 'Si' ? 1 : 0);
-        $charts[] = $this->pack('tiene_discapacidad', 'Hogares con condicion especial', 'doughnut', $this->houseBoolRows($cid, $f, 'discapacidad'),
+        $charts[] = $this->pack('tiene_discapacidad', 'Hogares con condicion especial', 'doughnut', $this->houseBoolRows($cid, $f, 'discapacidad', ['tiene_discapacidad']),
+            fn ($k) => $k, fn ($k) => $k === 'Si' ? 1 : 0);
+        $charts[] = $this->pack('tiene_vehiculos', 'Hogares con vehiculos', 'doughnut', $this->houseBoolRows($cid, $f, 'vehiculos', ['tiene_vehiculos']),
             fn ($k) => $k, fn ($k) => $k === 'Si' ? 1 : 0);
 
-        $rows = $this->baseVehiculos($cid, $f)
-            ->select("COALESCE(tv.nombre, 'Sin dato') AS k", false)
+        $rows = $this->baseVehiculos($cid, $f, ['tipo_vehiculo_id'])
+            ->select('COALESCE(tv.id, 0) AS k', false)
+            ->select("COALESCE(tv.nombre, 'Sin dato') AS lbl", false)
             ->select('COUNT(*) c', false)
             ->join('tipos_vehiculo tv', 'tv.id = cv.tipo_vehiculo_id', 'left')
-            ->groupBy('k')->orderBy('c', 'DESC')->get()->getResultArray();
-        $charts[] = $this->pack('', 'Vehiculos por tipo', 'bar', $rows, fn ($k) => $k, fn ($k) => null);
+            ->groupBy('k')->groupBy('lbl')->orderBy('c', 'DESC')->get()->getResultArray();
+        $charts[] = $this->packKV('tipo_vehiculo_id', 'Vehiculos por tipo', 'bar', $rows,
+            fn ($r) => $r['lbl'], fn ($r) => (int) $r['k'] === 0 ? null : $r['k']);
 
-        $charts[] = $this->pack('', 'Mascotas por tipo', 'doughnut', $this->mascotasPorTipo($cid, $f),
-            fn ($k) => $k, fn ($k) => null);
+        $charts[] = $this->packKV('tipo_mascota_id', 'Mascotas por tipo', 'doughnut', $this->mascotasPorTipo($cid, $f, ['tipo_mascota_id']),
+            fn ($r) => $r['lbl'], fn ($r) => (int) $r['k'] === 0 ? null : $r['k']);
 
         return $charts;
     }
 
-    private function baseVehiculos(int $cid, array $f)
+    private function baseVehiculos(int $cid, array $f, array $exclude = [])
     {
         $b = db_connect()->table('censo_vehiculos cv')
             ->join('censos_poblacionales cp', 'cp.id = cv.censo_id')
@@ -408,12 +465,19 @@ class InteligenciaController extends BaseController
             ->where('cp.cliente_id', $cid)
             ->where('cp.deleted_at', null);
 
-        $this->applyCensoFilters($b, $f);
+        $this->applyCensoFilters($b, $f, $exclude);
+
+        if (! in_array('tipo_vehiculo_id', $exclude, true) && $f['tipo_vehiculo_id'] !== null) {
+            $b->where('cv.tipo_vehiculo_id', $f['tipo_vehiculo_id']);
+        }
+        if (! in_array('tiene_vehiculos', $exclude, true) && $f['tiene_vehiculos'] === '0') {
+            $b->where('1 = 0', null, false);
+        }
 
         return $b;
     }
 
-    private function baseMascotasPoblacional(int $cid, array $f)
+    private function baseMascotasPoblacional(int $cid, array $f, array $exclude = [])
     {
         $b = db_connect()->table('mascotas m')
             ->join('censos_poblacionales cp', 'cp.id = m.censo_poblacional_id')
@@ -422,12 +486,37 @@ class InteligenciaController extends BaseController
             ->where('cp.cliente_id', $cid)
             ->where('cp.deleted_at', null);
 
-        $this->applyCensoFilters($b, $f);
+        $this->applyCensoFilters($b, $f, $exclude);
+
+        if (! in_array('tipo_mascota_id', $exclude, true) && $f['tipo_mascota_id'] !== null) {
+            $b->where('m.tipo_mascota_id', $f['tipo_mascota_id']);
+        }
 
         return $b;
     }
 
-    private function baseMascotasIndependiente(int $cid, array $f)
+    private function poblacionalForIndependentMascotaSql(array $f, string $extraCondition): string
+    {
+        $sql = 'SELECT 1 FROM censos_poblacionales cp2'
+            . ' WHERE cp2.inmueble_id = cm.inmueble_id'
+            . ' AND cp2.cliente_id = cm.cliente_id'
+            . ' AND cp2.deleted_at IS NULL'
+            . ' AND ' . $extraCondition;
+
+        if ($f['anio'] !== null) {
+            $sql .= ' AND cp2.anio = ' . (int) $f['anio'];
+        }
+        if ($f['fecha_desde'] !== null) {
+            $sql .= ' AND cp2.created_at >= ' . db_connect()->escape($f['fecha_desde'] . ' 00:00:00');
+        }
+        if ($f['fecha_hasta'] !== null) {
+            $sql .= ' AND cp2.created_at <= ' . db_connect()->escape($f['fecha_hasta'] . ' 23:59:59');
+        }
+
+        return $sql;
+    }
+
+    private function baseMascotasIndependiente(int $cid, array $f, array $exclude = [])
     {
         $b = db_connect()->table('mascotas m')
             ->join('censos_mascotas cm', 'cm.id = m.censo_mascota_id')
@@ -436,23 +525,49 @@ class InteligenciaController extends BaseController
             ->where('cm.cliente_id', $cid)
             ->where('cm.deleted_at', null);
 
-        if ($f['torre_id'] !== null) {
+        if (! in_array('torre_id', $exclude, true) && $f['torre_id'] !== null) {
             $b->where('i.torre_id', $f['torre_id']);
         }
-        if ($f['anio'] !== null) {
+        if (! in_array('anio', $exclude, true) && $f['anio'] !== null) {
             $b->where('cm.anio', $f['anio']);
         }
-        if ($f['tipo'] !== null) {
+        if (! in_array('tipo', $exclude, true) && $f['tipo'] !== null) {
             $b->where('i.tipo', $f['tipo']);
         }
-        if ($f['fecha_desde'] !== null) {
+        if (! in_array('fecha_desde', $exclude, true) && $f['fecha_desde'] !== null) {
             $b->where('cm.created_at >=', $f['fecha_desde'] . ' 00:00:00');
         }
-        if ($f['fecha_hasta'] !== null) {
+        if (! in_array('fecha_hasta', $exclude, true) && $f['fecha_hasta'] !== null) {
             $b->where('cm.created_at <=', $f['fecha_hasta'] . ' 23:59:59');
         }
-        if ($f['tiene_mascotas'] === '0') {
+        if (! in_array('tiene_mascotas', $exclude, true) && $f['tiene_mascotas'] === '0') {
             $b->where('1 = 0', null, false);
+        }
+        if (! in_array('tipo_mascota_id', $exclude, true) && $f['tipo_mascota_id'] !== null) {
+            $b->where('m.tipo_mascota_id', $f['tipo_mascota_id']);
+        }
+        if (! in_array('tiene_parqueadero', $exclude, true) && $f['tiene_parqueadero'] !== null) {
+            $b->where('EXISTS (' . $this->poblacionalForIndependentMascotaSql($f, 'cp2.tiene_parqueadero = ' . (int) $f['tiene_parqueadero']) . ')', null, false);
+        }
+        if (! in_array('tiene_discapacidad', $exclude, true) && $f['tiene_discapacidad'] !== null) {
+            $extra = $f['tiene_discapacidad'] === '1'
+                ? "NULLIF(TRIM(cp2.discapacidad_descripcion), '') IS NOT NULL"
+                : "(cp2.discapacidad_descripcion IS NULL OR TRIM(cp2.discapacidad_descripcion) = '')";
+            $b->where('EXISTS (' . $this->poblacionalForIndependentMascotaSql($f, $extra) . ')', null, false);
+        }
+        if (! in_array('tiene_vehiculos', $exclude, true) && $f['tiene_vehiculos'] !== null) {
+            $exists = 'EXISTS (SELECT 1 FROM censo_vehiculos cv2 WHERE cv2.censo_id = cp2.id)';
+            $b->where('EXISTS (' . $this->poblacionalForIndependentMascotaSql($f, ($f['tiene_vehiculos'] === '1' ? '' : 'NOT ') . $exists) . ')', null, false);
+        }
+        if (! in_array('tipo_vehiculo_id', $exclude, true) && $f['tipo_vehiculo_id'] !== null) {
+            $b->where(
+                'EXISTS (' . $this->poblacionalForIndependentMascotaSql(
+                    $f,
+                    'EXISTS (SELECT 1 FROM censo_vehiculos cv2 WHERE cv2.censo_id = cp2.id AND cv2.tipo_vehiculo_id = ' . (int) $f['tipo_vehiculo_id'] . ')'
+                ) . ')',
+                null,
+                false
+            );
         }
 
         return $b;
@@ -476,7 +591,7 @@ class InteligenciaController extends BaseController
         return $sorted;
     }
 
-    private function coverageByTower(int $cid, array $f): array
+    private function coverageByTower(int $cid, array $f, array $exclude = []): array
     {
         $join = 'cp.inmueble_id = i.id AND cp.deleted_at IS NULL';
         if ($f['anio'] !== null) {
@@ -491,6 +606,7 @@ class InteligenciaController extends BaseController
 
         $query = db_connect()->table('inmuebles i')
             ->select("COALESCE(t.nombre, 'Sin torre') AS k", false)
+            ->select('COALESCE(t.id, 0) AS v', false)
             ->select('COUNT(DISTINCT i.id) total', false)
             ->select('COUNT(DISTINCT cp.inmueble_id) respondidos', false)
             ->join('torres t', 't.id = i.torre_id', 'left')
@@ -498,26 +614,26 @@ class InteligenciaController extends BaseController
             ->where('i.cliente_id', $cid)
             ->where('i.deleted_at', null);
 
-        if ($f['torre_id'] !== null) {
+        if (! in_array('torre_id', $exclude, true) && $f['torre_id'] !== null) {
             $query->where('i.torre_id', $f['torre_id']);
         }
         if ($f['tipo'] !== null) {
             $query->where('i.tipo', $f['tipo']);
         }
 
-        $rows = $query->groupBy('k')->orderBy('k')->get()->getResultArray();
+        $rows = $query->groupBy('k')->groupBy('v')->orderBy('k')->get()->getResultArray();
 
         return array_map(static function (array $row): array {
             $total = (int) $row['total'];
             $pct = $total > 0 ? round(((int) $row['respondidos'] / $total) * 100, 1) : 0;
 
-            return ['k' => $row['k'], 'c' => $pct];
+            return ['k' => $row['k'], 'v' => (int) $row['v'] === 0 ? null : (int) $row['v'], 'c' => $pct];
         }, $rows);
     }
 
-    private function houseBoolRows(int $cid, array $f, string $kind): array
+    private function houseBoolRows(int $cid, array $f, string $kind, array $exclude = []): array
     {
-        $rows = $this->baseCensos($cid, $f)->select('cp.id, cp.tiene_mascotas, cp.tiene_parqueadero, cp.discapacidad_descripcion')->get()->getResultArray();
+        $rows = $this->baseCensos($cid, $f, $exclude)->select('cp.id, cp.tiene_mascotas, cp.tiene_parqueadero, cp.discapacidad_descripcion')->get()->getResultArray();
         $yes = 0;
         $no = 0;
         $pets = [];
@@ -527,12 +643,20 @@ class InteligenciaController extends BaseController
                 ->whereIn('censo_poblacional_id', $ids)->get()->getResultArray();
             $pets = array_fill_keys(array_map(static fn ($r) => (int) $r['id'], $petRows), true);
         }
+        $vehicles = [];
+        if ($kind === 'vehiculos' && $rows !== []) {
+            $ids = array_map(static fn ($r) => (int) $r['id'], $rows);
+            $vehicleRows = db_connect()->table('censo_vehiculos')->select('DISTINCT censo_id id', false)
+                ->whereIn('censo_id', $ids)->get()->getResultArray();
+            $vehicles = array_fill_keys(array_map(static fn ($r) => (int) $r['id'], $vehicleRows), true);
+        }
 
         foreach ($rows as $row) {
             $has = match ($kind) {
                 'mascotas' => (int) ($row['tiene_mascotas'] ?? 0) === 1 || isset($pets[(int) $row['id']]),
                 'parqueadero' => (int) ($row['tiene_parqueadero'] ?? 0) === 1,
                 'discapacidad' => trim((string) ($row['discapacidad_descripcion'] ?? '')) !== '',
+                'vehiculos' => isset($vehicles[(int) $row['id']]),
                 default => false,
             };
             $has ? $yes++ : $no++;
@@ -541,28 +665,29 @@ class InteligenciaController extends BaseController
         return [['k' => 'Si', 'c' => $yes], ['k' => 'No', 'c' => $no]];
     }
 
-    private function mascotasPorTipo(int $cid, array $f): array
+    private function mascotasPorTipo(int $cid, array $f, array $exclude = []): array
     {
         $totals = [];
-        foreach ([$this->baseMascotasPoblacional($cid, $f), $this->baseMascotasIndependiente($cid, $f)] as $query) {
-            $rows = $query->select("COALESCE(tm.nombre, 'Sin dato') AS k", false)
+        foreach ([$this->baseMascotasPoblacional($cid, $f, $exclude), $this->baseMascotasIndependiente($cid, $f, $exclude)] as $query) {
+            $rows = $query->select('COALESCE(tm.id, 0) AS k', false)
+                ->select("COALESCE(tm.nombre, 'Sin dato') AS lbl", false)
                 ->select('COUNT(*) c', false)
                 ->join('tipos_mascota tm', 'tm.id = m.tipo_mascota_id', 'left')
-                ->groupBy('k')
+                ->groupBy('k')->groupBy('lbl')
                 ->get()
                 ->getResultArray();
             foreach ($rows as $row) {
-                $totals[$row['k']] = ($totals[$row['k']] ?? 0) + (int) $row['c'];
+                $key = (int) $row['k'];
+                if (! isset($totals[$key])) {
+                    $totals[$key] = ['k' => $key, 'lbl' => $row['lbl'], 'c' => 0];
+                }
+                $totals[$key]['c'] += (int) $row['c'];
             }
         }
 
-        arsort($totals);
-        $result = [];
-        foreach ($totals as $label => $count) {
-            $result[] = ['k' => $label, 'c' => $count];
-        }
+        usort($totals, static fn ($a, $b) => $b['c'] <=> $a['c']);
 
-        return $result;
+        return array_values($totals);
     }
 
     private function summary(int $cid, array $f): array
@@ -570,10 +695,11 @@ class InteligenciaController extends BaseController
         return [
             'torres' => $this->coverageByTower($cid, $f),
             'vehiculos' => $this->baseVehiculos($cid, $f)
+                ->select('COALESCE(tv.id, 0) AS id', false)
                 ->select("COALESCE(tv.nombre, 'Sin dato') AS label", false)
                 ->select('COUNT(*) total', false)
                 ->join('tipos_vehiculo tv', 'tv.id = cv.tipo_vehiculo_id', 'left')
-                ->groupBy('label')->orderBy('total', 'DESC')->get()->getResultArray(),
+                ->groupBy('id')->groupBy('label')->orderBy('total', 'DESC')->get()->getResultArray(),
             'mascotas' => $this->mascotasPorTipo($cid, $f),
         ];
     }
@@ -639,6 +765,18 @@ class InteligenciaController extends BaseController
             ->where('cliente_id', $cid)->where('deleted_at', null)->orderBy('nombre')->get()->getResultArray();
     }
 
+    private function tiposMascota(): array
+    {
+        return db_connect()->table('tipos_mascota')->select('id, nombre')
+            ->where('activo', 1)->orderBy('nombre')->get()->getResultArray();
+    }
+
+    private function tiposVehiculo(): array
+    {
+        return db_connect()->table('tipos_vehiculo')->select('id, nombre')
+            ->where('activo', 1)->orderBy('nombre')->get()->getResultArray();
+    }
+
     private function anios(int $cid): array
     {
         $rows = db_connect()->query(
@@ -656,6 +794,8 @@ class InteligenciaController extends BaseController
         $chips = [];
         $torres = array_column($this->torres($cid), 'nombre', 'id');
         $parentescos = array_column(db_connect()->table('parentescos')->select('id, nombre')->where('activo', 1)->get()->getResultArray(), 'nombre', 'id');
+        $tiposMascota = array_column($this->tiposMascota(), 'nombre', 'id');
+        $tiposVehiculo = array_column($this->tiposVehiculo(), 'nombre', 'id');
 
         if ($f['anio'] !== null) {
             $chips[] = ['key' => 'anio', 'label' => 'Ano: ' . $f['anio']];
@@ -686,6 +826,15 @@ class InteligenciaController extends BaseController
             if ($f[$key] !== null) {
                 $chips[] = ['key' => $key, 'label' => $label . ': ' . ($f[$key] === '1' ? 'Si' : 'No')];
             }
+        }
+        if ($f['tipo_mascota_id'] !== null) {
+            $chips[] = ['key' => 'tipo_mascota_id', 'label' => 'Tipo mascota: ' . ($tiposMascota[$f['tipo_mascota_id']] ?? ('#' . $f['tipo_mascota_id']))];
+        }
+        if ($f['tiene_vehiculos'] !== null) {
+            $chips[] = ['key' => 'tiene_vehiculos', 'label' => 'Vehiculos: ' . ($f['tiene_vehiculos'] === '1' ? 'Si' : 'No')];
+        }
+        if ($f['tipo_vehiculo_id'] !== null) {
+            $chips[] = ['key' => 'tipo_vehiculo_id', 'label' => 'Tipo vehiculo: ' . ($tiposVehiculo[$f['tipo_vehiculo_id']] ?? ('#' . $f['tipo_vehiculo_id']))];
         }
 
         return $chips;

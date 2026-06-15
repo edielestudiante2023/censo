@@ -1,7 +1,7 @@
 <?php
 $q = function (array $extra = [], array $remove = []) use ($filters) {
     $base = [];
-    foreach (['anio', 'torre_id', 'tipo', 'sexo', 'edad', 'parentesco_id', 'fecha_desde', 'fecha_hasta', 'tiene_mascotas', 'tiene_parqueadero', 'tiene_discapacidad'] as $k) {
+    foreach (['anio', 'torre_id', 'tipo', 'sexo', 'edad', 'parentesco_id', 'fecha_desde', 'fecha_hasta', 'tiene_mascotas', 'tipo_mascota_id', 'tiene_vehiculos', 'tipo_vehiculo_id', 'tiene_parqueadero', 'tiene_discapacidad'] as $k) {
         if ($filters[$k] !== null) {
             $base[$k] = $filters[$k];
         }
@@ -36,6 +36,9 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
         .kpi .n { font-size:1.7rem; font-weight:800; color:#0f1623; }
         .kpi .l { font-size:.78rem; color:#6b7280; text-transform:uppercase; letter-spacing:.03em; margin-top:3px; }
         .kpi .gold { color:#c9a227; }
+        a.kpi { text-decoration:none; transition:transform .12s, box-shadow .12s; }
+        a.kpi:hover { transform:translateY(-1px); box-shadow:0 8px 20px rgba(0,0,0,.10); }
+        a.kpi.active { outline:2px solid #c9a227; }
         .panel { background:#fff; border-radius:14px; box-shadow:0 4px 14px rgba(0,0,0,.06); padding:16px; margin-bottom:16px; }
         .filters { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; align-items:end; }
         label { display:block; font-weight:700; font-size:.74rem; color:#374151; margin-bottom:5px; }
@@ -56,6 +59,8 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
         table.summary th, table.summary td { border-bottom:1px solid #edf0f3; padding:9px 6px; text-align:left; }
         table.summary th { color:#374151; font-size:.74rem; text-transform:uppercase; letter-spacing:.03em; }
         table.summary td:last-child, table.summary th:last-child { text-align:right; font-weight:700; }
+        table.summary a { color:inherit; text-decoration:none; font-weight:700; }
+        table.summary a:hover { color:#0d6efd; }
         .empty { padding:40px; text-align:center; color:#6b7280; }
         .filters > div { min-width:0; }
         @media (max-width:980px){ .filters{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
@@ -87,10 +92,10 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
             <div class="kpi"><div class="n"><?= esc($kpis['personas']) ?></div><div class="l">Personas</div></div>
             <div class="kpi"><div class="n"><?= esc($kpis['hogares']) ?></div><div class="l">Hogares respondidos</div></div>
             <div class="kpi"><div class="n gold"><?= esc($kpis['cobertura']) ?>%</div><div class="l">Cobertura (<?= esc($kpis['respondidos']) ?>/<?= esc($kpis['inmuebles']) ?> inmuebles)</div></div>
-            <div class="kpi"><div class="n"><?= esc($kpis['mascotas']) ?></div><div class="l">Mascotas (<?= esc($kpis['mascotas_poblacional']) ?> pob. / <?= esc($kpis['mascotas_independiente']) ?> indep.)</div></div>
-            <div class="kpi"><div class="n"><?= esc($kpis['vehiculos']) ?></div><div class="l">Vehiculos</div></div>
-            <div class="kpi"><div class="n"><?= esc($kpis['parqueaderos']) ?></div><div class="l">Hogares con parqueadero</div></div>
-            <div class="kpi"><div class="n"><?= esc($kpis['discapacidad']) ?></div><div class="l">Hogares con condicion especial</div></div>
+            <a class="kpi <?= $filters['tiene_mascotas'] === '1' ? 'active' : '' ?>" href="<?= base_url($basePath . $q(['tiene_mascotas' => '1'])) ?>"><div class="n"><?= esc($kpis['mascotas']) ?></div><div class="l">Mascotas (<?= esc($kpis['mascotas_poblacional']) ?> pob. / <?= esc($kpis['mascotas_independiente']) ?> indep.)</div></a>
+            <a class="kpi <?= $filters['tiene_vehiculos'] === '1' ? 'active' : '' ?>" href="<?= base_url($basePath . $q(['tiene_vehiculos' => '1'])) ?>"><div class="n"><?= esc($kpis['vehiculos']) ?></div><div class="l">Vehiculos</div></a>
+            <a class="kpi <?= $filters['tiene_parqueadero'] === '1' ? 'active' : '' ?>" href="<?= base_url($basePath . $q(['tiene_parqueadero' => '1'])) ?>"><div class="n"><?= esc($kpis['parqueaderos']) ?></div><div class="l">Hogares con parqueadero</div></a>
+            <a class="kpi <?= $filters['tiene_discapacidad'] === '1' ? 'active' : '' ?>" href="<?= base_url($basePath . $q(['tiene_discapacidad' => '1'])) ?>"><div class="n"><?= esc($kpis['discapacidad']) ?></div><div class="l">Hogares con condicion especial</div></a>
         </div>
 
         <div class="panel">
@@ -165,6 +170,32 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
                     </select>
                 </div>
                 <div>
+                    <label>Tipo mascota</label>
+                    <select name="tipo_mascota_id">
+                        <option value="">Todos</option>
+                        <?php foreach ($tiposMascota as $tm): ?>
+                            <option value="<?= esc($tm['id']) ?>" <?= (string) $filters['tipo_mascota_id'] === (string) $tm['id'] ? 'selected' : '' ?>><?= esc($tm['nombre']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
+                    <label>Con vehiculos</label>
+                    <select name="tiene_vehiculos">
+                        <option value="">Todos</option>
+                        <option value="1" <?= $filters['tiene_vehiculos'] === '1' ? 'selected' : '' ?>>Si</option>
+                        <option value="0" <?= $filters['tiene_vehiculos'] === '0' ? 'selected' : '' ?>>No</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Tipo vehiculo</label>
+                    <select name="tipo_vehiculo_id">
+                        <option value="">Todos</option>
+                        <?php foreach ($tiposVehiculo as $tv): ?>
+                            <option value="<?= esc($tv['id']) ?>" <?= (string) $filters['tipo_vehiculo_id'] === (string) $tv['id'] ? 'selected' : '' ?>><?= esc($tv['nombre']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
                     <label>Con parqueadero</label>
                     <select name="tiene_parqueadero">
                         <option value="">Todos</option>
@@ -207,7 +238,7 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
             <?php foreach ($charts as $i => $ch): ?>
                 <div class="chart-card">
                     <h3><?= esc($ch['title']) ?></h3>
-                    <div class="hint"><?= $ch['key'] !== '' ? 'Haz clic en un segmento para filtrar.' : 'Informativo.' ?></div>
+                    <div class="hint">Haz clic en un segmento para filtrar.</div>
                     <div class="chart-box"><canvas id="chart<?= $i ?>"></canvas></div>
                 </div>
             <?php endforeach; ?>
@@ -219,7 +250,16 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
                 <table class="summary">
                     <tr><th>Torre</th><th>%</th></tr>
                     <?php foreach ($summary['torres'] as $row): ?>
-                        <tr><td><?= esc($row['k']) ?></td><td><?= esc($row['c']) ?>%</td></tr>
+                        <tr>
+                            <td>
+                                <?php if ($row['v'] !== null): ?>
+                                    <a href="<?= base_url($basePath . $q(['torre_id' => $row['v']])) ?>"><?= esc($row['k']) ?></a>
+                                <?php else: ?>
+                                    <?= esc($row['k']) ?>
+                                <?php endif; ?>
+                            </td>
+                            <td><?= esc($row['c']) ?>%</td>
+                        </tr>
                     <?php endforeach; ?>
                 </table>
             </div>
@@ -228,7 +268,16 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
                 <table class="summary">
                     <tr><th>Tipo</th><th>Total</th></tr>
                     <?php foreach ($summary['vehiculos'] as $row): ?>
-                        <tr><td><?= esc($row['label']) ?></td><td><?= esc($row['total']) ?></td></tr>
+                        <tr>
+                            <td>
+                                <?php if ((int) $row['id'] !== 0): ?>
+                                    <a href="<?= base_url($basePath . $q(['tipo_vehiculo_id' => $row['id'], 'tiene_vehiculos' => '1'])) ?>"><?= esc($row['label']) ?></a>
+                                <?php else: ?>
+                                    <?= esc($row['label']) ?>
+                                <?php endif; ?>
+                            </td>
+                            <td><?= esc($row['total']) ?></td>
+                        </tr>
                     <?php endforeach; ?>
                 </table>
             </div>
@@ -237,7 +286,16 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
                 <table class="summary">
                     <tr><th>Tipo</th><th>Total</th></tr>
                     <?php foreach ($summary['mascotas'] as $row): ?>
-                        <tr><td><?= esc($row['k']) ?></td><td><?= esc($row['c']) ?></td></tr>
+                        <tr>
+                            <td>
+                                <?php if ((int) $row['k'] !== 0): ?>
+                                    <a href="<?= base_url($basePath . $q(['tipo_mascota_id' => $row['k'], 'tiene_mascotas' => '1'])) ?>"><?= esc($row['lbl']) ?></a>
+                                <?php else: ?>
+                                    <?= esc($row['lbl']) ?>
+                                <?php endif; ?>
+                            </td>
+                            <td><?= esc($row['c']) ?></td>
+                        </tr>
                     <?php endforeach; ?>
                 </table>
             </div>
