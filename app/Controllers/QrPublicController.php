@@ -88,14 +88,15 @@ class QrPublicController extends BaseController
         }
 
         $instrumento = (string) $qr['tipo_instrumento'];
+        $anio        = (int) ($qr['anio'] ?? date('Y'));
 
         $db = db_connect();
         $db->transStart();
 
         if ($instrumento === 'poblacional') {
-            $censoId = $this->savePoblacional($clienteId, (int) $qr['id'], (int) $inmueble['id'], $signature);
+            $censoId = $this->savePoblacional($clienteId, (int) $qr['id'], $anio, (int) $inmueble['id'], $signature);
         } else {
-            $censoId = $this->saveMascotas($clienteId, (int) $qr['id'], (int) $inmueble['id'], $signature);
+            $censoId = $this->saveMascotas($clienteId, (int) $qr['id'], $anio, (int) $inmueble['id'], $signature);
         }
 
         $db->transComplete();
@@ -179,12 +180,13 @@ class QrPublicController extends BaseController
             ->setFileName('censo-' . $ref['instrumento'] . '-' . $ref['id'] . '.pdf');
     }
 
-    private function savePoblacional(int $clienteId, int $qrId, int $inmuebleId, string $signature): int
+    private function savePoblacional(int $clienteId, int $qrId, int $anio, int $inmuebleId, string $signature): int
     {
         $model = new CensoPoblacionalModel();
         $model->insert([
             'cliente_id' => $clienteId,
             'qr_id' => $qrId,
+            'anio' => $anio,
             'inmueble_id' => $inmuebleId,
             'autorizacion_datos' => 1,
             'fecha_autorizacion' => date('Y-m-d H:i:s'),
@@ -278,12 +280,13 @@ class QrPublicController extends BaseController
         return false;
     }
 
-    private function saveMascotas(int $clienteId, int $qrId, int $inmuebleId, string $signature): int
+    private function saveMascotas(int $clienteId, int $qrId, int $anio, int $inmuebleId, string $signature): int
     {
         $model = new CensoMascotaModel();
         $model->insert([
             'cliente_id' => $clienteId,
             'qr_id' => $qrId,
+            'anio' => $anio,
             'inmueble_id' => $inmuebleId,
             'autorizacion_datos' => 1,
             'fecha_autorizacion' => date('Y-m-d H:i:s'),

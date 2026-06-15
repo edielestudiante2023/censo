@@ -34,13 +34,16 @@ class ClienteTableroController extends BaseController
     private function tableroData(array $cliente, bool $isAdmin): array
     {
         $clienteId = (int) $cliente['id'];
+        $filters   = $this->filters();
         $total     = $this->countInmuebles($clienteId);
-        $poblacionalRespondidos = $this->countRespondidos($clienteId, 'censos_poblacionales');
-        $mascotasRespondidos    = $this->countRespondidos($clienteId, 'censos_mascotas');
+        $poblacionalRespondidos = $this->countRespondidos($clienteId, 'censos_poblacionales', $filters['anio']);
+        $mascotasRespondidos    = $this->countRespondidos($clienteId, 'censos_mascotas', $filters['anio']);
 
         return [
             'cliente' => $cliente,
             'isAdmin' => $isAdmin,
+            'filters' => $filters,
+            'anios' => $this->anios($clienteId),
             'totales' => [
                 'inmuebles' => $total,
                 'poblacional_respondidos' => $poblacionalRespondidos,
@@ -50,10 +53,10 @@ class ClienteTableroController extends BaseController
                 'mascotas_faltantes' => max(0, $total - $mascotasRespondidos),
                 'mascotas_porcentaje' => $this->percentage($mascotasRespondidos, $total),
             ],
-            'faltantesPoblacional' => $this->missingInmuebles($clienteId, 'censos_poblacionales'),
-            'faltantesMascotas' => $this->missingInmuebles($clienteId, 'censos_mascotas'),
-            'ultimosPoblacional' => $this->latestResponses($clienteId, 'censos_poblacionales'),
-            'ultimosMascotas' => $this->latestResponses($clienteId, 'censos_mascotas'),
+            'faltantesPoblacional' => $this->missingInmuebles($clienteId, 'censos_poblacionales', $filters['anio']),
+            'faltantesMascotas' => $this->missingInmuebles($clienteId, 'censos_mascotas', $filters['anio']),
+            'ultimosPoblacional' => $this->latestResponses($clienteId, 'censos_poblacionales', $filters['anio']),
+            'ultimosMascotas' => $this->latestResponses($clienteId, 'censos_mascotas', $filters['anio']),
         ];
     }
 
@@ -70,24 +73,33 @@ class ClienteTableroController extends BaseController
             ->countAllResults();
     }
 
-    private function countRespondidos(int $clienteId, string $table): int
+    private function countRespondidos(int $clienteId, string $table, ?int $anio): int
     {
-        $row = db_connect()->table($table)
+        $query = db_connect()->table($table)
             ->select('COUNT(DISTINCT inmueble_id) AS total', false)
             ->where('cliente_id', $clienteId)
-            ->where('deleted_at', null)
-            ->get()
-            ->getRowArray();
+            ->where('deleted_at', null);
+
+        if ($anio !== null) {
+            $query->where('anio', $anio);
+        }
+
+        $row = $query->get()->getRowArray();
 
         return (int) ($row['total'] ?? 0);
     }
 
-    private function missingInmuebles(int $clienteId, string $table): array
+    private function missingInmuebles(int $clienteId, string $table, ?int $anio): array
     {
+        $join = 'c.inmueble_id = i.id AND c.deleted_at IS NULL';
+        if ($anio !== null) {
+            $join .= ' AND c.anio = ' . (int) $anio;
+        }
+
         return db_connect()->table('inmuebles i')
             ->select('i.id, i.tipo, i.identificador, i.piso, t.nombre AS torre_nombre')
             ->join('torres t', 't.id = i.torre_id', 'left')
-            ->join($table . ' c', 'c.inmueble_id = i.id AND c.deleted_at IS NULL', 'left')
+            ->join($table . ' c', $join, 'left')
             ->where('i.cliente_id', $clienteId)
             ->where('i.deleted_at', null)
             ->where('c.id', null)
@@ -99,18 +111,45 @@ class ClienteTableroController extends BaseController
             ->getResultArray();
     }
 
-    private function latestResponses(int $clienteId, string $table): array
+    private function latestResponses(int $clienteId, string $table, ?int $anio): array
     {
-        return db_connect()->table($table . ' c')
+        $query = db_connect()->table($table . ' c')
             ->select('c.id, c.inmueble_id, c.created_at, c.fecha_autorizacion, i.tipo, i.identificador, t.nombre AS torre_nombre')
             ->join('inmuebles i', 'i.id = c.inmueble_id')
             ->join('torres t', 't.id = i.torre_id', 'left')
             ->where('c.cliente_id', $clienteId)
-            ->where('c.deleted_at', null)
+            ->where('c.deleted_at', null);
+
+        if ($anio !== null) {
+            $query->where('c.anio', $anio);
+        }
+
+        return $query
             ->orderBy('c.created_at', 'DESC')
             ->limit(10)
             ->get()
             ->getResultArray();
+    }
+
+    private function filters(): array
+    {
+        $anio = trim((string) $this->request->getGet('anio'));
+
+        return [
+            'anio' => $anio !== '' ? (int) $anio : null,
+        ];
+    }
+
+    private function anios(int $clienteId): array
+    {
+        $rows = db_connect()->query(
+            'SELECT anio FROM censos_poblacionales WHERE cliente_id = ? AND deleted_at IS NULL AND anio IS NOT NULL'
+            . ' UNION SELECT anio FROM censos_mascotas WHERE cliente_id = ? AND deleted_at IS NULL AND anio IS NOT NULL'
+            . ' ORDER BY anio DESC',
+            [$clienteId, $clienteId]
+        )->getResultArray();
+
+        return array_map(static fn ($r) => (int) $r['anio'], $rows);
     }
 
     private function percentage(int $value, int $total): int

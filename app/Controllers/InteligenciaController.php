@@ -7,7 +7,7 @@ use App\Models\ClienteModel;
 class InteligenciaController extends BaseController
 {
     private const FILTER_KEYS = [
-        'torre_id', 'tipo', 'sexo', 'edad', 'parentesco_id',
+        'anio', 'torre_id', 'tipo', 'sexo', 'edad', 'parentesco_id',
         'fecha_desde', 'fecha_hasta', 'tiene_mascotas', 'tiene_parqueadero', 'tiene_discapacidad',
     ];
 
@@ -91,6 +91,7 @@ class InteligenciaController extends BaseController
         $resumen = [
             ['Estadisticas', $cliente['nombre_tercero']],
             ['Generado', date('Y-m-d H:i')],
+            ['Ano', $f['anio'] ?: 'Todos'],
             [],
             ['KPI', 'Valor'],
             ['Personas', $kpis['personas']],
@@ -132,7 +133,7 @@ class InteligenciaController extends BaseController
             ['name' => 'Personas', 'headers' => $pHeaders, 'rows' => $pRows],
         ]);
 
-        $filename = 'estadisticas-' . $cliente['slug'] . '-' . date('Ymd-His') . '.xlsx';
+        $filename = 'estadisticas-' . $cliente['slug'] . '-' . ($f['anio'] ?: 'todos-los-anos') . '-' . date('Ymd-His') . '.xlsx';
 
         return $this->response
             ->setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -162,6 +163,7 @@ class InteligenciaController extends BaseController
             'basePath' => $basePath,
             'exportPath' => $basePath . '/exportar',
             'filters'  => $f,
+            'anios'     => $this->anios($cid),
             'torres'   => $this->torres($cid),
             'parentescos' => db_connect()->table('parentescos')->select('id, nombre')->where('activo', 1)->orderBy('nombre')->get()->getResultArray(),
             'kpis'     => $this->kpis($cid, $f),
@@ -183,6 +185,7 @@ class InteligenciaController extends BaseController
         $tieneDiscapacidad = $g('tiene_discapacidad');
 
         return [
+            'anio'          => $g('anio') !== '' ? (int) $g('anio') : null,
             'torre_id'      => $g('torre_id') !== '' ? (int) $g('torre_id') : null,
             'tipo'          => in_array($tipo, ['casa', 'apartamento'], true) ? $tipo : null,
             'sexo'          => in_array($sexo, ['M', 'F', 'Otro'], true) ? $sexo : null,
@@ -250,6 +253,9 @@ class InteligenciaController extends BaseController
 
     private function applyCensoFilters($b, array $f, array $exclude = []): void
     {
+        if (! in_array('anio', $exclude, true) && $f['anio'] !== null) {
+            $b->where('cp.anio', $f['anio']);
+        }
         if (! in_array('torre_id', $exclude, true) && $f['torre_id'] !== null) {
             $b->where('i.torre_id', $f['torre_id']);
         }
@@ -433,6 +439,9 @@ class InteligenciaController extends BaseController
         if ($f['torre_id'] !== null) {
             $b->where('i.torre_id', $f['torre_id']);
         }
+        if ($f['anio'] !== null) {
+            $b->where('cm.anio', $f['anio']);
+        }
         if ($f['tipo'] !== null) {
             $b->where('i.tipo', $f['tipo']);
         }
@@ -469,18 +478,34 @@ class InteligenciaController extends BaseController
 
     private function coverageByTower(int $cid, array $f): array
     {
-        $rows = db_connect()->table('inmuebles i')
+        $join = 'cp.inmueble_id = i.id AND cp.deleted_at IS NULL';
+        if ($f['anio'] !== null) {
+            $join .= ' AND cp.anio = ' . (int) $f['anio'];
+        }
+        if ($f['fecha_desde'] !== null) {
+            $join .= " AND cp.created_at >= " . db_connect()->escape($f['fecha_desde'] . ' 00:00:00');
+        }
+        if ($f['fecha_hasta'] !== null) {
+            $join .= " AND cp.created_at <= " . db_connect()->escape($f['fecha_hasta'] . ' 23:59:59');
+        }
+
+        $query = db_connect()->table('inmuebles i')
             ->select("COALESCE(t.nombre, 'Sin torre') AS k", false)
             ->select('COUNT(DISTINCT i.id) total', false)
             ->select('COUNT(DISTINCT cp.inmueble_id) respondidos', false)
             ->join('torres t', 't.id = i.torre_id', 'left')
-            ->join('censos_poblacionales cp', 'cp.inmueble_id = i.id AND cp.deleted_at IS NULL', 'left')
+            ->join('censos_poblacionales cp', $join, 'left')
             ->where('i.cliente_id', $cid)
-            ->where('i.deleted_at', null)
-            ->groupBy('k')
-            ->orderBy('k')
-            ->get()
-            ->getResultArray();
+            ->where('i.deleted_at', null);
+
+        if ($f['torre_id'] !== null) {
+            $query->where('i.torre_id', $f['torre_id']);
+        }
+        if ($f['tipo'] !== null) {
+            $query->where('i.tipo', $f['tipo']);
+        }
+
+        $rows = $query->groupBy('k')->orderBy('k')->get()->getResultArray();
 
         return array_map(static function (array $row): array {
             $total = (int) $row['total'];
@@ -557,7 +582,7 @@ class InteligenciaController extends BaseController
     {
         $f = $this->filters();
         $data = $this->build($cliente, str_starts_with((string) current_url(), base_url('admin/')));
-        $filename = 'estadisticas-' . $cliente['slug'] . '-' . date('Ymd-His') . '.csv';
+        $filename = 'estadisticas-' . $cliente['slug'] . '-' . ($f['anio'] ?: 'todos-los-anos') . '-' . date('Ymd-His') . '.csv';
         $handle = fopen('php://temp', 'r+');
 
         fputcsv($handle, ['seccion', 'metrica', 'valor']);
@@ -614,12 +639,27 @@ class InteligenciaController extends BaseController
             ->where('cliente_id', $cid)->where('deleted_at', null)->orderBy('nombre')->get()->getResultArray();
     }
 
+    private function anios(int $cid): array
+    {
+        $rows = db_connect()->query(
+            'SELECT anio FROM censos_poblacionales WHERE cliente_id = ? AND deleted_at IS NULL AND anio IS NOT NULL'
+            . ' UNION SELECT anio FROM censos_mascotas WHERE cliente_id = ? AND deleted_at IS NULL AND anio IS NOT NULL'
+            . ' ORDER BY anio DESC',
+            [$cid, $cid]
+        )->getResultArray();
+
+        return array_map(static fn ($r) => (int) $r['anio'], $rows);
+    }
+
     private function chips(int $cid, array $f): array
     {
         $chips = [];
         $torres = array_column($this->torres($cid), 'nombre', 'id');
         $parentescos = array_column(db_connect()->table('parentescos')->select('id, nombre')->where('activo', 1)->get()->getResultArray(), 'nombre', 'id');
 
+        if ($f['anio'] !== null) {
+            $chips[] = ['key' => 'anio', 'label' => 'Ano: ' . $f['anio']];
+        }
         if ($f['tipo'] !== null) {
             $chips[] = ['key' => 'tipo', 'label' => 'Tipo: ' . ucfirst($f['tipo'])];
         }

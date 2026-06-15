@@ -48,20 +48,29 @@ class ClienteQrController extends BaseController
             return redirect()->back()->with('error', 'Selecciona un instrumento valido.');
         }
 
+        $anio = (int) ($this->request->getPost('anio') ?: date('Y'));
+        if ($anio < 2020 || $anio > 2100) {
+            $anio = (int) date('Y');
+        }
+
         $titulo = trim((string) $this->request->getPost('titulo'));
         if ($titulo === '') {
-            $titulo = $tipo === 'poblacional' ? 'Censo poblacional' : 'Censo de mascotas';
+            $titulo = ($tipo === 'poblacional' ? 'Censo poblacional' : 'Censo de mascotas') . ' ' . $anio;
         }
 
-        if ((new QrCodeModel())->forCliente($cid)->where('tipo_instrumento', $tipo)->first()) {
-            return redirect()->back()->with('error', 'Ya existe un QR para ese instrumento.');
+        if ((new QrCodeModel())->forCliente($cid)->where('tipo_instrumento', $tipo)->where('anio', $anio)->first()) {
+            return redirect()->back()->with('error', "Ya existe un QR de {$tipo} para el ano {$anio}.");
         }
+
+        db_connect()->table('qr_codes')
+            ->where('cliente_id', $cid)->where('tipo_instrumento', $tipo)
+            ->update(['activo' => 0, 'updated_at' => date('Y-m-d H:i:s')]);
 
         (new QrCodeModel())->insert([
-            'cliente_id' => $cid, 'tipo_instrumento' => $tipo, 'token' => $this->uniqueToken(), 'titulo' => $titulo, 'activo' => 1,
+            'cliente_id' => $cid, 'tipo_instrumento' => $tipo, 'anio' => $anio, 'token' => $this->uniqueToken(), 'titulo' => $titulo, 'activo' => 1,
         ]);
 
-        return redirect()->back()->with('success', 'QR generado correctamente.');
+        return redirect()->back()->with('success', "QR de la campana {$anio} generado. El QR anterior quedo inactivo.");
     }
 
     public function update(int $qrId)

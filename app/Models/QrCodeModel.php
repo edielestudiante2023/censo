@@ -12,10 +12,11 @@ class QrCodeModel extends Model
     protected $useSoftDeletes   = true;
     protected $useTimestamps    = true;
     protected $dateFormat       = 'datetime';
-    protected $allowedFields    = ['cliente_id', 'tipo_instrumento', 'token', 'titulo', 'activo'];
+    protected $allowedFields    = ['cliente_id', 'tipo_instrumento', 'anio', 'token', 'titulo', 'activo'];
     protected $validationRules  = [
         'cliente_id'       => 'required|is_natural_no_zero',
         'tipo_instrumento' => 'required|in_list[poblacional,mascotas]',
+        'anio'             => 'permit_empty|integer|greater_than_equal_to[2020]|less_than_equal_to[2100]',
         'token'            => 'required|alpha_dash|max_length[64]',
         'titulo'           => 'permit_empty|max_length[191]',
         'activo'           => 'required|in_list[0,1]',

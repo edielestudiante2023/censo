@@ -13,7 +13,7 @@ class CensoPoblacionalModel extends Model
     protected $useTimestamps    = true;
     protected $dateFormat       = 'datetime';
     protected $allowedFields    = [
-        'cliente_id', 'qr_id', 'inmueble_id', 'autorizacion_datos', 'fecha_autorizacion',
+        'cliente_id', 'qr_id', 'anio', 'inmueble_id', 'autorizacion_datos', 'fecha_autorizacion',
         'vive_en_copropiedad', 'direccion_notificacion', 'quien_vive', 'administrado_por',
         'inmobiliaria_nombre', 'inmobiliaria_telefono', 'inmobiliaria_correo', 'correo_contacto',
         'discapacidad_descripcion', 'tiene_mascotas', 'tiene_parqueadero', 'observaciones', 'firmante_nombre',
@@ -22,6 +22,7 @@ class CensoPoblacionalModel extends Model
     protected $validationRules  = [
         'cliente_id'             => 'required|is_natural_no_zero',
         'qr_id'                  => 'permit_empty|is_natural_no_zero',
+        'anio'                   => 'permit_empty|integer|greater_than_equal_to[2020]|less_than_equal_to[2100]',
         'inmueble_id'            => 'required|is_natural_no_zero',
         'autorizacion_datos'     => 'required|in_list[0,1]',
         'fecha_autorizacion'     => 'permit_empty|valid_date[Y-m-d H:i:s]',

@@ -13,13 +13,14 @@ class CensoMascotaModel extends Model
     protected $useTimestamps    = true;
     protected $dateFormat       = 'datetime';
     protected $allowedFields    = [
-        'cliente_id', 'qr_id', 'inmueble_id', 'autorizacion_datos', 'fecha_autorizacion',
+        'cliente_id', 'qr_id', 'anio', 'inmueble_id', 'autorizacion_datos', 'fecha_autorizacion',
         'responsable_nombre', 'responsable_documento', 'responsable_telefono', 'responsable_correo',
         'firmante_nombre', 'firma_imagen', 'pdf_ruta', 'pdf_enviado', 'fecha_envio', 'ip', 'user_agent',
     ];
     protected $validationRules  = [
         'cliente_id'            => 'required|is_natural_no_zero',
         'qr_id'                 => 'permit_empty|is_natural_no_zero',
+        'anio'                  => 'permit_empty|integer|greater_than_equal_to[2020]|less_than_equal_to[2100]',
         'inmueble_id'           => 'required|is_natural_no_zero',
         'autorizacion_datos'    => 'required|in_list[0,1]',
         'fecha_autorizacion'    => 'permit_empty|valid_date[Y-m-d H:i:s]',

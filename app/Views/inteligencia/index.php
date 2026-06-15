@@ -1,7 +1,7 @@
 <?php
 $q = function (array $extra = [], array $remove = []) use ($filters) {
     $base = [];
-    foreach (['torre_id', 'tipo', 'sexo', 'edad', 'parentesco_id', 'fecha_desde', 'fecha_hasta', 'tiene_mascotas', 'tiene_parqueadero', 'tiene_discapacidad'] as $k) {
+    foreach (['anio', 'torre_id', 'tipo', 'sexo', 'edad', 'parentesco_id', 'fecha_desde', 'fecha_hasta', 'tiene_mascotas', 'tiene_parqueadero', 'tiene_discapacidad'] as $k) {
         if ($filters[$k] !== null) {
             $base[$k] = $filters[$k];
         }
@@ -95,6 +95,15 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
 
         <div class="panel">
             <form class="filters" method="get" action="<?= base_url($basePath) ?>">
+                <div>
+                    <label>Ano</label>
+                    <select name="anio">
+                        <option value="">Todos</option>
+                        <?php foreach ($anios as $anio): ?>
+                            <option value="<?= esc($anio) ?>" <?= (string) $filters['anio'] === (string) $anio ? 'selected' : '' ?>><?= esc($anio) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
                 <div>
                     <label>Torre</label>
                     <select name="torre_id">

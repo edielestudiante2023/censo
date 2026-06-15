@@ -58,7 +58,12 @@ $isAdminQr = $isAdminQr ?? true;
                         </select>
                     </div>
                     <div class="field">
-                        <label for="titulo">Titulo</label>
+                        <label for="anio">Ano de la campana</label>
+                        <input id="anio" name="anio" type="number" min="2020" max="2100" value="<?= esc(date('Y')) ?>" required>
+                        <p class="hint">Cada ano es una campana nueva: el QR anterior de ese instrumento queda inactivo.</p>
+                    </div>
+                    <div class="field">
+                        <label for="titulo">Titulo (opcional)</label>
                         <input id="titulo" name="titulo" maxlength="191" placeholder="Censo poblacional">
                     </div>
                     <button class="btn btn-primary" type="submit">Generar QR</button>
@@ -77,9 +82,9 @@ $isAdminQr = $isAdminQr ?? true;
                                     <img src="<?= base_url($basePath . '/' . $qr['id'] . '.svg') ?>" alt="<?= esc($qr['titulo'] ?: $qr['tipo_instrumento']) ?>">
                                 </div>
                                 <div>
-                                    <span class="badge <?= (int) $qr['activo'] === 1 ? 'badge-on' : 'badge-off' ?>"><?= (int) $qr['activo'] === 1 ? 'Activo' : 'Inactivo' ?></span>
+                                    <span class="badge <?= (int) $qr['activo'] === 1 ? 'badge-on' : 'badge-off' ?>"><?= (int) $qr['activo'] === 1 ? 'Campana vigente' : 'Historico (inactivo)' ?></span>
                                     <h3 style="margin:10px 0 2px;"><?= esc($qr['titulo'] ?: $qr['tipo_instrumento']) ?></h3>
-                                    <p class="muted" style="text-transform:capitalize;"><?= esc($qr['tipo_instrumento']) ?></p>
+                                    <p class="muted"><span style="text-transform:capitalize;"><?= esc($qr['tipo_instrumento']) ?></span> · Ano <?= esc($qr['anio'] ?? '-') ?></p>
                                     <p class="qr-url"><?= esc(base_url('q/' . $qr['token'])) ?></p>
 
                                     <form method="post" action="<?= base_url($basePath . '/' . $qr['id']) ?>">

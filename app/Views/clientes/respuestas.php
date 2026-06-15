@@ -54,6 +54,15 @@
                     </select>
                 </div>
                 <div>
+                    <label for="anio">Ano</label>
+                    <select id="anio" name="anio">
+                        <option value="">Todos</option>
+                        <?php foreach ($anios as $anio): ?>
+                            <option value="<?= esc($anio) ?>" <?= (string) $filters['anio'] === (string) $anio ? 'selected' : '' ?>><?= esc($anio) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
                     <label for="torre_id">Torre</label>
                     <select id="torre_id" name="torre_id">
                         <option value="">Todas</option>
@@ -93,6 +102,7 @@
                     <thead>
                         <tr>
                             <th>Instrumento</th>
+                            <th>Ano</th>
                             <th>Inmueble</th>
                             <th>Fecha</th>
                             <th>Firmante</th>
@@ -104,6 +114,7 @@
                         <?php foreach ($respuestas as $respuesta): ?>
                             <tr>
                                 <td data-label="Instrumento"><span class="badge"><?= esc($respuesta['instrumento']) ?></span></td>
+                                <td data-label="Ano"><?= esc($respuesta['anio'] ?? '-') ?></td>
                                 <td data-label="Inmueble">
                                     <strong><?= esc($respuesta['identificador']) ?></strong>
                                     <div class="muted"><?= esc($respuesta['torre_nombre'] ?: $respuesta['tipo_inmueble']) ?></div>

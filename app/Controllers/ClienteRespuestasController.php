@@ -117,6 +117,7 @@ class ClienteRespuestasController extends BaseController
             'isAdmin' => $isAdmin,
             'filters' => $filters,
             'respuestas' => $this->queryRespuestas((int) $cliente['id'], $filters)->limit(300)->get()->getResultArray(),
+            'anios' => $this->anios((int) $cliente['id']),
             'torres' => $this->torres((int) $cliente['id']),
             'inmuebles' => $this->inmuebles((int) $cliente['id']),
         ];
@@ -151,11 +152,12 @@ class ClienteRespuestasController extends BaseController
         $filters = $this->filters();
         $rows    = $this->queryRespuestas((int) $cliente['id'], $filters)->get()->getResultArray();
 
-        $headers = ['Instrumento', 'Torre', 'Tipo inmueble', 'Inmueble', 'Piso', 'Fecha respuesta', 'Fecha autorizacion', 'Firmante', 'Contacto', 'Correo enviado'];
+        $headers = ['Instrumento', 'Ano', 'Torre', 'Tipo inmueble', 'Inmueble', 'Piso', 'Fecha respuesta', 'Fecha autorizacion', 'Firmante', 'Contacto', 'Correo enviado'];
         $data    = [];
         foreach ($rows as $row) {
             $data[] = [
                 $row['instrumento'],
+                $row['anio'],
                 $row['torre_nombre'] ?: 'N/A',
                 $row['tipo_inmueble'],
                 $row['identificador'],
@@ -169,7 +171,7 @@ class ClienteRespuestasController extends BaseController
         }
 
         $xlsx     = \App\Libraries\Excel::build([['name' => 'Respuestas', 'headers' => $headers, 'rows' => $data]]);
-        $filename = 'respuestas-' . $cliente['slug'] . '-' . ($filters['instrumento'] ?: 'todos') . '-' . date('Ymd-His') . '.xlsx';
+        $filename = 'respuestas-' . $cliente['slug'] . '-' . ($filters['instrumento'] ?: 'todos') . '-' . ($filters['anio'] ?: 'todos-los-anos') . '-' . date('Ymd-His') . '.xlsx';
 
         return $this->response
             ->setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -218,7 +220,7 @@ class ClienteRespuestasController extends BaseController
         }
 
         $xlsx     = \App\Libraries\Excel::build($sheets);
-        $filename = 'censo-completo-' . $cliente['slug'] . '-' . ($f['instrumento'] ?: 'todos') . '-' . date('Ymd-His') . '.xlsx';
+        $filename = 'censo-completo-' . $cliente['slug'] . '-' . ($f['instrumento'] ?: 'todos') . '-' . ($f['anio'] ?: 'todos-los-anos') . '-' . date('Ymd-His') . '.xlsx';
 
         return $this->response
             ->setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -254,7 +256,7 @@ class ClienteRespuestasController extends BaseController
         $maxV = $this->maxPer($veh);
         $maxT = $this->maxPer($tel);
 
-        $h = ['Fecha respuesta', 'Torre', 'Tipo inmueble', 'Inmueble', 'Piso', 'Autorizo datos', 'Fecha autorizacion', 'Vive en copropiedad', 'Direccion notificacion', 'Quien vive', 'Administrado por', 'Inmobiliaria', 'Inmobiliaria telefono', 'Inmobiliaria correo', 'Correo contacto', 'Tiene parqueadero', 'Discapacidad', 'Observaciones', 'Firmante'];
+        $h = ['Ano', 'Fecha respuesta', 'Torre', 'Tipo inmueble', 'Inmueble', 'Piso', 'Autorizo datos', 'Fecha autorizacion', 'Vive en copropiedad', 'Direccion notificacion', 'Quien vive', 'Administrado por', 'Inmobiliaria', 'Inmobiliaria telefono', 'Inmobiliaria correo', 'Correo contacto', 'Tiene parqueadero', 'Discapacidad', 'Observaciones', 'Firmante'];
         for ($i = 1; $i <= $maxP; $i++) { array_push($h, "Propietario $i Nombre", "Propietario $i Documento", "Propietario $i Telefono", "Propietario $i Correo"); }
         for ($i = 1; $i <= $maxA; $i++) { array_push($h, "Arrendatario $i Nombre", "Arrendatario $i Documento", "Arrendatario $i Telefono", "Arrendatario $i Correo"); }
         for ($i = 1; $i <= $maxR; $i++) { array_push($h, "Residente $i Nombre", "Residente $i Documento", "Residente $i Sexo", "Residente $i Parentesco", "Residente $i Edad"); }
@@ -268,7 +270,7 @@ class ClienteRespuestasController extends BaseController
         foreach ($censos as $c) {
             $id  = $c['id'];
             $row = [
-                $c['created_at'], $c['torre'], ucfirst((string) $c['i_tipo']), $c['i_ident'], $c['i_piso'],
+                $c['anio'], $c['created_at'], $c['torre'], ucfirst((string) $c['i_tipo']), $c['i_ident'], $c['i_piso'],
                 $bool($c['autorizacion_datos']), $c['fecha_autorizacion'], $bool($c['vive_en_copropiedad']),
                 $c['direccion_notificacion'], $c['quien_vive'], $c['administrado_por'], $c['inmobiliaria_nombre'],
                 $c['inmobiliaria_telefono'], $c['inmobiliaria_correo'], $c['correo_contacto'], $bool($c['tiene_parqueadero']),
@@ -306,14 +308,14 @@ class ClienteRespuestasController extends BaseController
 
         $bool = static fn ($v) => $v === null || $v === '' ? '' : ((int) $v === 1 ? 'Si' : 'No');
 
-        $h = ['Fecha respuesta', 'Torre', 'Tipo inmueble', 'Inmueble', 'Piso', 'Autorizo datos', 'Fecha autorizacion', 'Responsable Nombre', 'Responsable Documento', 'Responsable Telefono', 'Responsable Correo', 'Firmante'];
+        $h = ['Ano', 'Fecha respuesta', 'Torre', 'Tipo inmueble', 'Inmueble', 'Piso', 'Autorizo datos', 'Fecha autorizacion', 'Responsable Nombre', 'Responsable Documento', 'Responsable Telefono', 'Responsable Correo', 'Firmante'];
         for ($i = 1; $i <= $maxM; $i++) { array_push($h, "Mascota $i Nombre", "Mascota $i Tipo", "Mascota $i Edad", "Mascota $i Raza/Color", "Mascota $i Vacunada", "Mascota $i Esterilizada", "Mascota $i Foto", "Mascota $i Carne", "Mascota $i Poliza"); }
 
         $rows = [];
         foreach ($censos as $c) {
             $id  = $c['id'];
             $row = [
-                $c['created_at'], $c['torre'], ucfirst((string) $c['i_tipo']), $c['i_ident'], $c['i_piso'],
+                $c['anio'], $c['created_at'], $c['torre'], ucfirst((string) $c['i_tipo']), $c['i_ident'], $c['i_piso'],
                 $bool($c['autorizacion_datos']), $c['fecha_autorizacion'], $c['responsable_nombre'], $c['responsable_documento'],
                 $c['responsable_telefono'], $c['responsable_correo'], $c['firmante_nombre'],
             ];
@@ -329,6 +331,9 @@ class ClienteRespuestasController extends BaseController
 
     private function applyMatrixFilters($q, array $f, string $alias): void
     {
+        if ($f['anio'] !== null) {
+            $q->where($alias . '.anio', $f['anio']);
+        }
         if ($f['torre_id'] !== null) {
             $q->where('i.torre_id', $f['torre_id']);
         }
@@ -368,11 +373,11 @@ class ClienteRespuestasController extends BaseController
         $filters = $this->filters();
         $rows    = $this->queryRespuestas((int) $cliente['id'], $filters)->get()->getResultArray();
 
-        $filename = 'respuestas-' . $cliente['slug'] . '-' . ($filters['instrumento'] ?: 'todos') . '-' . date('Ymd-His') . '.csv';
+        $filename = 'respuestas-' . $cliente['slug'] . '-' . ($filters['instrumento'] ?: 'todos') . '-' . ($filters['anio'] ?: 'todos-los-anos') . '-' . date('Ymd-His') . '.csv';
         $handle   = fopen('php://temp', 'r+');
 
         fputcsv($handle, [
-            'instrumento', 'cliente', 'torre', 'tipo_inmueble', 'inmueble', 'piso',
+            'instrumento', 'ano', 'cliente', 'torre', 'tipo_inmueble', 'inmueble', 'piso',
             'fecha_respuesta', 'fecha_autorizacion', 'firmante', 'contacto',
             'pdf_ruta', 'pdf_enviado',
         ]);
@@ -380,6 +385,7 @@ class ClienteRespuestasController extends BaseController
         foreach ($rows as $row) {
             fputcsv($handle, [
                 $row['instrumento'],
+                $row['anio'],
                 $cliente['nombre_tercero'],
                 $row['torre_nombre'] ?: 'N/A',
                 $row['tipo_inmueble'],
@@ -419,6 +425,10 @@ class ClienteRespuestasController extends BaseController
             $query       = db_connect()->table('(' . $unionSql . ') r');
         }
 
+        if ($filters['anio'] !== null) {
+            $query->where('anio', $filters['anio']);
+        }
+
         if ($filters['torre_id'] !== null) {
             $query->where('torre_id', $filters['torre_id']);
         }
@@ -444,6 +454,7 @@ class ClienteRespuestasController extends BaseController
             ->select("
                 '{$instrumento}' AS instrumento,
                 c.id,
+                c.anio,
                 c.inmueble_id,
                 i.torre_id,
                 t.nombre AS torre_nombre,
@@ -478,11 +489,24 @@ class ClienteRespuestasController extends BaseController
 
         return [
             'instrumento' => $instrumento,
+            'anio' => $this->nullableIntGet('anio'),
             'torre_id' => $this->nullableIntGet('torre_id'),
             'inmueble_id' => $this->nullableIntGet('inmueble_id'),
             'desde' => $this->dateGet('desde'),
             'hasta' => $this->dateGet('hasta'),
         ];
+    }
+
+    private function anios(int $clienteId): array
+    {
+        $rows = db_connect()->query(
+            'SELECT anio FROM censos_poblacionales WHERE cliente_id = ? AND deleted_at IS NULL AND anio IS NOT NULL'
+            . ' UNION SELECT anio FROM censos_mascotas WHERE cliente_id = ? AND deleted_at IS NULL AND anio IS NOT NULL'
+            . ' ORDER BY anio DESC',
+            [$clienteId, $clienteId]
+        )->getResultArray();
+
+        return array_map(static fn ($r) => (int) $r['anio'], $rows);
     }
 
     private function torres(int $clienteId): array

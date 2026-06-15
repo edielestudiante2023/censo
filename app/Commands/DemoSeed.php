@@ -31,6 +31,7 @@ class DemoSeed extends BaseCommand
 
         $db->table('clientes')->where('slug', $this->slug)->delete();
         $now = date('Y-m-d H:i:s');
+        $anio = (int) date('Y');
 
         $db->table('clientes')->insert([
             'nombre_tercero' => 'Conjunto Residencial Demo', 'tipo_documento' => 'NIT', 'documento' => '901456789-0',
@@ -75,7 +76,7 @@ class DemoSeed extends BaseCommand
             $inmuebleId = $inmuebles[$idx];
             $tieneParq  = $idx % 2;
             $db->table('censos_poblacionales')->insert([
-                'cliente_id' => $cid, 'inmueble_id' => $inmuebleId, 'autorizacion_datos' => 1, 'fecha_autorizacion' => $now,
+                'cliente_id' => $cid, 'anio' => $anio, 'inmueble_id' => $inmuebleId, 'autorizacion_datos' => 1, 'fecha_autorizacion' => $now,
                 'vive_en_copropiedad' => 1, 'quien_vive' => 'Los propietarios', 'tiene_parqueadero' => $tieneParq,
                 'correo_contacto' => 'demo' . $idx . '@correo.com', 'firmante_nombre' => 'Propietario ' . ($idx + 1),
                 'ip' => '127.0.0.1', 'created_at' => $now, 'updated_at' => $now,
@@ -99,7 +100,7 @@ class DemoSeed extends BaseCommand
         // 4 censos de mascotas
         foreach ([0, 2, 4, 6] as $j => $inmIdx) {
             $db->table('censos_mascotas')->insert([
-                'cliente_id' => $cid, 'inmueble_id' => $inmuebles[$inmIdx], 'autorizacion_datos' => 1, 'fecha_autorizacion' => $now,
+                'cliente_id' => $cid, 'anio' => $anio, 'inmueble_id' => $inmuebles[$inmIdx], 'autorizacion_datos' => 1, 'fecha_autorizacion' => $now,
                 'responsable_nombre' => 'Responsable ' . ($j + 1), 'responsable_documento' => '20' . $j . '00000',
                 'responsable_correo' => 'mascota' . $j . '@correo.com', 'firmante_nombre' => 'Responsable ' . ($j + 1),
                 'ip' => '127.0.0.1', 'created_at' => $now, 'updated_at' => $now,
@@ -113,7 +114,7 @@ class DemoSeed extends BaseCommand
 
         // QR para ambos instrumentos
         foreach (['poblacional', 'mascotas'] as $tipo) {
-            $db->table('qr_codes')->insert(['cliente_id' => $cid, 'tipo_instrumento' => $tipo, 'token' => bin2hex(random_bytes(16)), 'titulo' => 'Demo ' . $tipo, 'activo' => 1, 'created_at' => $now, 'updated_at' => $now]);
+            $db->table('qr_codes')->insert(['cliente_id' => $cid, 'tipo_instrumento' => $tipo, 'anio' => $anio, 'token' => bin2hex(random_bytes(16)), 'titulo' => 'Demo ' . $tipo . ' ' . $anio, 'activo' => 1, 'created_at' => $now, 'updated_at' => $now]);
         }
 
         CLI::write('Cliente demo creado: id=' . $cid . ' (slug ' . $this->slug . ')', 'green');
