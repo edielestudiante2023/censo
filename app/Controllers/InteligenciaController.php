@@ -391,14 +391,14 @@ class InteligenciaController extends BaseController
     {
         $charts = [];
 
-        $rows = $this->baseResidentes($cid, $f, ['sexo'])
+        $rows = $this->baseResidentes($cid, $f)
             ->select("CASE WHEN cr.sexo IS NULL THEN 'Sin dato' ELSE cr.sexo END AS k", false)
             ->select('COUNT(*) c', false)->groupBy('k')->get()->getResultArray();
         $map = ['M' => 'Masculino', 'F' => 'Femenino', 'Otro' => 'Otro', 'Sin dato' => 'Sin dato'];
         $charts[] = $this->pack('sexo', 'Distribucion por sexo', 'doughnut', $rows,
             fn ($k) => $map[$k] ?? $k, fn ($k) => $k === 'Sin dato' ? null : $k);
 
-        $rows = $this->baseResidentes($cid, $f, ['torre_id'])
+        $rows = $this->baseResidentes($cid, $f)
             ->select("COALESCE(t.id, 0) AS k", false)
             ->select("COALESCE(t.nombre, 'Sin torre') AS lbl", false)
             ->select('COUNT(*) c', false)->groupBy('k')->groupBy('lbl')->orderBy('lbl')->get()->getResultArray();
@@ -412,12 +412,12 @@ class InteligenciaController extends BaseController
             . " WHEN cr.edad <= 44 THEN '30-44'"
             . " WHEN cr.edad <= 59 THEN '45-59'"
             . " ELSE '60+' END";
-        $rows = $this->baseResidentes($cid, $f, ['edad'])
+        $rows = $this->baseResidentes($cid, $f)
             ->select("$caseEdad AS k", false)->select('COUNT(*) c', false)->groupBy('k')->get()->getResultArray();
         $charts[] = $this->pack('edad', 'Personas por rango de edad', 'bar', $this->sortAgeRows($rows),
             fn ($k) => $k, fn ($k) => $k === 'Sin dato' ? null : $k);
 
-        $rows = $this->baseResidentes($cid, $f, ['parentesco_id'])
+        $rows = $this->baseResidentes($cid, $f)
             ->select("COALESCE(p.id, 0) AS k", false)
             ->select("COALESCE(p.nombre, 'Sin dato') AS lbl", false)
             ->join('parentescos p', 'p.id = cr.parentesco_id', 'left')
@@ -425,12 +425,12 @@ class InteligenciaController extends BaseController
         $charts[] = $this->packKV('parentesco_id', 'Personas por parentesco', 'bar', $rows,
             fn ($r) => $r['lbl'], fn ($r) => (int) $r['k'] === 0 ? null : $r['k']);
 
-        $rows = $this->baseResidentes($cid, $f, ['tipo'])
+        $rows = $this->baseResidentes($cid, $f)
             ->select('i.tipo AS k', false)->select('COUNT(*) c', false)->groupBy('k')->get()->getResultArray();
         $charts[] = $this->pack('tipo', 'Personas por tipo de inmueble', 'doughnut', $rows,
             fn ($k) => ucfirst((string) $k), fn ($k) => $k);
 
-        $charts[] = $this->packKV('torre_id', 'Cobertura por torre', 'bar', $this->coverageByTower($cid, $f, ['torre_id']),
+        $charts[] = $this->packKV('torre_id', 'Cobertura por torre', 'bar', $this->coverageByTower($cid, $f),
             fn ($r) => $r['k'], fn ($r) => $r['v']);
         $charts[] = $this->pack('tiene_mascotas', 'Hogares con mascotas', 'doughnut', $this->houseBoolRows($cid, $f, 'mascotas', ['tiene_mascotas']),
             fn ($k) => $k, fn ($k) => $k === 'Si' ? 1 : 0);
