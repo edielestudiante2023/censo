@@ -46,6 +46,9 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
         .btn { display:inline-flex; align-items:center; justify-content:center; border:0; border-radius:9px; padding:9px 13px; font-weight:700; font-size:.84rem; cursor:pointer; text-decoration:none; }
         .btn-primary { background:#0f1623; color:#fff; } .btn-muted { background:#e5e7eb; color:#111827; }
         .btn-clear { background:#fee2e2; color:#991b1b; }
+        .filter-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:stretch; grid-column:span 2; }
+        .filter-actions .btn { flex:1 1 86px; min-width:0; padding-left:10px; padding-right:10px; }
+        .filter-actions .btn-clear { flex-basis:116px; }
         .chips { display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 0; }
         .chip { background:#eef2ff; color:#3730a3; border-radius:999px; padding:5px 12px; font-size:.78rem; font-weight:600; text-decoration:none; display:inline-flex; gap:7px; align-items:center; }
         .chip b { font-weight:800; }
@@ -64,7 +67,7 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
         .empty { padding:40px; text-align:center; color:#6b7280; }
         .filters > div { min-width:0; }
         @media (max-width:980px){ .filters{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
-        @media (max-width:620px){ .filters{ grid-template-columns:1fr; } }
+        @media (max-width:620px){ .filters{ grid-template-columns:1fr; } .filter-actions{ grid-column:1; } }
     </style>
 </head>
 <body>
@@ -211,7 +214,7 @@ $q = function (array $extra = [], array $remove = []) use ($filters) {
                         <option value="0" <?= $filters['tiene_discapacidad'] === '0' ? 'selected' : '' ?>>No</option>
                     </select>
                 </div>
-                <div style="display:flex; gap:8px;">
+                <div class="filter-actions">
                     <button class="btn btn-primary" type="submit">Aplicar</button>
                     <a class="btn btn-clear" href="<?= base_url($basePath) ?>">Borrar filtros</a>
                     <a class="btn btn-primary" href="<?= base_url($basePath . '/excel' . $q()) ?>">Excel</a>
