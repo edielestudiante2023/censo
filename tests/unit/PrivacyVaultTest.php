@@ -78,5 +78,6 @@ final class PrivacyVaultTest extends CIUnitTestCase
 
         $this->assertSame(['data' => []], $model->decryptEvent(['data' => []]));
         $this->assertSame(['data' => null], $model->decryptEvent(['data' => null]));
+        $this->assertSame(['data' => false], $model->decryptEvent(['data' => false]));
     }
 }
