@@ -37,7 +37,8 @@
 # database.default.DBDriver = MySQLi
 # database.default.DBPrefix =
 # database.default.port = 3306
-# database.default.sslCA = /etc/ssl/certs/ca-certificates.crt
+# Optional only when the CA file is inside PHP open_basedir.
+# database.default.sslCA =
 
 # If you use MySQLi as tests, first update the values of Config\Database::$tests.
 # database.tests.hostname = localhost

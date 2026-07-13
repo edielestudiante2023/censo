@@ -204,9 +204,17 @@ class Database extends Config
         // SSL solo para la BD gestionada de DigitalOcean (sslmode REQUIRED).
         // No afecta el entorno local (hostname = localhost).
         if (str_contains((string) ($this->default['hostname'] ?? ''), 'ondigitalocean.com')) {
-            $sslCa = (string) (env('database.default.sslCA') ?: '/etc/ssl/certs/ca-certificates.crt');
             $this->default['encrypt'] = ['ssl_verify' => false];
-            if (is_file($sslCa)) {
+            $sslCa = trim((string) env('database.default.sslCA'));
+            $openBaseDir = trim((string) ini_get('open_basedir'));
+            $caAllowed = $openBaseDir === '' || (bool) array_filter(
+                explode(PATH_SEPARATOR, $openBaseDir),
+                static fn (string $base): bool => str_starts_with(
+                    str_replace('\\', '/', $sslCa),
+                    rtrim(str_replace('\\', '/', trim($base)), '/') . '/'
+                )
+            );
+            if ($sslCa !== '' && $caAllowed) {
                 $this->default['encrypt']['ssl_ca'] = $sslCa;
             }
         }
