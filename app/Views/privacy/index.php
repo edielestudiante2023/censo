@@ -119,10 +119,11 @@ $statusClass = static fn (string $status): string => in_array($status, ['publica
                 </div><button class="btn btn-primary" type="submit">Guardar programa</button>
             </form>
             <div>
-                <section class="card"><h3 style="margin-top:0">Portal del titular</h3><p class="muted">Canal publico para decisiones de autorizacion y solicitudes.</p><div class="public-link"><?= esc(base_url('privacidad/' . $programa['public_token'])) ?></div><a class="btn btn-muted" style="margin-top:10px" target="_blank" rel="noopener" href="<?= base_url('privacidad/' . $programa['public_token']) ?>">Abrir portal</a></section>
+                <section class="card"><h3 style="margin-top:0">Portal del titular</h3><p class="muted">El residente entra sin crear usuario, verifica su correo y firma su decision.</p><div class="public-link"><?= esc(base_url('privacidad/' . $programa['public_token'])) ?></div><a class="btn btn-muted" style="margin-top:10px" target="_blank" rel="noopener" href="<?= base_url('privacidad/' . $programa['public_token']) ?>">Abrir portal</a></section>
                 <section class="card"><h3 style="margin-top:0">Revision asistida</h3><p class="muted">La IA recibe solo el inventario estructurado, nunca identidades de titulares.</p><form method="post" action="<?= base_url($basePath . '/ia/revisar') ?>"><?= csrf_field() ?><button class="btn btn-primary" type="submit" <?= $openAiConfigured?'':'disabled' ?>>Revisar inventario con IA</button></form><?php if (!$openAiConfigured): ?><p class="hint">Configura openai.apiKey para habilitar la revision.</p><?php endif; ?></section>
             </div>
         </div>
+        <?= view('privacy/_resident_rollout', compact('basePath', 'programa', 'documentos', 'avisoPublicaciones')) ?>
     </section>
 
     <section class="pane" id="pane-inventario">
@@ -208,6 +209,7 @@ $statusClass = static fn (string $status): string => in_array($status, ['publica
     <?= view('privacy/_security', compact('basePath', 'securityAssignments', 'securityControls', 'securityIncidents', 'securityUsers', 'confidentialityAgreements', 'bases', 'finalidades')) ?>
 </main>
 <?= view('privacy/_instructions') ?>
+<?= view('privacy/_field_help') ?>
 <?= view('partials/home_fab') ?>
 <script>
 (function(){var buttons=[].slice.call(document.querySelectorAll('[data-pane]'));var panes=[].slice.call(document.querySelectorAll('.pane'));function openPane(name){buttons.forEach(function(b){b.classList.toggle('active',b.dataset.pane===name)});panes.forEach(function(p){p.classList.toggle('active',p.id==='pane-'+name)});history.replaceState(null,'','#'+name)}buttons.forEach(function(b){b.addEventListener('click',function(){openPane(b.dataset.pane)})});var selected=location.hash.replace('#','');openPane(document.getElementById('pane-'+selected)?selected:'resumen')})();

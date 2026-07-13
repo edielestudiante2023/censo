@@ -15,6 +15,7 @@ use App\Libraries\PrivacyProcessorAgreementService;
 use App\Libraries\PrivacyRequestWorkflow;
 use App\Libraries\PrivacyPii;
 use App\Libraries\PrivacyVault;
+use App\Libraries\QrSvgService;
 use App\Models\ClienteModel;
 use App\Models\DpBaseDatosModel;
 use App\Models\DpDocumentoModel;
@@ -1244,6 +1245,23 @@ class PrivacyController extends BaseController
         fclose($stream);
         return $this->response->setHeader('Content-Type', 'text/csv; charset=UTF-8')
             ->setHeader('Content-Disposition', 'attachment; filename="solicitudes-proteccion-datos.csv"')->setBody($content);
+    }
+
+    public function privacyPortalQr(?int $clienteId = null)
+    {
+        $cliente = $this->cliente($clienteId);
+        if (! $cliente) {
+            return $this->denied();
+        }
+
+        $program = $this->program($cliente);
+        $portalUrl = base_url('privacidad/' . $program['public_token']);
+        $svg = (new QrSvgService())->render($portalUrl, $cliente['color_primario'] ?? '#111827', 420);
+
+        return $this->response
+            ->setHeader('Content-Type', 'image/svg+xml; charset=UTF-8')
+            ->setHeader('Content-Disposition', 'inline; filename="portal-datos-personales.svg"')
+            ->setBody($svg);
     }
 
     private function show(?int $clienteId)

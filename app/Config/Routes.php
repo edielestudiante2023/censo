@@ -53,6 +53,7 @@ $routes->get('inteligencia/excel', 'InteligenciaController::excelMine', ['filter
 
 // Programa de tratamiento de datos del propio conjunto
 $routes->get('datos-personales', 'PrivacyController::mine', ['filter' => 'role:cliente,consejo,comite']);
+$routes->get('datos-personales/portal/qr.svg', 'PrivacyController::privacyPortalQr', ['filter' => 'role:cliente,consejo,comite']);
 $routes->post('datos-personales/programa', 'PrivacyController::saveProgram', ['filter' => 'role:cliente']);
 $routes->post('datos-personales/bases/guardar', 'PrivacyController::saveBase', ['filter' => 'role:cliente']);
 $routes->post('datos-personales/bases/archivar', 'PrivacyController::deactivateBase', ['filter' => 'role:cliente']);
@@ -107,6 +108,7 @@ $routes->group('admin', ['filter' => 'role:superadmin,admin'], static function (
     $routes->get('clientes/(:num)/inteligencia/exportar', 'InteligenciaController::exportAdmin/$1');
     $routes->get('clientes/(:num)/inteligencia/excel', 'InteligenciaController::excelAdmin/$1');
     $routes->get('clientes/(:num)/datos-personales', 'PrivacyController::admin/$1');
+    $routes->get('clientes/(:num)/datos-personales/portal/qr.svg', 'PrivacyController::privacyPortalQr/$1');
     $routes->post('clientes/(:num)/datos-personales/programa', 'PrivacyController::saveProgram/$1');
     $routes->post('clientes/(:num)/datos-personales/bases/guardar', 'PrivacyController::saveBase/$1');
     $routes->post('clientes/(:num)/datos-personales/bases/archivar', 'PrivacyController::deactivateBase/$1');
