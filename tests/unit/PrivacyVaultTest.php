@@ -3,6 +3,7 @@
 use App\Libraries\PrivacyCipher;
 use App\Libraries\PrivacyPii;
 use App\Libraries\PrivacyVault;
+use App\Models\Concerns\PrivacyEncryptedModel;
 use CodeIgniter\Test\CIUnitTestCase;
 
 final class PrivacyVaultTest extends CIUnitTestCase
@@ -60,5 +61,22 @@ final class PrivacyVaultTest extends CIUnitTestCase
 
         $this->expectException(\RuntimeException::class);
         $vault->decryptFile($blob, 'pdf|client-2/file.pdf.enc');
+    }
+
+    public function testEncryptedModelDoesNotInitializeVaultForEmptyResults(): void
+    {
+        $model = new class {
+            use PrivacyEncryptedModel;
+
+            protected string $table = 'dp_programas';
+
+            public function decryptEvent(array $event): array
+            {
+                return $this->privacyDecryptCallback($event);
+            }
+        };
+
+        $this->assertSame(['data' => []], $model->decryptEvent(['data' => []]));
+        $this->assertSame(['data' => null], $model->decryptEvent(['data' => null]));
     }
 }

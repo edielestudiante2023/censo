@@ -16,7 +16,7 @@ trait PrivacyEncryptedModel
 
     protected function privacyDecryptCallback(array $event): array
     {
-        if (! array_key_exists('data', $event) || $event['data'] === null) {
+        if (! array_key_exists('data', $event) || $event['data'] === null || $event['data'] === []) {
             return $event;
         }
         $vault = new PrivacyVault();
