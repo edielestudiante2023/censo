@@ -112,6 +112,7 @@
                                             <a href="<?= $base ?>/tablero">Tablero</a>
                                             <a href="<?= $base ?>/respuestas">Respuestas</a>
                                             <a href="<?= $base ?>/inteligencia">Estadisticas</a>
+                                            <a href="<?= $base ?>/datos-personales">Datos personales</a>
                                             <div class="menu-sep"></div>
                                             <a href="<?= $base ?>/qr">Codigos QR</a>
                                             <a href="<?= $base ?>/config">Configurar conjunto</a>

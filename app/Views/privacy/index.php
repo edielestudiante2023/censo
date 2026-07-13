@@ -31,7 +31,10 @@ $statusClass = static fn (string $status): string => in_array($status, ['publica
 <main class="wrap">
     <div class="header">
         <div><h2><?= esc($cliente['nombre_tercero']) ?></h2><p>Programa integral de tratamiento de datos personales</p></div>
-        <div class="actions"><a class="btn btn-muted" href="<?= base_url($basePath . '/exportar') ?>">Exportar solicitudes</a></div>
+        <div class="actions">
+            <button class="btn btn-muted privacy-guide-trigger" type="button" data-guide-open="general" aria-haspopup="dialog">? Instructivo general</button>
+            <a class="btn btn-muted" href="<?= base_url($basePath . '/exportar') ?>">Exportar solicitudes</a>
+        </div>
     </div>
     <?php if (session('success')): ?><div class="alert alert-success"><?= esc(session('success')) ?></div><?php endif; ?>
     <?php if (session('error')): ?><div class="alert alert-error"><?= esc(session('error')) ?></div><?php endif; ?>
@@ -53,6 +56,7 @@ $statusClass = static fn (string $status): string => in_array($status, ['publica
     </div>
 
     <section class="pane" id="pane-resumen">
+        <div class="pane-guide-bar"><button type="button" class="privacy-guide-trigger" data-guide-open="resumen" aria-haspopup="dialog">? Instructivo de Resumen</button></div>
         <div class="split">
             <form class="card" method="post" action="<?= base_url($basePath . '/programa') ?>">
                 <?= csrf_field() ?><h3 style="margin-top:0">Responsable y canales</h3>
@@ -122,6 +126,7 @@ $statusClass = static fn (string $status): string => in_array($status, ['publica
     </section>
 
     <section class="pane" id="pane-inventario">
+        <div class="pane-guide-bar"><button type="button" class="privacy-guide-trigger" data-guide-open="inventario" aria-haspopup="dialog">? Instructivo de Inventario</button></div>
         <div class="split">
             <div class="card"><h3 style="margin-top:0">Bases de datos</h3>
                 <?php foreach ($bases as $base): ?>
@@ -149,6 +154,7 @@ $statusClass = static fn (string $status): string => in_array($status, ['publica
     </section>
 
     <section class="pane" id="pane-documentos">
+        <div class="pane-guide-bar"><button type="button" class="privacy-guide-trigger" data-guide-open="documentos" aria-haspopup="dialog">? Instructivo de Documentos</button></div>
         <div class="actions" style="margin-bottom:14px"><form method="post" action="<?= base_url($basePath . '/documentos/generar') ?>" onsubmit="return confirm('Generar una nueva version de los siete documentos?')"><?= csrf_field() ?><button class="btn btn-primary" type="submit">Generar nuevas versiones</button></form></div>
         <?php foreach($latestDocuments as $document): ?><details class="card"><summary><strong><?= esc($document['titulo']) ?></strong> · v<?= $document['version'] ?> <span class="badge <?= $statusClass($document['estado']) ?>"><?= esc($document['estado']) ?></span></summary>
             <div class="legal-preview" style="margin-top:14px"><?= $document['contenido_html'] ?></div>
@@ -162,10 +168,12 @@ $statusClass = static fn (string $status): string => in_array($status, ['publica
     </section>
 
     <section class="pane" id="pane-titulares">
+        <div class="pane-guide-bar"><button type="button" class="privacy-guide-trigger" data-guide-open="titulares" aria-haspopup="dialog">? Instructivo de Titulares</button></div>
         <section class="card"><h3 style="margin-top:0">Decisiones registradas</h3><p class="muted">Exclusiones activas: <strong><?= $exclusiones ?></strong></p><table><thead><tr><th>Fecha</th><th>Titular</th><th>Perfil</th><th>Decision</th><th>Evidencia</th></tr></thead><tbody><?php foreach($consentimientos as $c): ?><tr><td><?= esc($c['otorgado_at']) ?></td><td><?= esc($c['titular_nombre']) ?><div class="muted"><?= esc($c['titular_email'] ?? '') ?></div></td><td><?= esc($c['tipo_titular']) ?></td><td><span class="badge <?= $c['decision']==='autorizado'?'badge-on':'badge-off' ?>"><?= esc($c['decision']) ?></span></td><td class="mini"><?= esc(substr($c['evidencia_hash'],0,16)) ?>…<br><a href="<?= base_url($basePath . '/consentimientos/pdf?id=' . $c['id']) ?>">Expediente</a></td></tr><?php endforeach; ?></tbody></table></section>
     </section>
 
     <section class="pane" id="pane-solicitudes">
+        <div class="pane-guide-bar"><button type="button" class="privacy-guide-trigger" data-guide-open="solicitudes" aria-haspopup="dialog">? Instructivo de Solicitudes</button></div>
         <div class="split"><div>
         <?php foreach($solicitudes as $request): $deadline=$request['prorroga_hasta']?:$request['vence_at']; $over=$request['estado']!=='cerrada' && $deadline && $deadline<date('Y-m-d'); ?><details class="card"><summary><strong><?= esc($request['radicado']) ?></strong> · <?= esc($request['tipo']) ?> <span class="badge <?= $statusClass($request['estado']) ?>"><?= esc($request['estado']) ?></span> <span class="mini <?= $over?'deadline-over':'' ?>"><?= $deadline?'vence '.esc($deadline):'identidad pendiente' ?></span></summary>
             <div class="request-grid" style="margin-top:14px"><div><span class="kicker">Titular</span><p><strong><?= esc($request['titular_nombre']) ?></strong><br><?= esc($request['titular_email']) ?><br><?= esc($request['titular_documento'] ?? '') ?></p></div><div><span class="kicker">Solicitud</span><p><?= nl2br(esc($request['solicitud_texto'])) ?></p></div></div>
@@ -183,6 +191,7 @@ $statusClass = static fn (string $status): string => in_array($status, ['publica
     </section>
 
     <section class="pane" id="pane-terceros">
+        <div class="pane-guide-bar"><button type="button" class="privacy-guide-trigger" data-guide-open="terceros" aria-haspopup="dialog">? Instructivo de Terceros</button></div>
         <div class="split"><div><section class="card"><h3 style="margin-top:0">Terceros clasificados</h3><?php foreach($terceros as $third): ?><details class="list-row"><summary><strong><?= esc($third['nombre']) ?></strong> <span class="badge <?= (int)($third['habilitado_datos']??0)?'badge-on':'badge-off' ?>"><?= (int)($third['habilitado_datos']??0)?'habilitado':'bloqueado' ?></span></summary><p class="mini">Rol material: <?= esc(str_replace('_',' ',$third['clasificacion_rol']??'pendiente')) ?> · riesgo <?= esc($third['nivel_riesgo']??'-') ?> · contrato hasta <?= esc($third['contrato_vence']??'sin fecha') ?></p><p><?= esc($third['clasificacion_justificacion']??'') ?></p>
             <?php if(in_array($third['clasificacion_rol']??'', ['encargado','rol_dual'], true)): ?>
             <form class="compact-form" method="post" action="<?= base_url($basePath . '/terceros/subencargados') ?>"><?= csrf_field() ?><input type="hidden" name="tercero_id" value="<?= $third['id'] ?>"><h4>Autorizar subencargado</h4><div class="form-grid"><div><label>Entidad</label><input name="nombre" required></div><div><label>Identificacion</label><input name="documento" required></div><div><label>Pais</label><input name="pais" required></div><div><label>Servicio</label><input name="servicio" required></div><div><label>Datos, separados por coma</label><input name="datos" required></div><div><label>DPA o contrato</label><input name="contrato_evidencia" required></div></div><button class="btn btn-muted" type="submit">Aprobar subencargado</button></form>
@@ -192,11 +201,13 @@ $statusClass = static fn (string $status): string => in_array($status, ['publica
     </section>
 
     <section class="pane" id="pane-trazabilidad">
+        <div class="pane-guide-bar"><button type="button" class="privacy-guide-trigger" data-guide-open="trazabilidad" aria-haspopup="dialog">? Instructivo de Trazabilidad</button></div>
         <section class="card"><h3 style="margin-top:0">Notificaciones</h3><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Destinatario</th><th>Estado</th><th>Proveedor</th></tr></thead><tbody><?php foreach($notificaciones as $n): ?><tr><td><?= esc($n['created_at']) ?></td><td><?= esc($n['tipo']) ?></td><td><?= esc($n['destinatario']) ?></td><td><span class="badge <?= $statusClass($n['estado']) ?>"><?= esc($n['estado']) ?></span></td><td class="mini"><?= esc($n['proveedor_id'] ?? '-') ?></td></tr><?php endforeach; ?></tbody></table></section>
         <section class="card"><h3 style="margin-top:0">Revisiones de IA</h3><?php foreach($aiRuns as $run): ?><details class="list-row"><summary><?= esc($run['created_at']) ?> · <?= esc($run['modelo']) ?> <span class="badge <?= $run['estado']==='completada'?'badge-on':'badge-off' ?>"><?= esc($run['estado']) ?></span></summary><?php if($run['salida_json']): ?><pre class="ai-output"><?= esc(json_encode(json_decode($run['salida_json'],true), JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)) ?></pre><?php else: ?><p class="alert alert-error"><?= esc($run['error'] ?? '') ?></p><?php endif; ?></details><?php endforeach; ?></section>
     </section>
     <?= view('privacy/_security', compact('basePath', 'securityAssignments', 'securityControls', 'securityIncidents', 'securityUsers', 'confidentialityAgreements', 'bases', 'finalidades')) ?>
 </main>
+<?= view('privacy/_instructions') ?>
 <?= view('partials/home_fab') ?>
 <script>
 (function(){var buttons=[].slice.call(document.querySelectorAll('[data-pane]'));var panes=[].slice.call(document.querySelectorAll('.pane'));function openPane(name){buttons.forEach(function(b){b.classList.toggle('active',b.dataset.pane===name)});panes.forEach(function(p){p.classList.toggle('active',p.id==='pane-'+name)});history.replaceState(null,'','#'+name)}buttons.forEach(function(b){b.addEventListener('click',function(){openPane(b.dataset.pane)})});var selected=location.hash.replace('#','');openPane(document.getElementById('pane-'+selected)?selected:'resumen')})();
