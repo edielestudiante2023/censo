@@ -48,14 +48,14 @@
             <?= csrf_field() ?>
             <label for="password">Nueva contrasena</label>
             <div class="control">
-                <input type="password" id="password" name="password" minlength="8" required autofocus>
+                <input type="password" id="password" name="password" minlength="12" required autofocus>
                 <button type="button" class="toggle" id="t1">Ver</button>
             </div>
-            <div class="hint">Minimo 8 caracteres.</div>
+            <div class="hint">Minimo 12 caracteres.</div>
 
             <label for="password_confirm">Confirmar contrasena</label>
             <div class="control">
-                <input type="password" id="password_confirm" name="password_confirm" minlength="8" required>
+                <input type="password" id="password_confirm" name="password_confirm" minlength="12" required>
                 <button type="button" class="toggle" id="t2">Ver</button>
             </div>
 

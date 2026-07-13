@@ -61,8 +61,8 @@ class PasswordController extends BaseController
         $password = (string) $this->request->getPost('password');
         $confirm  = (string) $this->request->getPost('password_confirm');
 
-        if (strlen($password) < 8) {
-            return redirect()->back()->with('error', 'La contrasena debe tener al menos 8 caracteres.');
+        if (strlen($password) < 12) {
+            return redirect()->back()->with('error', 'La contrasena debe tener al menos 12 caracteres.');
         }
         if ($password !== $confirm) {
             return redirect()->back()->with('error', 'Las contrasenas no coinciden.');

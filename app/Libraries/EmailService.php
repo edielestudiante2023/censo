@@ -21,10 +21,18 @@ class EmailService
 
     protected function sendViaSendGrid(string $toEmail, string $subject, string $htmlContent, array $options = []): bool
     {
+        return $this->sendViaSendGridDetailed($toEmail, $subject, $htmlContent, $options)['success'];
+    }
+
+    /**
+     * @return array{success: bool, status: int, message_id: string|null, error: string|null}
+     */
+    protected function sendViaSendGridDetailed(string $toEmail, string $subject, string $htmlContent, array $options = []): array
+    {
         if ($this->apiKey === '') {
             log_message('error', 'SendGrid API key vacia; email a {to} no enviado', ['to' => $toEmail]);
 
-            return false;
+            return ['success' => false, 'status' => 0, 'message_id' => null, 'error' => 'API key no configurada'];
         }
 
         try {
@@ -61,19 +69,58 @@ class EmailService
             if ($response->statusCode() >= 200 && $response->statusCode() < 300) {
                 log_message('info', 'Email enviado a {to} ({subj})', ['to' => $toEmail, 'subj' => $subject]);
 
-                return true;
+                $headers = $response->headers();
+                $headerValue = $headers['X-Message-Id'] ?? $headers['x-message-id'] ?? null;
+                $messageId = is_array($headerValue) ? ($headerValue[0] ?? null) : (is_string($headerValue) ? $headerValue : null);
+
+                return ['success' => true, 'status' => $response->statusCode(), 'message_id' => $messageId, 'error' => null];
             }
 
             log_message('error', 'Error email {to} (HTTP {code}): {body}', [
                 'to' => $toEmail, 'code' => $response->statusCode(), 'body' => $response->body(),
             ]);
 
-            return false;
+            return ['success' => false, 'status' => $response->statusCode(), 'message_id' => null, 'error' => substr((string) $response->body(), 0, 1000)];
         } catch (\Throwable $e) {
             log_message('error', 'Excepcion email {to}: {msg}', ['to' => $toEmail, 'msg' => $e->getMessage()]);
 
-            return false;
+            return ['success' => false, 'status' => 0, 'message_id' => null, 'error' => $e->getMessage()];
         }
+    }
+
+    /**
+     * Envia una comunicacion asociada a un expediente de proteccion de datos.
+     *
+     * @return array{success: bool, status: int, message_id: string|null, error: string|null}
+     */
+    public function sendPrivacyMessage(string $toEmail, string $subject, string $html, ?string $pdfAbsPath = null, ?int $clientId = null): array
+    {
+        if ($clientId && ! $this->providerAllowed($clientId, 'sendgrid')) {
+            return ['success' => false, 'status' => 0, 'message_id' => null, 'error' => 'V-01/V-07: SendGrid no tiene cadena contractual vigente para este Responsable'];
+        }
+        $attachments = [];
+        if ($pdfAbsPath && is_file($pdfAbsPath)) {
+            $content = (string) file_get_contents($pdfAbsPath);
+            $writePath = rtrim(str_replace('\\', '/', WRITEPATH), '/') . '/';
+            $normalized = str_replace('\\', '/', $pdfAbsPath);
+            if (str_starts_with($normalized, $writePath)) {
+                $relative = substr($normalized, strlen($writePath));
+                $content = (new PrivacyPdf())->contents($relative);
+            }
+            $attachments[] = [
+                'content' => base64_encode($content),
+                'type' => 'application/pdf',
+                'filename' => 'respuesta-proteccion-datos.pdf',
+            ];
+        }
+
+        return $this->sendViaSendGridDetailed($toEmail, $subject, $html, ['attachments' => $attachments]);
+    }
+
+    /** Canal aislado para el segundo factor de autenticacion; no admite adjuntos. */
+    public function sendMfaCode(string $toEmail, string $subject, string $html): array
+    {
+        return $this->sendViaSendGridDetailed($toEmail, $subject, $html);
     }
 
     /** Enlace de restablecimiento de contrasena. */
@@ -106,7 +153,9 @@ class EmailService
             static fn ($e) => filter_var($e, FILTER_VALIDATE_EMAIL)
         )));
 
-        if ($recipients === [] || ! is_file($pdfAbsPath)) {
+        $clientId = (int) ($cliente['id'] ?? 0);
+        if ($recipients === [] || ! is_file($pdfAbsPath) || $clientId < 1
+            || ! $this->providerAllowed($clientId, 'sendgrid')) {
             return 0;
         }
 
@@ -128,5 +177,10 @@ class EmailService
         }
 
         return $ok;
+    }
+
+    protected function providerAllowed(int $clientId, string $provider): bool
+    {
+        return (new PrivacyProcessorGate())->allowsProvider($clientId, $provider);
     }
 }

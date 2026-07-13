@@ -37,6 +37,7 @@
 # database.default.DBDriver = MySQLi
 # database.default.DBPrefix =
 # database.default.port = 3306
+# database.default.sslCA = /etc/ssl/certs/ca-certificates.crt
 
 # If you use MySQLi as tests, first update the values of Config\Database::$tests.
 # database.tests.hostname = localhost
@@ -55,6 +56,12 @@
 
 # encryption.key =
 
+# Privacy at-rest encryption. Prefer two distinct 32-byte hexadecimal secrets.
+# If omitted, domain-separated HKDF subkeys are derived from encryption.key.
+# privacy.encKey =
+# privacy.indexKey =
+privacy.encVersion = 1
+
 #--------------------------------------------------------------------
 # SESSION
 #--------------------------------------------------------------------
@@ -67,3 +74,11 @@
 #--------------------------------------------------------------------
 
 # logger.threshold = 4
+
+#--------------------------------------------------------------------
+# PRIVACY MODULE INTEGRATIONS
+#--------------------------------------------------------------------
+
+# openai.apiKey =
+# openai.model = gpt-4o-mini
+# sendgrid.webhookToken =

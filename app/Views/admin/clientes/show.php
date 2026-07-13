@@ -61,6 +61,7 @@
                 <a class="section-card" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/tablero') ?>"><strong>Tablero</strong><span>Avance del censo y faltantes.</span></a>
                 <a class="section-card" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/respuestas') ?>"><strong>Respuestas</strong><span>Censos recibidos, PDF y export CSV.</span></a>
                 <a class="section-card" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/inteligencia') ?>"><strong>Estadisticas</strong><span>Estadisticas y graficos con filtros.</span></a>
+                <a class="section-card" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/datos-personales') ?>"><strong>Datos personales</strong><span>Programa documental, autorizaciones y derechos de titulares.</span></a>
             </div>
         </section>
 

@@ -74,8 +74,8 @@
 
                     <div>
                         <label for="password"><?= $isEdit ? 'Nueva contrasena' : 'Contrasena' ?></label>
-                        <input type="password" id="password" name="password" <?= $isEdit ? '' : 'required' ?> minlength="8" autocomplete="new-password">
-                        <div class="hint"><?= $isEdit ? 'Dejala vacia para conservar la actual.' : 'Minimo 8 caracteres.' ?></div>
+                        <input type="password" id="password" name="password" <?= $isEdit ? '' : 'required' ?> minlength="12" autocomplete="new-password">
+                        <div class="hint"><?= $isEdit ? 'Dejala vacia para conservar la actual.' : 'Minimo 12 caracteres.' ?></div>
                     </div>
 
                     <div class="full checks">

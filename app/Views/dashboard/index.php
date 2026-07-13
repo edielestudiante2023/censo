@@ -68,6 +68,10 @@
                         <strong>Codigos QR</strong>
                         <span>Genera el QR de tu conjunto para imprimir y pegar en las torres.</span>
                     </a>
+                    <a class="module" href="<?= base_url('datos-personales') ?>">
+                        <strong>Datos personales</strong>
+                        <span>Inventario, documentos, autorizaciones y solicitudes de titulares.</span>
+                    </a>
                 </div>
             <?php endif; ?>
         </div>

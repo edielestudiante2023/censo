@@ -25,7 +25,7 @@ final class EmailServiceTest extends CIUnitTestCase
                     '',
                     'residente@example.com',
                 ],
-                ['nombre_tercero' => 'Conjunto Demo'],
+                ['id' => 17, 'nombre_tercero' => 'Conjunto Demo'],
                 'poblacional',
                 $pdfPath
             );
@@ -53,9 +53,26 @@ final class EmailServiceTest extends CIUnitTestCase
         $this->assertSame(0, $sent);
         $this->assertSame([], $service->deliveries);
     }
+
+    public function testSendCensoPdfIsBlockedWhenProcessorAgreementIsMissing(): void
+    {
+        $pdfPath = tempnam(WRITEPATH . 'cache', 'pdf-test-');
+        file_put_contents($pdfPath, '%PDF-1.4 test');
+        try {
+            $service = new BlockedEmailService();
+            $this->assertSame(0, $service->sendCensoPdf(
+                ['admin@example.com'],
+                ['id' => 17, 'nombre_tercero' => 'Conjunto Demo'],
+                'poblacional',
+                $pdfPath
+            ));
+        } finally {
+            @unlink($pdfPath);
+        }
+    }
 }
 
-final class FakeEmailService extends EmailService
+class FakeEmailService extends EmailService
 {
     /**
      * @var array<int, array{to: string, subject: string, attachment: string|null}>
@@ -73,5 +90,18 @@ final class FakeEmailService extends EmailService
         ];
 
         return true;
+    }
+
+    protected function providerAllowed(int $clientId, string $provider): bool
+    {
+        return true;
+    }
+}
+
+final class BlockedEmailService extends FakeEmailService
+{
+    protected function providerAllowed(int $clientId, string $provider): bool
+    {
+        return false;
     }
 }

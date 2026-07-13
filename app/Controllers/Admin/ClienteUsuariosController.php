@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\ClienteModel;
 use App\Models\RolModel;
 use App\Models\UsuarioModel;
+use App\Libraries\PrivacyAccessGate;
 
 class ClienteUsuariosController extends BaseController
 {
@@ -56,9 +57,15 @@ class ClienteUsuariosController extends BaseController
         }
 
         $data['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
+        if ((new PrivacyAccessGate())->required($clienteId)) {
+            $data['activo'] = 0;
+        }
         (new UsuarioModel())->insert($data);
 
-        return redirect()->to('/admin/clientes/' . $clienteId . '/usuarios')->with('success', 'Usuario creado correctamente.');
+        $message = (new PrivacyAccessGate())->required($clienteId)
+            ? 'Usuario creado inactivo. Se habilitara al completar compromiso individual e induccion.'
+            : 'Usuario creado correctamente.';
+        return redirect()->to('/admin/clientes/' . $clienteId . '/usuarios')->with('success', $message);
     }
 
     public function edit(int $clienteId, int $usuarioId)
@@ -98,6 +105,10 @@ class ClienteUsuariosController extends BaseController
 
         if ($password !== '') {
             $data['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
+        }
+
+        if ((int) $data['activo'] === 1 && ! (new PrivacyAccessGate())->ready($clienteId, $usuarioId)) {
+            return redirect()->back()->withInput()->with('error', 'No se puede activar: falta compromiso individual vigente, integro e induccion registrada.');
         }
 
         (new UsuarioModel())->update($usuarioId, $data);
@@ -161,14 +172,14 @@ class ClienteUsuariosController extends BaseController
             return false;
         }
 
-        if (! $isEdit && strlen($password) < 8) {
-            $this->validator->setError('password', 'La contrasena debe tener minimo 8 caracteres.');
+        if (! $isEdit && strlen($password) < 12) {
+            $this->validator->setError('password', 'La contrasena debe tener minimo 12 caracteres.');
 
             return false;
         }
 
-        if ($isEdit && $password !== '' && strlen($password) < 8) {
-            $this->validator->setError('password', 'La nueva contrasena debe tener minimo 8 caracteres.');
+        if ($isEdit && $password !== '' && strlen($password) < 12) {
+            $this->validator->setError('password', 'La nueva contrasena debe tener minimo 12 caracteres.');
 
             return false;
         }
