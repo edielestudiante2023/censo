@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Libraries\EmailService;
+use App\Libraries\HousingUnitConfigurator;
 use App\Libraries\OpenAiPrivacyService;
 use App\Libraries\PrivacyAudit;
 use App\Libraries\PrivacyBusinessDays;
@@ -34,6 +35,61 @@ class PrivacyController extends BaseController
     public function admin(int $clienteId)
     {
         return $this->show($clienteId);
+    }
+
+    public function generateHousingHouses(?int $clienteId = null)
+    {
+        $cliente = $this->cliente($clienteId);
+        if (! $cliente) {
+            return $this->denied();
+        }
+
+        try {
+            $result = (new HousingUnitConfigurator())->generateHouses((int) $cliente['id'], [
+                'prefix' => $this->request->getPost('housing_house_prefix'),
+                'padding' => $this->request->getPost('housing_house_padding'),
+                'from' => $this->request->getPost('housing_house_from'),
+                'to' => $this->request->getPost('housing_house_to'),
+            ]);
+            PrivacyAudit::record((int) $cliente['id'], 'configurar_casas', 'unidad_habitacional', null, null, $result);
+        } catch (\InvalidArgumentException | \RuntimeException $e) {
+            return redirect()->to($this->privacyModuleUrl($cliente) . '#titulares')->withInput()->with('error', $e->getMessage());
+        }
+
+        return redirect()->to($this->privacyModuleUrl($cliente) . '#titulares')->with('success', sprintf(
+            'Configuracion guardada: %d casas creadas y %d existentes conservadas.',
+            $result['created'],
+            $result['skipped']
+        ));
+    }
+
+    public function generateHousingApartments(?int $clienteId = null)
+    {
+        $cliente = $this->cliente($clienteId);
+        if (! $cliente) {
+            return $this->denied();
+        }
+
+        try {
+            $result = (new HousingUnitConfigurator())->generateApartments((int) $cliente['id'], [
+                'tower_prefix' => $this->request->getPost('housing_tower_prefix'),
+                'tower_from' => $this->request->getPost('housing_tower_from'),
+                'tower_to' => $this->request->getPost('housing_tower_to'),
+                'floors' => $this->request->getPost('housing_floors'),
+                'units_per_floor' => $this->request->getPost('housing_units_per_floor'),
+                'unit_from' => $this->request->getPost('housing_unit_from'),
+            ]);
+            PrivacyAudit::record((int) $cliente['id'], 'configurar_apartamentos', 'unidad_habitacional', null, null, $result);
+        } catch (\InvalidArgumentException | \RuntimeException $e) {
+            return redirect()->to($this->privacyModuleUrl($cliente) . '#titulares')->withInput()->with('error', $e->getMessage());
+        }
+
+        return redirect()->to($this->privacyModuleUrl($cliente) . '#titulares')->with('success', sprintf(
+            'Configuracion guardada: %d torres y %d apartamentos creados; %d unidades existentes conservadas.',
+            $result['towers_created'],
+            $result['created'],
+            $result['skipped']
+        ));
     }
 
     public function saveProgram(?int $clienteId = null)
@@ -1538,6 +1594,15 @@ class PrivacyController extends BaseController
     private function denied()
     {
         return redirect()->to('/dashboard')->with('error', 'No tienes acceso a ese programa de datos personales.');
+    }
+
+    private function privacyModuleUrl(array $cliente): string
+    {
+        if (in_array((string) session()->get('rol'), ['superadmin', 'admin'], true)) {
+            return base_url('admin/clientes/' . $cliente['id'] . '/datos-personales');
+        }
+
+        return base_url('datos-personales');
     }
 
     private function nullable(string $key): ?string

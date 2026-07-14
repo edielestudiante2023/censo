@@ -105,14 +105,16 @@ $privacyGuides = [
     ],
     'titulares' => [
         'eyebrow' => 'Operacion continua',
-        'title' => 'Consultar decisiones y exclusiones de titulares',
-        'intro' => 'Esta vista consolida cobertura por apartamento o casa y las decisiones individuales capturadas en el portal publico.',
+        'title' => 'Configurar unidades y consultar decisiones de titulares',
+        'intro' => 'Esta vista configura el universo de apartamentos o casas, mide su cobertura y consolida las decisiones individuales capturadas en el portal publico.',
         'before' => [
             'Politica, Aviso y Autorizacion publicados.',
             'Portal del Titular disponible y correo transaccional operativo.',
             'Finalidades vigentes sin cambios pendientes de regeneracion.',
         ],
         'steps' => [
+            ['Configurar las unidades habitacionales', 'Abra Configurar unidades habitacionales. Para apartamentos indique rango de torres, pisos y unidades por piso; para casas indique el rango consecutivo. El sistema evita duplicados.'],
+            ['Validar el universo de cobertura', 'Confirme que Total unidades coincida con la estructura residencial que debe gestionar el programa. Puede completar la configuracion en varias ejecuciones.'],
             ['Revisar el portal desde Resumen', 'Use Abrir portal para confirmar los documentos, canales y opciones que vera el Titular.'],
             ['Seleccionar la unidad', 'Propietarios, residentes, arrendatarios y menores identifican primero su apartamento o casa.'],
             ['Verificar identidad', 'El Titular solicita un codigo a su correo y lo ingresa antes de decidir.'],

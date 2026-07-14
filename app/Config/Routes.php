@@ -55,6 +55,8 @@ $routes->get('inteligencia/excel', 'InteligenciaController::excelMine', ['filter
 $routes->get('datos-personales', 'PrivacyController::mine', ['filter' => 'role:cliente,consejo,comite']);
 $routes->get('datos-personales/portal/qr.svg', 'PrivacyController::privacyPortalQr', ['filter' => 'role:cliente,consejo,comite']);
 $routes->post('datos-personales/programa', 'PrivacyController::saveProgram', ['filter' => 'role:cliente']);
+$routes->post('datos-personales/unidades/casas', 'PrivacyController::generateHousingHouses', ['filter' => 'role:cliente']);
+$routes->post('datos-personales/unidades/apartamentos', 'PrivacyController::generateHousingApartments', ['filter' => 'role:cliente']);
 $routes->post('datos-personales/bases/guardar', 'PrivacyController::saveBase', ['filter' => 'role:cliente']);
 $routes->post('datos-personales/bases/archivar', 'PrivacyController::deactivateBase', ['filter' => 'role:cliente']);
   $routes->post('datos-personales/finalidades', 'PrivacyController::savePurpose', ['filter' => 'role:cliente']);
@@ -110,6 +112,8 @@ $routes->group('admin', ['filter' => 'role:superadmin,admin'], static function (
     $routes->get('clientes/(:num)/datos-personales', 'PrivacyController::admin/$1');
     $routes->get('clientes/(:num)/datos-personales/portal/qr.svg', 'PrivacyController::privacyPortalQr/$1');
     $routes->post('clientes/(:num)/datos-personales/programa', 'PrivacyController::saveProgram/$1');
+    $routes->post('clientes/(:num)/datos-personales/unidades/casas', 'PrivacyController::generateHousingHouses/$1');
+    $routes->post('clientes/(:num)/datos-personales/unidades/apartamentos', 'PrivacyController::generateHousingApartments/$1');
     $routes->post('clientes/(:num)/datos-personales/bases/guardar', 'PrivacyController::saveBase/$1');
     $routes->post('clientes/(:num)/datos-personales/bases/archivar', 'PrivacyController::deactivateBase/$1');
       $routes->post('clientes/(:num)/datos-personales/finalidades', 'PrivacyController::savePurpose/$1');
