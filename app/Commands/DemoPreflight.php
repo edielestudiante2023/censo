@@ -29,6 +29,8 @@ final class DemoPreflight extends BaseCommand
             'bases' => $db->table('dp_bases_datos')->where('cliente_id', $id)->where('activo', 1)->countAllResults() >= 5,
             'documentos' => $db->table('dp_documentos')->where('cliente_id', $id)->where('estado', 'publicado')->countAllResults() >= 7,
             'decisiones' => $db->table('dp_consentimientos')->where('cliente_id', $id)->where('canal', 'demo_preparado')->countAllResults() >= 3,
+            'usuario cliente con correo real' => $db->table('usuarios')->where('cliente_id', $id)
+                ->where('email', 'sistemasdegestionpropiedadhori@gmail.com')->where('activo', 1)->countAllResults() === 1,
         ];
         foreach ($checks as $name => $ok) {
             CLI::write(($ok ? '[OK] ' : '[FALTA] ') . $name, $ok ? 'green' : 'red');

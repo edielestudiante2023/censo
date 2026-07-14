@@ -18,7 +18,7 @@ class DemoUsers extends BaseCommand
 
     private array $users = [
         ['email' => 'admin@demo.test',   'rol' => 'admin',   'nombre' => 'Admin Demo',   'tenant' => false],
-        ['email' => 'cliente@demo.test', 'rol' => 'cliente', 'nombre' => 'Cliente Demo', 'tenant' => true],
+        ['email' => 'sistemasdegestionpropiedadhori@gmail.com', 'rol' => 'cliente', 'nombre' => 'Cliente Demo', 'tenant' => true],
         ['email' => 'consejo@demo.test', 'rol' => 'consejo', 'nombre' => 'Consejo Demo', 'tenant' => true],
         ['email' => 'comite@demo.test',  'rol' => 'comite',  'nombre' => 'Comite Demo',  'tenant' => true],
     ];

@@ -28,6 +28,17 @@ final class DemoPrepare extends BaseCommand
         $clienteId = (int) $cliente['id'];
         $now = date('Y-m-d H:i:s');
 
+        $clientRole = $db->table('roles')->select('id')->where('nombre', 'cliente')->get()->getRowArray();
+        $demoUser = $clientRole ? $db->table('usuarios')->where('cliente_id', $clienteId)
+            ->where('rol_id', $clientRole['id'])->where('deleted_at', null)->get()->getRowArray() : null;
+        if ($demoUser) {
+            $db->table('usuarios')->where('id', $demoUser['id'])->update([
+                'email' => 'sistemasdegestionpropiedadhori@gmail.com',
+                'activo' => 1,
+                'updated_at' => $now,
+            ]);
+        }
+
         $access = new ClientInstrumentAccess();
         foreach (array_keys(ClientInstrumentAccess::LABELS) as $instrument) {
             $access->set($clienteId, $instrument, true, null, 'Entorno demostrativo integral autorizado por Cycloid');
@@ -163,6 +174,8 @@ final class DemoPrepare extends BaseCommand
             'inventario de bases' => $db->table('dp_bases_datos')->where('cliente_id', $clienteId)->where('activo', 1)->countAllResults() >= 5,
             '7 documentos publicados' => $db->table('dp_documentos')->where('cliente_id', $clienteId)->where('estado', 'publicado')->countAllResults() >= 7,
             'decisiones demostrativas' => $db->table('dp_consentimientos')->where('cliente_id', $clienteId)->where('canal', 'demo_preparado')->countAllResults() >= 3,
+            'correo real del usuario cliente' => $db->table('usuarios')->where('cliente_id', $clienteId)
+                ->where('email', 'sistemasdegestionpropiedadhori@gmail.com')->where('activo', 1)->countAllResults() === 1,
         ];
         foreach ($checks as $label => $ok) {
             CLI::write(($ok ? '[OK] ' : '[FALTA] ') . $label, $ok ? 'green' : 'red');
