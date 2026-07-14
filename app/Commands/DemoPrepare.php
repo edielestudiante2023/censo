@@ -35,6 +35,7 @@ final class DemoPrepare extends BaseCommand
         if ($demoUser) {
             $db->table('usuarios')->where('id', $demoUser['id'])->update([
                 'email' => 'sistemasdegestionpropiedadhori@gmail.com',
+                'password_hash' => password_hash('Demo2026*', PASSWORD_DEFAULT),
                 'activo' => 1,
                 'updated_at' => $now,
             ]);
@@ -180,6 +181,7 @@ final class DemoPrepare extends BaseCommand
             'decisiones demostrativas' => $db->table('dp_consentimientos')->where('cliente_id', $clienteId)->where('canal', 'demo_preparado')->countAllResults() >= 3,
             'correo real del usuario cliente' => $db->table('usuarios')->where('cliente_id', $clienteId)
                 ->where('email', 'sistemasdegestionpropiedadhori@gmail.com')->where('activo', 1)->countAllResults() === 1,
+            'credenciales del usuario demo' => $demoUser && password_verify('Demo2026*', (string) $demoUser['password_hash']),
             'acceso del usuario demo' => $demoUser && (new PrivacyAccessGate())->ready($clienteId, (int) $demoUser['id']),
         ];
         foreach ($checks as $label => $ok) {

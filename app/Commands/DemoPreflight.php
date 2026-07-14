@@ -34,6 +34,7 @@ final class DemoPreflight extends BaseCommand
             'decisiones' => $db->table('dp_consentimientos')->where('cliente_id', $id)->where('canal', 'demo_preparado')->countAllResults() >= 3,
             'usuario cliente con correo real' => $db->table('usuarios')->where('cliente_id', $id)
                 ->where('email', 'sistemasdegestionpropiedadhori@gmail.com')->where('activo', 1)->countAllResults() === 1,
+            'credenciales del usuario demo' => $demoUser && password_verify('Demo2026*', (string) $demoUser['password_hash']),
             'acceso del usuario demo' => $demoUser && (new PrivacyAccessGate())->ready($id, (int) $demoUser['id']),
         ];
         foreach ($checks as $name => $ok) {
