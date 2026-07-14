@@ -165,13 +165,13 @@ $privacyGuides = [
         'before' => [
             'Responsables designados mediante acta, contrato o documento equivalente.',
             'Evidencias de controles, pruebas de restauracion y revision de accesos.',
-            'Usuarios del cliente creados para asignarles alcance e induccion.',
+            'Usuarios del cliente creados para asignarles un alcance individual.',
         ],
         'steps' => [
             ['Completar Gobierno y RACI', 'Registre organo, administrador, responsable de privacidad, TI y seguridad fisica con su evidencia de designacion.'],
             ['Sellar controles periodicos', 'Seleccione el control, resultado, vigencia, evidencia y detalle verificable. Corrija los no conformes y registre una nueva ejecucion.'],
-            ['Preparar usuarios', 'Cree el usuario desde el detalle del cliente. Registre su induccion y genere un compromiso con bases, finalidades y operaciones limitadas.'],
-            ['Obtener la firma individual', 'El firmante recibe un enlace, verifica su correo y firma la instancia. La activacion exige compromiso vigente e induccion.'],
+            ['Preparar usuarios', 'Cree el usuario desde el detalle del cliente y genere un compromiso con bases, finalidades y operaciones limitadas.'],
+            ['Obtener la firma individual', 'El firmante recibe un enlace, verifica su correo y firma la instancia. La activacion exige un compromiso vigente.'],
             ['Abrir incidentes sin demora', 'Registre conocimiento, deteccion, severidad, fuente y descripcion. El sistema calcula el vencimiento de reporte.'],
             ['Documentar cada actuacion', 'Clasifique, contenga, decida reporte, registre constancia SIC, comunique a Titulares cuando corresponda, recupere y cierre.'],
             ['Cerrar accesos al terminar', 'Use Revocar acceso y cerrar con motivo y evidencia de devolucion o eliminacion. El usuario queda inactivo.'],
@@ -179,7 +179,7 @@ $privacyGuides = [
         'done' => [
             'Cada responsabilidad tiene persona o area y acto de designacion.',
             'Los controles criticos tienen evidencia vigente.',
-            'Ningun usuario accede sin induccion y compromiso vigente.',
+            'Los usuarios sujetos al control tienen un compromiso individual vigente.',
             'Los incidentes abiertos tienen actuacion y decision dentro del plazo.',
         ],
         'warning' => 'Abrir, reportar y cerrar incidentes deja eventos inmutables. Use datos completos y no borre evidencia para corregir una actuacion.',

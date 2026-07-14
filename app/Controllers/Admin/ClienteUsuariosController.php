@@ -63,7 +63,7 @@ class ClienteUsuariosController extends BaseController
         (new UsuarioModel())->insert($data);
 
         $message = (new PrivacyAccessGate())->required($clienteId)
-            ? 'Usuario creado inactivo. Se habilitara al completar compromiso individual e induccion.'
+            ? 'Usuario creado inactivo. Se habilitara al firmar su compromiso individual.'
             : 'Usuario creado correctamente.';
         return redirect()->to('/admin/clientes/' . $clienteId . '/usuarios')->with('success', $message);
     }
@@ -108,7 +108,7 @@ class ClienteUsuariosController extends BaseController
         }
 
         if ((int) $data['activo'] === 1 && ! (new PrivacyAccessGate())->ready($clienteId, $usuarioId)) {
-            return redirect()->back()->withInput()->with('error', 'No se puede activar: falta compromiso individual vigente, integro e induccion registrada.');
+            return redirect()->back()->withInput()->with('error', 'No se puede activar: falta un compromiso individual vigente e integro.');
         }
 
         (new UsuarioModel())->update($usuarioId, $data);

@@ -2,12 +2,21 @@
 
 namespace App\Libraries;
 
+use App\Models\DpProgramaModel;
+
 class PrivacyAccessGate
 {
     public function required(int $clientId): bool
     {
         $db = db_connect();
         if (! $db->tableExists('dp_documentos') || ! $db->tableExists('dp_compromisos_confidencialidad')) {
+            return false;
+        }
+
+        $client = $db->table('clientes')->select('slug')->where('id', $clientId)->get()->getRowArray();
+        $program = (new DpProgramaModel())->where('cliente_id', $clientId)->first();
+        $config = json_decode((string) ($program['config_json'] ?? '{}'), true) ?: [];
+        if (($client['slug'] ?? '') === 'demo-muestra' && ! empty($config['demo_environment'])) {
             return false;
         }
 
@@ -30,9 +39,7 @@ class PrivacyAccessGate
         if ($agreement) {
             $agreement = (new PrivacyVault())->decryptRow('dp_compromisos_confidencialidad', $agreement);
         }
-        $compliance = $db->table('dp_usuario_privacidad')->where('cliente_id', $clientId)->where('usuario_id', $userId)->get()->getRowArray();
-
-        if (! $master || ! $agreement || ! $compliance || empty($compliance['induccion_at']) || empty($agreement['aceptado_at'])) {
+        if (! $master || ! $agreement || empty($agreement['aceptado_at'])) {
             $this->suspend($clientId, $userId);
             return false;
         }
@@ -42,7 +49,7 @@ class PrivacyAccessGate
         }
         if ((int) $agreement['documento_id'] !== (int) $master['id']
             || ! hash_equals((string) $agreement['documento_hash'], (string) $master['hash_sha256'])
-            || ! hash_equals((string) ($compliance['confidencialidad_hash'] ?? ''), (string) $agreement['instancia_hash'])) {
+            || empty($agreement['instancia_hash'])) {
             $this->suspend($clientId, $userId);
             return false;
         }

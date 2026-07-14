@@ -31,7 +31,7 @@ class RoleFilter implements FilterInterface
             $gate = new PrivacyAccessGate();
             if (! $gate->ready($clientId, $userId)) {
                 session()->destroy();
-                return redirect()->to('/login')->with('error', 'Tu acceso fue suspendido: verifica compromiso individual, vigencia e induccion.');
+                return redirect()->to('/login')->with('error', 'Tu acceso fue suspendido: verifica el compromiso individual y su vigencia.');
             }
             if ($this->requiresPrivacyGovernance($request) && ! $gate->allowsPrivacyGovernance($clientId, $userId)) {
                 return redirect()->to('/dashboard')->with('error', 'Tu rol operativo no autoriza la administracion del programa de datos personales.');

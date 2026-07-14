@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Libraries\ClientInstrumentAccess;
+use App\Libraries\PrivacyAccessGate;
 use App\Libraries\PrivacyDocumentService;
 use App\Libraries\PrivacyProgramService;
 use App\Models\DpConsentimientoModel;
@@ -47,6 +48,7 @@ final class DemoPrepare extends BaseCommand
         $programModel = new DpProgramaModel();
         $program = $programModel->where('cliente_id', $clienteId)->first();
         $config = array_replace(json_decode((string) ($program['config_json'] ?? '{}'), true) ?: [], [
+            'demo_environment' => true,
             'area_responsable' => 'Administracion de la copropiedad',
             'horario_atencion' => 'Lunes a viernes de 8:00 a.m. a 5:00 p.m.',
             'organo_aprobacion' => 'Consejo de Administracion - Acta DEMO-001',
@@ -167,6 +169,8 @@ final class DemoPrepare extends BaseCommand
     private function preflight(int $clienteId): int
     {
         $db = db_connect();
+        $demoUser = $db->table('usuarios')->where('cliente_id', $clienteId)
+            ->where('email', 'sistemasdegestionpropiedadhori@gmail.com')->where('deleted_at', null)->get()->getRowArray();
         $checks = [
             '3 instrumentos habilitados' => count(array_filter((new ClientInstrumentAccess())->enabledMap($clienteId))) === 3,
             'unidades habitacionales' => $db->table('inmuebles')->where('cliente_id', $clienteId)->where('deleted_at', null)->countAllResults() >= 1,
@@ -176,6 +180,7 @@ final class DemoPrepare extends BaseCommand
             'decisiones demostrativas' => $db->table('dp_consentimientos')->where('cliente_id', $clienteId)->where('canal', 'demo_preparado')->countAllResults() >= 3,
             'correo real del usuario cliente' => $db->table('usuarios')->where('cliente_id', $clienteId)
                 ->where('email', 'sistemasdegestionpropiedadhori@gmail.com')->where('activo', 1)->countAllResults() === 1,
+            'acceso del usuario demo' => $demoUser && (new PrivacyAccessGate())->ready($clienteId, (int) $demoUser['id']),
         ];
         foreach ($checks as $label => $ok) {
             CLI::write(($ok ? '[OK] ' : '[FALTA] ') . $label, $ok ? 'green' : 'red');

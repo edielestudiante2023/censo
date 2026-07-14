@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Libraries\ClientInstrumentAccess;
+use App\Libraries\PrivacyAccessGate;
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
 
@@ -22,6 +23,8 @@ final class DemoPreflight extends BaseCommand
             return EXIT_ERROR;
         }
         $id = (int) $client['id'];
+        $demoUser = $db->table('usuarios')->where('cliente_id', $id)
+            ->where('email', 'sistemasdegestionpropiedadhori@gmail.com')->where('deleted_at', null)->get()->getRowArray();
         $checks = [
             'instrumentos' => count(array_filter((new ClientInstrumentAccess())->enabledMap($id))) === 3,
             'unidades' => $db->table('inmuebles')->where('cliente_id', $id)->where('deleted_at', null)->countAllResults() >= 1,
@@ -31,6 +34,7 @@ final class DemoPreflight extends BaseCommand
             'decisiones' => $db->table('dp_consentimientos')->where('cliente_id', $id)->where('canal', 'demo_preparado')->countAllResults() >= 3,
             'usuario cliente con correo real' => $db->table('usuarios')->where('cliente_id', $id)
                 ->where('email', 'sistemasdegestionpropiedadhori@gmail.com')->where('activo', 1)->countAllResults() === 1,
+            'acceso del usuario demo' => $demoUser && (new PrivacyAccessGate())->ready($id, (int) $demoUser['id']),
         ];
         foreach ($checks as $name => $ok) {
             CLI::write(($ok ? '[OK] ' : '[FALTA] ') . $name, $ok ? 'green' : 'red');

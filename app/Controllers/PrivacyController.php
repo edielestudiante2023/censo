@@ -1009,36 +1009,6 @@ class PrivacyController extends BaseController
         return redirect()->back()->with($result === 'conforme' ? 'success' : 'error', 'Evidencia del control registrada sin posibilidad de edicion.');
     }
 
-    public function recordUserPrivacyCompliance(?int $clienteId = null)
-    {
-        $cliente = $this->cliente($clienteId);
-        $userId = (int) $this->request->getPost('usuario_id');
-        $evidence = trim((string) $this->request->getPost('evidencia'));
-        $db = db_connect();
-        $user = $cliente ? $db->table('usuarios')->where('cliente_id', $cliente['id'])->where('id', $userId)->where('deleted_at', null)->get()->getRowArray() : null;
-        if (! $user || $evidence === '') {
-            return redirect()->back()->with('error', 'Selecciona un usuario y aporta el acta o evidencia de induccion.');
-        }
-        $now = date('Y-m-d H:i:s');
-        $existing = $db->table('dp_usuario_privacidad')->where('cliente_id', $cliente['id'])->where('usuario_id', $userId)->get()->getRowArray();
-        $data = ['induccion_at' => $now, 'induccion_hash' => hash('sha256', 'induccion|' . $evidence),
-            'recertificado_at' => $now, 'suspendido_at' => null, 'updated_at' => $now];
-        if ($existing) {
-            $db->table('dp_usuario_privacidad')->where('id', $existing['id'])->update($data);
-            $id = (int) $existing['id'];
-        } else {
-            $data += ['cliente_id' => $cliente['id'], 'usuario_id' => $userId, 'created_at' => $now];
-            $db->table('dp_usuario_privacidad')->insert($data);
-            $id = (int) $db->insertID();
-        }
-        PrivacyAudit::record((int) $cliente['id'], 'registrar_induccion', 'usuario_privacidad', $id, $existing,
-            ['usuario_id' => $userId, 'evidencia_hash' => hash('sha256', $evidence)]);
-        if ((new PrivacyAccessGate())->ready((int) $cliente['id'], $userId)) {
-            $db->table('usuarios')->where('id', $userId)->where('cliente_id', $cliente['id'])->update(['activo' => 1, 'updated_at' => $now]);
-        }
-        return redirect()->back()->with('success', 'Induccion registrada. La cuenta solo se activa con compromiso individual vigente.');
-    }
-
     public function createConfidentialityAgreement(?int $clienteId = null)
     {
         $cliente = $this->cliente($clienteId);
@@ -1419,7 +1389,7 @@ class PrivacyController extends BaseController
             'securityAssignments' => $assignments,
             'securityControls' => $controls,
             'securityIncidents' => $incidents,
-            'securityUsers' => $db->table('usuarios u')->select('u.id, u.nombre, u.email, u.activo, r.nombre AS rol, up.confidencialidad_at, up.induccion_at, up.recertificado_at')
+            'securityUsers' => $db->table('usuarios u')->select('u.id, u.nombre, u.email, u.activo, r.nombre AS rol, up.confidencialidad_at, up.recertificado_at')
                 ->join('roles r', 'r.id=u.rol_id')
                 ->join('dp_usuario_privacidad up', 'up.usuario_id=u.id AND up.cliente_id=u.cliente_id', 'left')
                 ->where('u.cliente_id', $cliente['id'])->where('u.deleted_at', null)->orderBy('u.nombre')->get()->getResultArray(),
@@ -1806,9 +1776,9 @@ class PrivacyController extends BaseController
             }
             $pendingUsers = $db->table('usuarios u')->select('u.id')->join('dp_usuario_privacidad up', 'up.usuario_id=u.id AND up.cliente_id=u.cliente_id', 'left')
                 ->where('u.cliente_id', $cliente['id'])->where('u.activo', 1)->where('u.deleted_at', null)
-                ->groupStart()->where('up.confidencialidad_at', null)->orWhere('up.induccion_at', null)->groupEnd()->countAllResults();
+                ->where('up.confidencialidad_at', null)->countAllResults();
             if ($pendingUsers > 0) {
-                $problems[] = 'Hay ' . $pendingUsers . ' usuarios activos sin confidencialidad e induccion registradas.';
+                $problems[] = 'Hay ' . $pendingUsers . ' usuarios activos sin compromiso individual registrado.';
             }
         }
         if ($document['tipo'] === 'confidencialidad') {

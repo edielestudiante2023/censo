@@ -9,13 +9,9 @@
         <h3 style="margin-top:0">Usuarios y habilitacion</h3>
         <?php foreach($securityUsers as $user): ?>
             <div class="list-row"><strong><?= esc($user['nombre']) ?></strong> <span class="badge <?= (int)$user['activo']?'badge-on':'badge-off' ?>"><?= (int)$user['activo']?'activo':'inactivo' ?></span>
-                <div class="mini"><?= esc($user['rol']) ?> · firma individual: <?= esc($user['confidencialidad_at']??'pendiente') ?> · induccion: <?= esc($user['induccion_at']??'pendiente') ?></div>
+                <div class="mini"><?= esc($user['rol']) ?> · compromiso individual: <?= esc($user['confidencialidad_at']??'pendiente') ?></div>
             </div>
         <?php endforeach; ?>
-        <form method="post" action="<?= base_url($basePath . '/seguridad/usuarios') ?>">
-            <?= csrf_field() ?><h4>Registrar induccion</h4><label>Usuario</label><select name="usuario_id" required><?php foreach($securityUsers as $user): ?><option value="<?= $user['id'] ?>"><?= esc($user['nombre'].' · '.$user['email']) ?></option><?php endforeach; ?></select>
-            <label>Acta o evidencia verificable</label><input name="evidencia" required><button class="btn btn-primary" type="submit">Registrar induccion</button>
-        </form>
     </section>
     <section class="card">
         <h3 style="margin-top:0">Generar compromiso individual</h3>

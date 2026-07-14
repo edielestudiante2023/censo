@@ -79,7 +79,6 @@ $routes->post('datos-personales/solicitudes/base', 'PrivacyController::executeRe
 $routes->post('datos-personales/solicitudes/tercero', 'PrivacyController::executeRequestThirdParty', ['filter' => 'role:cliente']);
 $routes->post('datos-personales/seguridad/asignaciones', 'PrivacyController::saveSecurityAssignment', ['filter' => 'role:cliente']);
 $routes->post('datos-personales/seguridad/controles', 'PrivacyController::recordSecurityControl', ['filter' => 'role:cliente']);
-$routes->post('datos-personales/seguridad/usuarios', 'PrivacyController::recordUserPrivacyCompliance', ['filter' => 'role:cliente']);
 $routes->post('datos-personales/confidencialidad/generar', 'PrivacyController::createConfidentialityAgreement', ['filter' => 'role:cliente']);
 $routes->post('datos-personales/confidencialidad/cerrar', 'PrivacyController::closeConfidentialityAgreement', ['filter' => 'role:cliente']);
 $routes->post('datos-personales/seguridad/incidentes', 'PrivacyController::createSecurityIncident', ['filter' => 'role:cliente']);
@@ -136,7 +135,6 @@ $routes->group('admin', ['filter' => 'role:superadmin,admin'], static function (
     $routes->post('clientes/(:num)/datos-personales/solicitudes/tercero', 'PrivacyController::executeRequestThirdParty/$1');
     $routes->post('clientes/(:num)/datos-personales/seguridad/asignaciones', 'PrivacyController::saveSecurityAssignment/$1');
     $routes->post('clientes/(:num)/datos-personales/seguridad/controles', 'PrivacyController::recordSecurityControl/$1');
-    $routes->post('clientes/(:num)/datos-personales/seguridad/usuarios', 'PrivacyController::recordUserPrivacyCompliance/$1');
     $routes->post('clientes/(:num)/datos-personales/confidencialidad/generar', 'PrivacyController::createConfidentialityAgreement/$1');
     $routes->post('clientes/(:num)/datos-personales/confidencialidad/cerrar', 'PrivacyController::closeConfidentialityAgreement/$1');
     $routes->post('clientes/(:num)/datos-personales/seguridad/incidentes', 'PrivacyController::createSecurityIncident/$1');

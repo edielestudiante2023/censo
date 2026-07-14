@@ -18,7 +18,7 @@ class AuthFilter implements FilterInterface
         $userId = (int) session()->get('user_id');
         if ($clientId > 0 && $userId > 0 && ! (new PrivacyAccessGate())->ready($clientId, $userId)) {
             session()->destroy();
-            return redirect()->to('/login')->with('error', 'Tu acceso fue suspendido: verifica compromiso individual, vigencia e induccion.');
+            return redirect()->to('/login')->with('error', 'Tu acceso fue suspendido: verifica el compromiso individual y su vigencia.');
         }
     }
 
