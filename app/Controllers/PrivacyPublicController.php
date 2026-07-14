@@ -18,6 +18,8 @@ use App\Models\DpSolicitudModel;
 
 class PrivacyPublicController extends BaseController
 {
+    private const HOUSING_HOLDER_TYPES = ['propietario', 'residente', 'arrendatario', 'menor de edad'];
+
     public function portal(string $token)
     {
         $context = $this->context($token);
@@ -35,6 +37,7 @@ class PrivacyPublicController extends BaseController
         }
         $data = [
             'tipo_titular' => trim((string) $this->request->getPost('tipo_titular')),
+            'inmueble_id' => (int) $this->request->getPost('inmueble_id') ?: null,
             'titular_nombre' => trim((string) $this->request->getPost('titular_nombre')),
             'titular_tipo_documento' => trim((string) $this->request->getPost('titular_tipo_documento')),
             'titular_documento' => trim((string) $this->request->getPost('titular_documento')),
@@ -49,9 +52,21 @@ class PrivacyPublicController extends BaseController
             'tipo_titular' => 'required|max_length[50]', 'titular_nombre' => 'required|max_length[191]',
             'titular_documento' => 'required|max_length[80]', 'titular_email' => 'required|valid_email|max_length[191]',
             'calidad_otorgante' => 'required|in_list[titular,representante_menor,apoderado]',
+            'inmueble_id' => 'permit_empty|is_natural_no_zero',
         ])) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
+        $housingUnit = $data['inmueble_id']
+            ? $this->findHousingUnit((int) $context['cliente']['id'], (int) $data['inmueble_id'])
+            : null;
+        if ($this->requiresHousingUnit($data['tipo_titular']) && ! $housingUnit) {
+            return redirect()->back()->withInput()->with('error', 'Selecciona la torre y la unidad habitacional que corresponden al Titular.');
+        }
+        if (! $this->requiresHousingUnit($data['tipo_titular'])) {
+            $housingUnit = null;
+            $data['inmueble_id'] = null;
+        }
+        $data['inmueble_label'] = $housingUnit ? $this->housingUnitLabel($housingUnit) : null;
         if ($data['calidad_otorgante'] !== 'titular' && (! $data['representante_nombre'] || ! $data['representante_documento'] || ! $data['calidad_representacion'])) {
             return redirect()->back()->withInput()->with('error', 'Identifica al representante o apoderado y la calidad en que actua.');
         }
@@ -128,6 +143,16 @@ class PrivacyPublicController extends BaseController
             return redirect()->back()->with('error', 'Verifica tu identidad por correo antes de registrar decisiones.');
         }
         $data = $context['verifiedIdentity'];
+        $housingUnit = ! empty($data['inmueble_id'])
+            ? $this->findHousingUnit((int) $context['cliente']['id'], (int) $data['inmueble_id'])
+            : null;
+        if ($this->requiresHousingUnit((string) ($data['tipo_titular'] ?? '')) && ! $housingUnit) {
+            session()->remove($this->consentSessionKey($token, 'verified'));
+            session()->remove($this->consentSessionKey($token, 'preview'));
+            return redirect()->back()->with('error', 'La unidad habitacional ya no esta disponible. Identificate nuevamente y selecciona una unidad valida.');
+        }
+        $data['inmueble_id'] = $housingUnit['id'] ?? null;
+        $data['inmueble_label'] = $housingUnit ? $this->housingUnitLabel($housingUnit) : null;
         $authorization = $context['authorization'];
         if (! $authorization || ! hash_equals((string) $authorization['hash_sha256'], (string) $this->request->getPost('documento_hash'))) {
             return redirect()->back()->withInput()->with('error', 'La version de la autorizacion cambio. Revisa nuevamente el documento antes de decidir.');
@@ -227,6 +252,7 @@ class PrivacyPublicController extends BaseController
         }
         $evidence = [
             'cliente_id' => (int) $context['cliente']['id'], 'documento_id' => $authorization['id'] ?? null,
+            'inmueble_id' => $data['inmueble_id'], 'unidad_habitacional' => $data['inmueble_label'],
             'documento_hash' => $authorization['hash_sha256'] ?? null, 'decision' => $decision,
             'vector' => $decisionVector, 'instancia_hash' => $instanceHash, 'titular_documento' => $data['titular_documento'],
             'fecha' => $now, 'zona_horaria' => 'America/Bogota', 'canal' => 'portal_web',
@@ -236,7 +262,8 @@ class PrivacyPublicController extends BaseController
         ];
         $evidenceHash = hash('sha256', json_encode($evidence, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
         $id = (new DpConsentimientoModel())->insert([
-            'cliente_id' => $context['cliente']['id'], 'documento_id' => $authorization['id'] ?? null,
+            'cliente_id' => $context['cliente']['id'], 'inmueble_id' => $data['inmueble_id'],
+            'documento_id' => $authorization['id'] ?? null,
             'documento_version' => $authorization['version'], 'documento_hash' => $authorization['hash_sha256'],
             'instancia_html' => $instance, 'instancia_hash' => $instanceHash,
             'tipo_titular' => $data['tipo_titular'], 'titular_nombre' => $data['titular_nombre'],
@@ -266,7 +293,7 @@ class PrivacyPublicController extends BaseController
             $this->upsertExclusion((int) $context['cliente']['id'], $data['titular_documento'], $data['titular_email'], $decision, $rejected, 'consentimiento');
         }
         PrivacyAudit::record((int) $context['cliente']['id'], 'registrar_decision', 'consentimiento', (int) $id, null,
-            ['decision' => $decision, 'evidencia_hash' => hash('sha256', json_encode($evidence))], 'titular');
+            ['decision' => $decision, 'inmueble_id' => $data['inmueble_id'], 'evidencia_hash' => hash('sha256', json_encode($evidence))], 'titular');
         $consent = (new DpConsentimientoModel())->find($id);
         $pdfPath = (new PrivacyPdf())->consent($consent, $context['cliente'], $context['consentPurposes'], $authorization);
         $this->notifyConsent($context['cliente'], $data, $decision, (int) $id, WRITEPATH . $pdfPath);
@@ -457,6 +484,7 @@ class PrivacyPublicController extends BaseController
         $consentPreview = session()->get($this->consentSessionKey($token, 'preview'));
         return [
             'cliente' => $cliente, 'programa' => $program, 'token' => $token,
+            'housingUnits' => $this->housingUnits((int) $cliente['id']),
             'bases' => $this->vault()->decryptRows('dp_bases_datos', $db->table('dp_bases_datos')->where('cliente_id', $cliente['id'])->where('activo', 1)->orderBy('nombre')->get()->getResultArray()),
             'finalidades' => $purposes,
             'consentPurposes' => array_values(array_filter($purposes, static fn ($purpose) => ($purpose['base_juridica_tipo'] ?? 'autorizacion') === 'autorizacion')),
@@ -466,6 +494,49 @@ class PrivacyPublicController extends BaseController
             'verification' => $verification, 'verifiedIdentity' => $verifiedIdentity, 'pendingVerification' => $pendingVerification,
             'consentPreview' => is_array($consentPreview) ? $consentPreview : null,
         ];
+    }
+
+    private function housingUnits(int $clienteId): array
+    {
+        return db_connect()->table('inmuebles i')
+            ->select('i.id, i.tipo, i.identificador, i.piso, i.torre_id, t.nombre AS torre_nombre')
+            ->join('torres t', 't.id = i.torre_id', 'left')
+            ->where('i.cliente_id', $clienteId)
+            ->where('i.deleted_at', null)
+            ->orderBy('i.tipo', 'ASC')
+            ->orderBy('t.nombre', 'ASC')
+            ->orderBy('i.identificador', 'ASC')
+            ->get()
+            ->getResultArray();
+    }
+
+    private function findHousingUnit(int $clienteId, int $inmuebleId): ?array
+    {
+        if ($inmuebleId < 1) {
+            return null;
+        }
+
+        return db_connect()->table('inmuebles i')
+            ->select('i.id, i.tipo, i.identificador, i.piso, i.torre_id, t.nombre AS torre_nombre')
+            ->join('torres t', 't.id = i.torre_id', 'left')
+            ->where('i.cliente_id', $clienteId)
+            ->where('i.id', $inmuebleId)
+            ->where('i.deleted_at', null)
+            ->get()
+            ->getRowArray() ?: null;
+    }
+
+    private function requiresHousingUnit(string $holderType): bool
+    {
+        return in_array(mb_strtolower(trim($holderType)), self::HOUSING_HOLDER_TYPES, true);
+    }
+
+    private function housingUnitLabel(array $unit): string
+    {
+        $tower = trim((string) ($unit['torre_nombre'] ?? ''));
+        $identifier = trim((string) ($unit['identificador'] ?? ''));
+
+        return $tower !== '' ? $tower . ' - ' . $identifier : $identifier;
     }
 
     private function notifyConsent(array $cliente, array $data, string $decision, int $consentId, string $pdfPath): void
@@ -511,7 +582,7 @@ class PrivacyPublicController extends BaseController
         return '<article class="legal-document"><header><h1>Instancia de Autorizacion para el Tratamiento de Datos Personales</h1><p>Version ' . esc($context['authorization']['version']) . '</p></header>' .
             $context['authorization']['contenido_html'] .
             (isset($context['documents']['politica']) ? '<p><strong>Politica vigente vinculada:</strong> version ' . esc($context['documents']['politica']['version']) . ', hash SHA-256 ' . esc($context['documents']['politica']['hash_sha256']) . '.</p>' : '') .
-            '<h2>Identidad y legitimacion</h2><p><strong>Titular:</strong> ' . esc($data['titular_nombre']) . '<br><strong>Documento:</strong> ' . esc(trim($data['titular_tipo_documento'] . ' ' . $data['titular_documento'])) . '<br><strong>Perfil:</strong> ' . esc($data['tipo_titular']) . '<br><strong>Calidad del otorgante:</strong> ' . esc($data['calidad_otorgante']) . '</p>' . $representation .
+            '<h2>Identidad y legitimacion</h2><p><strong>Titular:</strong> ' . esc($data['titular_nombre']) . '<br><strong>Documento:</strong> ' . esc(trim($data['titular_tipo_documento'] . ' ' . $data['titular_documento'])) . '<br><strong>Perfil:</strong> ' . esc($data['tipo_titular']) . ($data['inmueble_label'] ? '<br><strong>Unidad habitacional declarada:</strong> ' . esc($data['inmueble_label']) : '') . '<br><strong>Calidad del otorgante:</strong> ' . esc($data['calidad_otorgante']) . '</p>' . $representation .
             '<h2>Vector de decisiones</h2><table><thead><tr><th>Base</th><th>Finalidad</th><th>Datos</th><th>Decision</th></tr></thead><tbody>' . $rows . '</tbody></table>' . $sensitive . $biometric . $transfer . $minor .
             '<p><strong>Finalidades autorizadas:</strong> ' . esc(implode('; ', $authorized) ?: 'Ninguna') . '.<br><strong>Finalidades no autorizadas:</strong> ' . esc(implode('; ', $rejected) ?: 'Ninguna') . '.</p>' .
             '<h2>Evidencia informada</h2><p>Fecha y hora del servidor: ' . esc($now) . ' (America/Bogota). Canal: portal web. Tipo de aceptacion: firma electronica. Metodo de verificacion: codigo de un solo uso enviado al correo y firma electronica. Se conservan IP e identificador del navegador exclusivamente para probar esta decision; no se captura geolocalizacion ni huella ampliada del dispositivo.</p></article>';

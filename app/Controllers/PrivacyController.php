@@ -9,6 +9,7 @@ use App\Libraries\PrivacyBusinessDays;
 use App\Libraries\PrivacyConfidentialityService;
 use App\Libraries\PrivacyAccessGate;
 use App\Libraries\PrivacyDocumentService;
+use App\Libraries\PrivacyHousingCoverage;
 use App\Libraries\PrivacyPdf;
 use App\Libraries\PrivacyProgramService;
 use App\Libraries\PrivacyProcessorAgreementService;
@@ -1308,6 +1309,19 @@ class PrivacyController extends BaseController
             $document['hash_valid'] = hash_equals((string) $document['hash_sha256'], hash('sha256', (string) $document['contenido_html']));
         }
         unset($document);
+        $currentAuthorization = null;
+        foreach ($documents as $document) {
+            if ($document['tipo'] === 'autorizacion' && $document['estado'] === 'publicado') {
+                $currentAuthorization = $document;
+                break;
+            }
+        }
+        $housingCoverage = (new PrivacyHousingCoverage())->summarize(
+            (int) $cliente['id'],
+            $currentAuthorization ? (int) $currentAuthorization['id'] : null
+        );
+        $metrics['unidades_gestionadas'] = $housingCoverage['gestionadas'];
+        $metrics['unidades_pendientes'] = $housingCoverage['pendientes'] + $housingCoverage['desactualizadas'];
         $thirdParties = $vault->decryptRows('dp_terceros', $db->table('dp_terceros')->where('cliente_id', $cliente['id'])->where('activo', 1)->orderBy('nombre')->get()->getResultArray());
         $subprocessors = $vault->decryptRows('dp_subencargados', $db->table('dp_subencargados')->where('cliente_id', $cliente['id'])->where('activo', 1)->orderBy('nombre')->get()->getResultArray());
         $processorAgreements = $vault->decryptRows('dp_acuerdos_encargado', $db->table('dp_acuerdos_encargado a')->select('a.*, t.nombre AS tercero_nombre, t.representante_email')
@@ -1318,7 +1332,11 @@ class PrivacyController extends BaseController
         }
         unset($agreement);
         $processorInstructions = $vault->decryptRows('dp_encargado_instrucciones', $db->table('dp_encargado_instrucciones')->where('cliente_id', $cliente['id'])->orderBy('created_at', 'DESC')->limit(100)->get()->getResultArray());
-        $consents = $vault->decryptRows('dp_consentimientos', $db->table('dp_consentimientos')->where('cliente_id', $cliente['id'])->orderBy('otorgado_at', 'DESC')->limit(100)->get()->getResultArray());
+        $consents = $vault->decryptRows('dp_consentimientos', $db->table('dp_consentimientos c')
+            ->select('c.*, i.identificador AS inmueble_identificador, i.tipo AS inmueble_tipo, t.nombre AS torre_nombre')
+            ->join('inmuebles i', 'i.id=c.inmueble_id AND i.cliente_id=c.cliente_id', 'left')
+            ->join('torres t', 't.id=i.torre_id', 'left')
+            ->where('c.cliente_id', $cliente['id'])->orderBy('c.otorgado_at', 'DESC')->limit(100)->get()->getResultArray());
         $notifications = $vault->decryptRows('dp_notificaciones', $db->table('dp_notificaciones')->where('cliente_id', $cliente['id'])->orderBy('created_at', 'DESC')->limit(30)->get()->getResultArray());
         $aiRuns = $vault->decryptRows('dp_ai_runs', $db->table('dp_ai_runs')->where('cliente_id', $cliente['id'])->orderBy('created_at', 'DESC')->limit(10)->get()->getResultArray());
         $assignments = $vault->decryptRows('dp_asignaciones_seguridad', $db->table('dp_asignaciones_seguridad')->where('cliente_id', $cliente['id'])->where('activo', 1)->orderBy('rol')->get()->getResultArray());
@@ -1337,6 +1355,8 @@ class PrivacyController extends BaseController
             'avisoVariantes' => $db->table('dp_aviso_variantes')->where('cliente_id', $cliente['id'])->orderBy('documento_id', 'DESC')->orderBy('tipo')->get()->getResultArray(),
             'avisoPublicaciones' => $db->table('dp_aviso_publicaciones')->where('cliente_id', $cliente['id'])->orderBy('publicado_at', 'DESC')->get()->getResultArray(),
             'consentimientos' => $consents,
+            'housingCoverage' => $housingCoverage,
+            'currentAuthorization' => $currentAuthorization,
             'exclusiones' => $db->table('dp_exclusiones')->where('cliente_id', $cliente['id'])->where('activo', 1)->countAllResults(),
             'solicitudes' => $requests, 'notificaciones' => $notifications,
             'aiRuns' => $aiRuns,

@@ -13,7 +13,7 @@ class DpConsentimientoModel extends Model
     protected $returnType = 'array';
     protected $useTimestamps = true;
     protected $allowedFields = [
-        'cliente_id', 'documento_id', 'documento_version', 'documento_hash', 'instancia_html', 'instancia_hash',
+        'cliente_id', 'inmueble_id', 'documento_id', 'documento_version', 'documento_hash', 'instancia_html', 'instancia_hash',
         'tipo_titular', 'titular_nombre',
         'titular_tipo_documento', 'titular_documento', 'titular_email',
         'representante_nombre', 'calidad_otorgante', 'representante_documento', 'calidad_representacion',

@@ -106,7 +106,7 @@ $privacyGuides = [
     'titulares' => [
         'eyebrow' => 'Operacion continua',
         'title' => 'Consultar decisiones y exclusiones de titulares',
-        'intro' => 'Esta vista consolida autorizaciones, negativas y decisiones parciales capturadas en el portal publico.',
+        'intro' => 'Esta vista consolida cobertura por apartamento o casa y las decisiones individuales capturadas en el portal publico.',
         'before' => [
             'Politica, Aviso y Autorizacion publicados.',
             'Portal del Titular disponible y correo transaccional operativo.',
@@ -114,14 +114,17 @@ $privacyGuides = [
         ],
         'steps' => [
             ['Abrir el portal desde Resumen', 'Use Abrir portal para probar la experiencia que vera el Titular.'],
+            ['Seleccionar la unidad', 'Propietarios, residentes, arrendatarios y menores identifican primero su apartamento o casa.'],
             ['Verificar identidad', 'El Titular solicita un codigo a su correo y lo ingresa antes de decidir.'],
             ['Revisar la instancia final', 'Antes de firmar, el portal presenta el documento aplicable, finalidades y vector de decisiones.'],
             ['Registrar la decision', 'El Titular firma y confirma. El sistema conserva la instancia vista, el hash y la evidencia tecnica.'],
-            ['Consultar el resultado', 'Regrese a Titulares y compruebe perfil, decision, fecha y estado de exclusiones.'],
+            ['Consultar cobertura', 'Regrese a Titulares para ver las unidades gestionadas, pendientes o asociadas a una version anterior.'],
+            ['Consultar el resultado individual', 'Compruebe unidad, perfil, decision, fecha y estado de exclusiones.'],
             ['Abrir el expediente', 'Use Expediente para descargar la constancia PDF asociada a esa decision.'],
         ],
         'done' => [
-            'La decision aparece una sola vez con fecha y evidencia.',
+            'La unidad deja de aparecer como pendiente cuando recibe una decision sobre la version vigente.',
+            'La decision individual aparece con fecha, unidad y evidencia.',
             'Las negativas o revocatorias generan la exclusion correspondiente.',
             'El PDF corresponde a la instancia y version que vio el Titular.',
         ],
