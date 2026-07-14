@@ -37,13 +37,13 @@
             </div>
             <?php if ($isAdmin): ?>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                    <a class="btn btn-primary" href="<?= base_url($estadisticasPath) . $anioQuery ?>">Ver estadisticas</a>
+                    <?php if (!empty($instrumentos['censo_poblacional'])): ?><a class="btn btn-primary" href="<?= base_url($estadisticasPath) . $anioQuery ?>">Ver estadisticas</a><?php endif; ?>
                     <a class="btn btn-muted" href="<?= base_url($respuestasPath) . $anioQuery ?>">Ver respuestas</a>
                     <a class="btn btn-muted" href="<?= base_url('admin/clientes/' . $cliente['id']) ?>">Volver al cliente</a>
                 </div>
             <?php else: ?>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                    <a class="btn btn-primary" href="<?= base_url($estadisticasPath) . $anioQuery ?>">Ver estadisticas</a>
+                    <?php if (!empty($instrumentos['censo_poblacional'])): ?><a class="btn btn-primary" href="<?= base_url($estadisticasPath) . $anioQuery ?>">Ver estadisticas</a><?php endif; ?>
                     <a class="btn btn-muted" href="<?= base_url($respuestasPath) . $anioQuery ?>">Ver respuestas</a>
                 </div>
             <?php endif; ?>
@@ -68,14 +68,14 @@
         </section>
 
         <section class="stats">
-            <div class="stat">
+            <?php if (!empty($instrumentos['censo_poblacional'])): ?><div class="stat">
                 <strong><?= esc($totales['inmuebles']) ?></strong>
                 <span>Inmuebles registrados</span>
-            </div>
-            <div class="stat">
+            </div><?php endif; ?>
+            <?php if (!empty($instrumentos['censo_mascotas'])): ?><div class="stat">
                 <strong><?= esc($totales['poblacional_respondidos']) ?></strong>
                 <span>Censos poblacionales recibidos</span>
-            </div>
+            </div><?php endif; ?>
             <div class="stat">
                 <strong><?= esc($totales['mascotas_respondidos']) ?></strong>
                 <span>Censos de mascotas recibidos</span>
@@ -83,7 +83,7 @@
         </section>
 
         <section class="grid">
-            <div class="card">
+            <?php if (!empty($instrumentos['censo_poblacional'])): ?><div class="card">
                 <h3>Censo poblacional</h3>
                 <div class="metric">
                     <div class="metric-row">
@@ -93,9 +93,9 @@
                     <div class="bar"><span style="width: <?= esc($totales['poblacional_porcentaje']) ?>%;"></span></div>
                 </div>
                 <?= view('clientes/partials/faltantes_table', ['faltantes' => $faltantesPoblacional]) ?>
-            </div>
+            </div><?php endif; ?>
 
-            <div class="card">
+            <?php if (!empty($instrumentos['censo_mascotas'])): ?><div class="card">
                 <h3>Censo de mascotas</h3>
                 <div class="metric">
                     <div class="metric-row">
@@ -105,17 +105,17 @@
                     <div class="bar"><span style="width: <?= esc($totales['mascotas_porcentaje']) ?>%;"></span></div>
                 </div>
                 <?= view('clientes/partials/faltantes_table', ['faltantes' => $faltantesMascotas]) ?>
-            </div>
+            </div><?php endif; ?>
 
-            <div class="card">
+            <?php if (!empty($instrumentos['censo_poblacional'])): ?><div class="card">
                 <h3>Ultimos poblacionales</h3>
                 <?= view('clientes/partials/respuestas_table', ['respuestas' => $ultimosPoblacional]) ?>
-            </div>
+            </div><?php endif; ?>
 
-            <div class="card">
+            <?php if (!empty($instrumentos['censo_mascotas'])): ?><div class="card">
                 <h3>Ultimos mascotas</h3>
                 <?= view('clientes/partials/respuestas_table', ['respuestas' => $ultimosMascotas]) ?>
-            </div>
+            </div><?php endif; ?>
         </section>
     </main>
     <?= view('partials/home_fab') ?>

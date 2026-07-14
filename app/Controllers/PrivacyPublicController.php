@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Libraries\EmailService;
+use App\Libraries\ClientInstrumentAccess;
 use App\Libraries\PrivacyAudit;
 use App\Libraries\PrivacyBusinessDays;
 use App\Libraries\PrivacyPdf;
@@ -417,7 +418,8 @@ class PrivacyPublicController extends BaseController
             return null;
         }
         $cliente = (new ClienteModel())->find((int) $program['cliente_id']);
-        if (! $cliente || (int) $cliente['activo'] !== 1) {
+        if (! $cliente || (int) $cliente['activo'] !== 1
+            || ! (new ClientInstrumentAccess())->enabled((int) $cliente['id'], ClientInstrumentAccess::DATOS_PERSONALES)) {
             return null;
         }
         $db = db_connect();

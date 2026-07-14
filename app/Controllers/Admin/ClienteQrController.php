@@ -4,6 +4,7 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
 use App\Libraries\QrSvgService;
+use App\Libraries\ClientInstrumentAccess;
 use App\Models\ClienteModel;
 use App\Models\QrCodeModel;
 
@@ -18,11 +19,15 @@ class ClienteQrController extends BaseController
             return redirect()->to('/admin/clientes')->with('error', 'Cliente no encontrado.');
         }
 
+        $instrumentos = (new ClientInstrumentAccess())->enabledMap($clienteId);
+        $qrCodes = array_values(array_filter((new QrCodeModel())->forCliente($clienteId)->orderBy('tipo_instrumento', 'ASC')->findAll(),
+            static fn (array $qr): bool => ! empty($instrumentos[$qr['tipo_instrumento'] === 'poblacional' ? ClientInstrumentAccess::POBLACIONAL : ClientInstrumentAccess::MASCOTAS])));
         return view('admin/clientes/qr/index', [
             'cliente'   => $cliente,
-            'qrCodes'   => (new QrCodeModel())->forCliente($clienteId)->orderBy('tipo_instrumento', 'ASC')->findAll(),
+            'qrCodes'   => $qrCodes,
             'basePath'  => 'admin/clientes/' . $clienteId . '/qr',
             'isAdminQr' => true,
+            'instrumentos' => $instrumentos,
         ]);
     }
 
@@ -36,6 +41,10 @@ class ClienteQrController extends BaseController
         $tipo = (string) $this->request->getPost('tipo_instrumento');
         if (! in_array($tipo, self::TIPOS, true)) {
             return redirect()->back()->with('error', 'Selecciona un instrumento valido.');
+        }
+        $entitlement = $tipo === 'poblacional' ? ClientInstrumentAccess::POBLACIONAL : ClientInstrumentAccess::MASCOTAS;
+        if (! (new ClientInstrumentAccess())->enabled($clienteId, $entitlement)) {
+            return redirect()->back()->with('error', 'Ese instrumento no esta habilitado para el cliente.');
         }
 
         $anio = (int) ($this->request->getPost('anio') ?: date('Y'));
@@ -144,10 +153,16 @@ class ClienteQrController extends BaseController
 
     private function findQr(int $clienteId, int $qrId): ?array
     {
-        return (new QrCodeModel())
+        $qr = (new QrCodeModel())
             ->where('cliente_id', $clienteId)
             ->where('id', $qrId)
             ->first();
+        if (! $qr) {
+            return null;
+        }
+        $instrument = $qr['tipo_instrumento'] === 'poblacional' ? ClientInstrumentAccess::POBLACIONAL : ClientInstrumentAccess::MASCOTAS;
+
+        return (new ClientInstrumentAccess())->enabled($clienteId, $instrument) ? $qr : null;
     }
 
     private function publicUrl(string $token): string

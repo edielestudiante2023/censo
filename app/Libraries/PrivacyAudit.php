@@ -10,6 +10,9 @@ final class PrivacyAudit
         $lockName = 'dp_audit_' . $clienteId;
         $locked = false;
         $now = date('Y-m-d H:i:s');
+        $request = service('request');
+        $hasIp = method_exists($request, 'getIPAddress');
+        $hasUserAgent = method_exists($request, 'getUserAgent');
         $row = [
             'cliente_id' => $clienteId,
             'usuario_id' => session()->get('user_id') ?: null,
@@ -19,8 +22,8 @@ final class PrivacyAudit
             'entidad_id' => $entidadId,
             'antes_json' => $antes === null ? null : json_encode($antes, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             'despues_json' => $despues === null ? null : json_encode($despues, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            'ip' => service('request')->getIPAddress(),
-            'user_agent' => substr((string) service('request')->getUserAgent(), 0, 500),
+            'ip' => $hasIp ? $request->getIPAddress() : '127.0.0.1',
+            'user_agent' => $hasUserAgent ? substr((string) $request->getUserAgent(), 0, 500) : 'CLI',
             'created_at' => $now,
         ];
 

@@ -53,15 +53,42 @@
         <?php endif; ?>
 
         <section class="card">
+            <h3 style="margin:0 0 4px;">Instrumentos incluidos</h3>
+            <p class="muted" style="margin:0 0 14px;">Valores agregados habilitados para este cliente segun el alcance vigente del contrato SST. Todo instrumento nuevo inicia deshabilitado.</p>
+            <form method="post" action="<?= base_url('admin/clientes/' . $cliente['id'] . '/instrumentos') ?>">
+                <?= csrf_field() ?>
+                <div class="checks" style="display:grid;gap:10px;">
+                    <?php foreach ($instrumentos as $key => $instrumento): ?>
+                        <label style="display:flex;align-items:flex-start;gap:10px;">
+                            <input type="checkbox" name="instrumentos[]" value="<?= esc($key) ?>" <?= !empty($instrumento['vigente']) ? 'checked' : '' ?>>
+                            <span><strong><?= esc($instrumento['label']) ?></strong><br><span class="muted"><?= !empty($instrumento['vigente']) ? 'Habilitado' : 'Deshabilitado' ?><?= !empty($instrumento['habilitado_hasta']) ? ' hasta ' . esc(substr($instrumento['habilitado_hasta'], 0, 10)) : '' ?></span></span>
+                        </label>
+                    <?php endforeach; ?>
+                </div>
+                <div class="grid" style="margin-top:14px;">
+                    <div><label for="instrumentos_hasta">Vigencia hasta (opcional)</label><input type="date" id="instrumentos_hasta" name="instrumentos_hasta"></div>
+                    <div class="full"><label for="instrumentos_motivo">Motivo contractual u operativo</label><input id="instrumentos_motivo" name="instrumentos_motivo" minlength="8" maxlength="255" required placeholder="Ejemplo: Valor agregado incluido en renovacion SST 2026"></div>
+                </div>
+                <button class="btn btn-primary" type="submit">Guardar habilitaciones</button>
+            </form>
+        </section>
+
+        <section class="card">
             <h3 style="margin:0 0 12px;">Gestion del conjunto</h3>
             <div class="sections">
-                <a class="section-card" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/config') ?>"><strong>Configurar conjunto</strong><span>Tipo, torres e inmuebles (generador).</span></a>
-                <a class="section-card" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/qr') ?>"><strong>Codigos QR</strong><span>Generar QR por instrumento y pieza grafica.</span></a>
                 <a class="section-card" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/usuarios') ?>"><strong>Usuarios</strong><span>Accesos del conjunto (cliente/consejo/comite).</span></a>
+                <?php if (!empty($instrumentos['censo_poblacional']['vigente']) || !empty($instrumentos['censo_mascotas']['vigente']) || !empty($instrumentos['tratamiento_datos']['vigente'])): ?><a class="section-card" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/config') ?>"><strong>Unidades habitacionales</strong><span>Torres, apartamentos y casas del instrumento habilitado.</span></a><?php endif; ?>
+                <?php if (!empty($instrumentos['censo_poblacional']['vigente']) || !empty($instrumentos['censo_mascotas']['vigente'])): ?>
+                <a class="section-card" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/qr') ?>"><strong>Codigos QR</strong><span>Generar QR para los censos habilitados.</span></a>
                 <a class="section-card" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/tablero') ?>"><strong>Tablero</strong><span>Avance del censo y faltantes.</span></a>
                 <a class="section-card" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/respuestas') ?>"><strong>Respuestas</strong><span>Censos recibidos, PDF y export CSV.</span></a>
+                <?php endif; ?>
+                <?php if (!empty($instrumentos['censo_poblacional']['vigente'])): ?>
                 <a class="section-card" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/inteligencia') ?>"><strong>Estadisticas</strong><span>Estadisticas y graficos con filtros.</span></a>
+                <?php endif; ?>
+                <?php if (!empty($instrumentos['tratamiento_datos']['vigente'])): ?>
                 <a class="section-card" href="<?= base_url('admin/clientes/' . $cliente['id'] . '/datos-personales') ?>"><strong>Datos personales</strong><span>Programa documental, autorizaciones y derechos de titulares.</span></a>
+                <?php endif; ?>
             </div>
         </section>
 

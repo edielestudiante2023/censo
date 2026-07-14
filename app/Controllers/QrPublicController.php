@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Libraries\HabeasData;
+use App\Libraries\ClientInstrumentAccess;
 use App\Models\CensoArrendatarioModel;
 use App\Models\CensoMascotaModel;
 use App\Models\CensoPoblacionalModel;
@@ -455,6 +456,12 @@ class QrPublicController extends BaseController
 
         $cliente = (new ClienteModel())->find((int) $qr['cliente_id']);
         if (! $cliente || (int) $cliente['activo'] !== 1) {
+            return null;
+        }
+        $instrument = $qr['tipo_instrumento'] === 'poblacional'
+            ? ClientInstrumentAccess::POBLACIONAL
+            : ClientInstrumentAccess::MASCOTAS;
+        if (! (new ClientInstrumentAccess())->enabled((int) $cliente['id'], $instrument)) {
             return null;
         }
 

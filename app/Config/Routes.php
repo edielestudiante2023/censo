@@ -166,6 +166,7 @@ $routes->group('admin', ['filter' => 'role:superadmin,admin'], static function (
     $routes->get('clientes/(:num)', 'Admin\ClientesController::show/$1');
     $routes->get('clientes/(:num)/edit', 'Admin\ClientesController::edit/$1');
     $routes->post('clientes/(:num)', 'Admin\ClientesController::update/$1');
+    $routes->post('clientes/(:num)/instrumentos', 'Admin\ClientesController::updateInstruments/$1');
     $routes->post('clientes/(:num)/logo/delete', 'Admin\ClientesController::removeLogo/$1');
     $routes->post('clientes/(:num)/delete', 'Admin\ClientesController::delete/$1');
 });

@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Libraries\QrSvgService;
+use App\Libraries\ClientInstrumentAccess;
 use App\Models\ClienteModel;
 use App\Models\QrCodeModel;
 
@@ -27,11 +28,15 @@ class ClienteQrController extends BaseController
             return redirect()->to('/dashboard')->with('error', 'Tu usuario no tiene un conjunto asignado.');
         }
 
+        $instrumentos = (new ClientInstrumentAccess())->enabledMap((int) $cliente['id']);
+        $qrCodes = array_values(array_filter((new QrCodeModel())->forCliente((int) $cliente['id'])->orderBy('tipo_instrumento', 'ASC')->findAll(),
+            static fn (array $qr): bool => ! empty($instrumentos[$qr['tipo_instrumento'] === 'poblacional' ? ClientInstrumentAccess::POBLACIONAL : ClientInstrumentAccess::MASCOTAS])));
         return view('admin/clientes/qr/index', [
             'cliente'   => $cliente,
-            'qrCodes'   => (new QrCodeModel())->forCliente((int) $cliente['id'])->orderBy('tipo_instrumento', 'ASC')->findAll(),
+            'qrCodes'   => $qrCodes,
             'basePath'  => 'qr',
             'isAdminQr' => false,
+            'instrumentos' => $instrumentos,
         ]);
     }
 
@@ -46,6 +51,10 @@ class ClienteQrController extends BaseController
         $tipo = (string) $this->request->getPost('tipo_instrumento');
         if (! in_array($tipo, self::TIPOS, true)) {
             return redirect()->back()->with('error', 'Selecciona un instrumento valido.');
+        }
+        $entitlement = $tipo === 'poblacional' ? ClientInstrumentAccess::POBLACIONAL : ClientInstrumentAccess::MASCOTAS;
+        if (! (new ClientInstrumentAccess())->enabled($cid, $entitlement)) {
+            return redirect()->back()->with('error', 'Ese instrumento no esta habilitado para el cliente.');
         }
 
         $anio = (int) ($this->request->getPost('anio') ?: date('Y'));
@@ -137,7 +146,13 @@ class ClienteQrController extends BaseController
 
     private function findQr(int $clienteId, int $qrId): ?array
     {
-        return (new QrCodeModel())->where('cliente_id', $clienteId)->where('id', $qrId)->first();
+        $qr = (new QrCodeModel())->where('cliente_id', $clienteId)->where('id', $qrId)->first();
+        if (! $qr) {
+            return null;
+        }
+        $instrument = $qr['tipo_instrumento'] === 'poblacional' ? ClientInstrumentAccess::POBLACIONAL : ClientInstrumentAccess::MASCOTAS;
+
+        return (new ClientInstrumentAccess())->enabled($clienteId, $instrument) ? $qr : null;
     }
 
     private function uniqueToken(): string

@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Libraries\ClientInstrumentAccess;
 use App\Models\ClienteModel;
 
 class ClienteRespuestasController extends BaseController
@@ -83,6 +84,10 @@ class ClienteRespuestasController extends BaseController
         if (! in_array($instrumento, self::INSTRUMENTOS, true)) {
             return redirect()->to($back)->with('error', 'Instrumento invalido.');
         }
+        $entitlement = $instrumento === 'poblacional' ? ClientInstrumentAccess::POBLACIONAL : ClientInstrumentAccess::MASCOTAS;
+        if (! (new ClientInstrumentAccess())->enabled($clienteId, $entitlement)) {
+            return redirect()->to($back)->with('error', 'Ese instrumento no esta habilitado para el cliente.');
+        }
 
         $table = $instrumento === 'poblacional' ? 'censos_poblacionales' : 'censos_mascotas';
         $censo = db_connect()->table($table)
@@ -120,6 +125,7 @@ class ClienteRespuestasController extends BaseController
             'anios' => $this->anios((int) $cliente['id']),
             'torres' => $this->torres((int) $cliente['id']),
             'inmuebles' => $this->inmuebles((int) $cliente['id']),
+            'instrumentos' => (new ClientInstrumentAccess())->enabledMap((int) $cliente['id']),
         ];
     }
 
@@ -485,6 +491,23 @@ class ClienteRespuestasController extends BaseController
         $instrumento = (string) $this->request->getGet('instrumento');
         if (! in_array($instrumento, self::INSTRUMENTOS, true)) {
             $instrumento = '';
+        }
+        $clientId = (int) session()->get('cliente_id');
+        if (preg_match('#^admin/clientes/(\d+)#', trim(service('request')->getUri()->getPath(), '/'), $match)) {
+            $clientId = (int) $match[1];
+        }
+        if ($clientId > 0) {
+            $map = (new ClientInstrumentAccess())->enabledMap($clientId);
+            $enabled = array_values(array_filter([
+                !empty($map[ClientInstrumentAccess::POBLACIONAL]) ? 'poblacional' : null,
+                !empty($map[ClientInstrumentAccess::MASCOTAS]) ? 'mascotas' : null,
+            ]));
+            if ($instrumento !== '' && ! in_array($instrumento, $enabled, true)) {
+                $instrumento = '';
+            }
+            if ($instrumento === '' && count($enabled) === 1) {
+                $instrumento = $enabled[0];
+            }
         }
 
         return [

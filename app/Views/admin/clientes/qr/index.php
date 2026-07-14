@@ -53,8 +53,8 @@ $isAdminQr = $isAdminQr ?? true;
                     <div class="field">
                         <label for="tipo_instrumento">Instrumento</label>
                         <select id="tipo_instrumento" name="tipo_instrumento" required>
-                            <option value="poblacional">Censo poblacional</option>
-                            <option value="mascotas">Censo de mascotas</option>
+                            <?php if (!empty($instrumentos['censo_poblacional'])): ?><option value="poblacional">Censo poblacional</option><?php endif; ?>
+                            <?php if (!empty($instrumentos['censo_mascotas'])): ?><option value="mascotas">Censo de mascotas</option><?php endif; ?>
                         </select>
                     </div>
                     <div class="field">

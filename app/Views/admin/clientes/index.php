@@ -74,7 +74,7 @@
                     </thead>
                     <tbody>
                         <?php foreach ($clientes as $cliente): ?>
-                            <?php $base = base_url('admin/clientes/' . $cliente['id']); ?>
+                            <?php $base = base_url('admin/clientes/' . $cliente['id']); $enabled = $instrumentosPorCliente[(int)$cliente['id']] ?? []; ?>
                             <tr>
                                 <td data-label="Cliente">
                                     <div class="cli">
@@ -101,6 +101,7 @@
                                     <?php else: ?>
                                         <span class="badge badge-off">Inactivo</span>
                                     <?php endif; ?>
+                                    <div class="muted" style="margin-top:5px;font-size:.72rem;"><?= count(array_filter($enabled)) ?> instrumentos habilitados</div>
                                 </td>
                                 <td data-label="Acciones" style="text-align:right;">
                                     <div class="menu">
@@ -109,13 +110,12 @@
                                             <a href="<?= $base ?>">Ver detalle</a>
                                             <a href="<?= $base ?>/edit">Editar</a>
                                             <div class="menu-sep"></div>
-                                            <a href="<?= $base ?>/tablero">Tablero</a>
-                                            <a href="<?= $base ?>/respuestas">Respuestas</a>
-                                            <a href="<?= $base ?>/inteligencia">Estadisticas</a>
-                                            <a href="<?= $base ?>/datos-personales">Datos personales</a>
+                                            <?php if (!empty($enabled['censo_poblacional']) || !empty($enabled['censo_mascotas'])): ?><a href="<?= $base ?>/tablero">Tablero</a><a href="<?= $base ?>/respuestas">Respuestas</a><?php endif; ?>
+                                            <?php if (!empty($enabled['censo_poblacional'])): ?><a href="<?= $base ?>/inteligencia">Estadisticas</a><?php endif; ?>
+                                            <?php if (!empty($enabled['tratamiento_datos'])): ?><a href="<?= $base ?>/datos-personales">Datos personales</a><?php endif; ?>
                                             <div class="menu-sep"></div>
-                                            <a href="<?= $base ?>/qr">Codigos QR</a>
-                                            <a href="<?= $base ?>/config">Configurar conjunto</a>
+                                            <?php if (!empty($enabled['censo_poblacional']) || !empty($enabled['censo_mascotas'])): ?><a href="<?= $base ?>/qr">Codigos QR</a><?php endif; ?>
+                                            <?php if (array_filter($enabled)): ?><a href="<?= $base ?>/config">Unidades habitacionales</a><?php endif; ?>
                                             <a href="<?= $base ?>/usuarios">Usuarios</a>
                                         </div>
                                     </div>

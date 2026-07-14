@@ -48,9 +48,9 @@
                 <div>
                     <label for="instrumento">Instrumento</label>
                     <select id="instrumento" name="instrumento">
-                        <option value="">Todos</option>
-                        <option value="poblacional" <?= $filters['instrumento'] === 'poblacional' ? 'selected' : '' ?>>Poblacional</option>
-                        <option value="mascotas" <?= $filters['instrumento'] === 'mascotas' ? 'selected' : '' ?>>Mascotas</option>
+                        <?php if (!empty($instrumentos['censo_poblacional']) && !empty($instrumentos['censo_mascotas'])): ?><option value="">Todos</option><?php endif; ?>
+                        <?php if (!empty($instrumentos['censo_poblacional'])): ?><option value="poblacional" <?= $filters['instrumento'] === 'poblacional' ? 'selected' : '' ?>>Poblacional</option><?php endif; ?>
+                        <?php if (!empty($instrumentos['censo_mascotas'])): ?><option value="mascotas" <?= $filters['instrumento'] === 'mascotas' ? 'selected' : '' ?>>Mascotas</option><?php endif; ?>
                     </select>
                 </div>
                 <div>

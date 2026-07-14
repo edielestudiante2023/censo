@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Libraries\ClientInstrumentAccess;
 use App\Models\ClienteModel;
 
 class ClienteTableroController extends BaseController
@@ -36,14 +37,18 @@ class ClienteTableroController extends BaseController
         $clienteId = (int) $cliente['id'];
         $filters   = $this->filters();
         $total     = $this->countInmuebles($clienteId);
-        $poblacionalRespondidos = $this->countRespondidos($clienteId, 'censos_poblacionales', $filters['anio']);
-        $mascotasRespondidos    = $this->countRespondidos($clienteId, 'censos_mascotas', $filters['anio']);
+        $instrumentos = (new ClientInstrumentAccess())->enabledMap($clienteId);
+        $hasPopulation = ! empty($instrumentos[ClientInstrumentAccess::POBLACIONAL]);
+        $hasPets = ! empty($instrumentos[ClientInstrumentAccess::MASCOTAS]);
+        $poblacionalRespondidos = $hasPopulation ? $this->countRespondidos($clienteId, 'censos_poblacionales', $filters['anio']) : 0;
+        $mascotasRespondidos    = $hasPets ? $this->countRespondidos($clienteId, 'censos_mascotas', $filters['anio']) : 0;
 
         return [
             'cliente' => $cliente,
             'isAdmin' => $isAdmin,
             'filters' => $filters,
             'anios' => $this->anios($clienteId),
+            'instrumentos' => $instrumentos,
             'totales' => [
                 'inmuebles' => $total,
                 'poblacional_respondidos' => $poblacionalRespondidos,
@@ -53,10 +58,10 @@ class ClienteTableroController extends BaseController
                 'mascotas_faltantes' => max(0, $total - $mascotasRespondidos),
                 'mascotas_porcentaje' => $this->percentage($mascotasRespondidos, $total),
             ],
-            'faltantesPoblacional' => $this->missingInmuebles($clienteId, 'censos_poblacionales', $filters['anio']),
-            'faltantesMascotas' => $this->missingInmuebles($clienteId, 'censos_mascotas', $filters['anio']),
-            'ultimosPoblacional' => $this->latestResponses($clienteId, 'censos_poblacionales', $filters['anio']),
-            'ultimosMascotas' => $this->latestResponses($clienteId, 'censos_mascotas', $filters['anio']),
+            'faltantesPoblacional' => $hasPopulation ? $this->missingInmuebles($clienteId, 'censos_poblacionales', $filters['anio']) : [],
+            'faltantesMascotas' => $hasPets ? $this->missingInmuebles($clienteId, 'censos_mascotas', $filters['anio']) : [],
+            'ultimosPoblacional' => $hasPopulation ? $this->latestResponses($clienteId, 'censos_poblacionales', $filters['anio']) : [],
+            'ultimosMascotas' => $hasPets ? $this->latestResponses($clienteId, 'censos_mascotas', $filters['anio']) : [],
         ];
     }
 

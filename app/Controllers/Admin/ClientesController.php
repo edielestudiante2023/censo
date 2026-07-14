@@ -4,6 +4,7 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
 use App\Libraries\HabeasData;
+use App\Libraries\ClientInstrumentAccess;
 use App\Models\ClienteModel;
 
 class ClientesController extends BaseController
@@ -24,10 +25,17 @@ class ClientesController extends BaseController
                 ->groupEnd();
         }
 
+        $clientes = $clienteModel->orderBy('nombre_tercero', 'ASC')->paginate(15);
+        $access = new ClientInstrumentAccess();
+        $instrumentos = [];
+        foreach ($clientes as $cliente) {
+            $instrumentos[(int) $cliente['id']] = $access->enabledMap((int) $cliente['id']);
+        }
         return view('admin/clientes/index', [
-            'clientes' => $clienteModel->orderBy('nombre_tercero', 'ASC')->paginate(15),
+            'clientes' => $clientes,
             'pager'    => $clienteModel->pager,
             'q'        => $q,
+            'instrumentosPorCliente' => $instrumentos,
         ]);
     }
 
@@ -71,7 +79,35 @@ class ClientesController extends BaseController
             return redirect()->to('/admin/clientes')->with('error', 'Cliente no encontrado.');
         }
 
-        return view('admin/clientes/show', ['cliente' => $cliente]);
+        return view('admin/clientes/show', [
+            'cliente' => $cliente,
+            'instrumentos' => (new ClientInstrumentAccess())->rows($id),
+        ]);
+    }
+
+    public function updateInstruments(int $id)
+    {
+        $cliente = $this->findCliente($id);
+        if (! $cliente) {
+            return redirect()->to('/admin/clientes')->with('error', 'Cliente no encontrado.');
+        }
+        $reason = trim((string) $this->request->getPost('instrumentos_motivo'));
+        if (mb_strlen($reason) < 8 || mb_strlen($reason) > 255) {
+            return redirect()->back()->with('error', 'Registra un motivo contractual u operativo de 8 a 255 caracteres.');
+        }
+        $selected = (array) $this->request->getPost('instrumentos');
+        $until = trim((string) $this->request->getPost('instrumentos_hasta')) ?: null;
+        $access = new ClientInstrumentAccess();
+        try {
+            foreach (array_keys(ClientInstrumentAccess::LABELS) as $instrument) {
+                $access->set($id, $instrument, in_array($instrument, $selected, true), (int) session()->get('user_id'), $reason, $until);
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Instrumentos cliente {id}: {message}', ['id' => $id, 'message' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'No fue posible actualizar los instrumentos del cliente.');
+        }
+
+        return redirect()->back()->with('success', 'Instrumentos del cliente actualizados y auditados.');
     }
 
     public function edit(int $id)

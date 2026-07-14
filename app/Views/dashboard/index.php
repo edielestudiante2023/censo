@@ -52,26 +52,38 @@
                 </div>
             <?php elseif (in_array($rol ?? '', ['cliente', 'consejo', 'comite'], true)): ?>
                 <div class="modules">
+                    <?php $censoHabilitado = !empty($instrumentos['censo_poblacional']) || !empty($instrumentos['censo_mascotas']); ?>
+                    <?php if ($censoHabilitado): ?>
                     <a class="module" href="<?= base_url('tablero') ?>">
                         <strong>Tablero</strong>
-                        <span>Consultar avance del censo y faltantes por diligenciar.</span>
+                        <span>Consultar avance y faltantes de los instrumentos habilitados.</span>
                     </a>
                     <a class="module" href="<?= base_url('respuestas') ?>">
                         <strong>Respuestas</strong>
                         <span>Ver y exportar los censos recibidos del conjunto.</span>
                     </a>
+                    <?php endif; ?>
+                    <?php if (!empty($instrumentos['censo_poblacional'])): ?>
                     <a class="module" href="<?= base_url('inteligencia') ?>">
                         <strong>Estadisticas</strong>
                         <span>Graficos: sexo, torre, edad, parentesco y mas, con filtros.</span>
                     </a>
+                    <?php endif; ?>
+                    <?php if ($censoHabilitado): ?>
                     <a class="module" href="<?= base_url('qr') ?>">
                         <strong>Codigos QR</strong>
                         <span>Genera el QR de tu conjunto para imprimir y pegar en las torres.</span>
                     </a>
+                    <?php endif; ?>
+                    <?php if (!empty($instrumentos['tratamiento_datos'])): ?>
                     <a class="module" href="<?= base_url('datos-personales') ?>">
                         <strong>Datos personales</strong>
                         <span>Inventario, documentos, autorizaciones y solicitudes de titulares.</span>
                     </a>
+                    <?php endif; ?>
+                    <?php if (!$censoHabilitado && empty($instrumentos['tratamiento_datos'])): ?>
+                        <p class="muted">No hay instrumentos habilitados para este cliente. Contacta a la administracion de Cycloid.</p>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
         </div>
