@@ -24,13 +24,14 @@ final class PrivacyConfidentialityPortalTest extends CIUnitTestCase
         $this->assertStringContainsString('La instancia firmada y su evidencia son inmutables', $migration);
     }
 
-    public function testRoleFilterEnforcesSignedOperationsDuringSession(): void
+    public function testAccessDependsOnInstrumentAndRoleInsteadOfSignedCommitment(): void
     {
         $filter = file_get_contents(APPPATH . 'Filters/RoleFilter.php');
-        $this->assertStringContainsString('allowsOperation', $filter);
-        $this->assertStringContainsString("'exportar'", $filter);
-        $this->assertStringContainsString("'suprimir'", $filter);
-        $this->assertStringContainsString("'actualizar'", $filter);
-        $this->assertStringContainsString('allowsPrivacyGovernance', $filter);
+        $auth = file_get_contents(APPPATH . 'Controllers/AuthController.php');
+        $users = file_get_contents(APPPATH . 'Controllers/Admin/ClienteUsuariosController.php');
+        $this->assertStringContainsString('ClientInstrumentAccess', $filter);
+        $this->assertStringNotContainsString('PrivacyAccessGate', $filter);
+        $this->assertStringNotContainsString('->ready(', $auth);
+        $this->assertStringNotContainsString('PrivacyAccessGate', $users);
     }
 }

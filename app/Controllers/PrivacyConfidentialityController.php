@@ -4,7 +4,6 @@ namespace App\Controllers;
 
 use App\Libraries\EmailService;
 use App\Libraries\PrivacyConfidentialityService;
-use App\Libraries\PrivacyAccessGate;
 use App\Libraries\PrivacyPdf;
 use App\Libraries\PrivacyVault;
 
@@ -88,9 +87,6 @@ final class PrivacyConfidentialityController extends BaseController
         $complianceData = ['confidencialidad_at' => $now, 'confidencialidad_hash' => $agreement['instancia_hash'], 'recertificado_at' => $now, 'updated_at' => $now];
         if ($compliance) { $db->table('dp_usuario_privacidad')->where('id', $compliance['id'])->update($complianceData); }
         else { $complianceData += ['cliente_id' => $agreement['cliente_id'], 'usuario_id' => $agreement['usuario_id'], 'created_at' => $now]; $db->table('dp_usuario_privacidad')->insert($complianceData); }
-        if ((new PrivacyAccessGate())->ready((int) $agreement['cliente_id'], (int) $agreement['usuario_id'])) {
-            $db->table('usuarios')->where('id', $agreement['usuario_id'])->where('cliente_id', $agreement['cliente_id'])->update(['activo' => 1, 'updated_at' => $now]);
-        }
         $agreement = array_merge($agreement, ['firma_imagen' => $signature, 'aceptado_at' => $now]);
         $path = (new PrivacyPdf())->confidentiality($agreement, $context['client']);
         $result = (new EmailService())->sendPrivacyMessage($context['user']['email'], 'Copia de compromiso individual de confidencialidad', '<p>Adjuntamos la instancia individual aceptada y sellada.</p>', WRITEPATH . $path, (int) $context['client']['id']);

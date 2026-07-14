@@ -6,7 +6,6 @@ use App\Controllers\BaseController;
 use App\Models\ClienteModel;
 use App\Models\RolModel;
 use App\Models\UsuarioModel;
-use App\Libraries\PrivacyAccessGate;
 
 class ClienteUsuariosController extends BaseController
 {
@@ -57,15 +56,9 @@ class ClienteUsuariosController extends BaseController
         }
 
         $data['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
-        if ((new PrivacyAccessGate())->required($clienteId)) {
-            $data['activo'] = 0;
-        }
         (new UsuarioModel())->insert($data);
 
-        $message = (new PrivacyAccessGate())->required($clienteId)
-            ? 'Usuario creado inactivo. Se habilitara al firmar su compromiso individual.'
-            : 'Usuario creado correctamente.';
-        return redirect()->to('/admin/clientes/' . $clienteId . '/usuarios')->with('success', $message);
+        return redirect()->to('/admin/clientes/' . $clienteId . '/usuarios')->with('success', 'Usuario creado correctamente.');
     }
 
     public function edit(int $clienteId, int $usuarioId)
@@ -105,10 +98,6 @@ class ClienteUsuariosController extends BaseController
 
         if ($password !== '') {
             $data['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
-        }
-
-        if ((int) $data['activo'] === 1 && ! (new PrivacyAccessGate())->ready($clienteId, $usuarioId)) {
-            return redirect()->back()->withInput()->with('error', 'No se puede activar: falta un compromiso individual vigente e integro.');
         }
 
         (new UsuarioModel())->update($usuarioId, $data);

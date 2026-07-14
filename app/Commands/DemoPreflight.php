@@ -3,13 +3,14 @@
 namespace App\Commands;
 
 use App\Libraries\ClientInstrumentAccess;
-use App\Libraries\PrivacyAccessGate;
 use App\Models\DpDocumentoModel;
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
 
 final class DemoPreflight extends BaseCommand
 {
+    private const ACCESS_SCHEMA_VERSION = 2;
+
     protected $group = 'Demo';
     protected $name = 'demo:preflight';
     protected $description = 'Verifica que el cliente demo de produccion este listo para una reunion.';
@@ -37,7 +38,7 @@ final class DemoPreflight extends BaseCommand
             'usuario cliente con correo real' => $db->table('usuarios')->where('cliente_id', $id)
                 ->where('email', 'sistemasdegestionpropiedadhori@gmail.com')->where('activo', 1)->countAllResults() === 1,
             'credenciales del usuario demo' => $demoUser && password_verify('Demo2026*', (string) $demoUser['password_hash']),
-            'acceso del usuario demo' => $demoUser && (new PrivacyAccessGate())->ready($id, (int) $demoUser['id']),
+            'usuario demo habilitado' => $demoUser && (int) $demoUser['activo'] === 1,
         ];
         foreach ($checks as $name => $ok) {
             CLI::write(($ok ? '[OK] ' : '[FALTA] ') . $name, $ok ? 'green' : 'red');
@@ -60,7 +61,7 @@ final class DemoPreflight extends BaseCommand
                 return false;
             }
             $variables = json_decode((string) ($document['variables_json'] ?? '{}'), true) ?: [];
-            if ((int) ($variables['demo_access_schema_version'] ?? 0) < 1
+            if ((int) ($variables['demo_access_schema_version'] ?? 0) < self::ACCESS_SCHEMA_VERSION
                 || ! hash_equals((string) $document['hash_sha256'], hash('sha256', (string) $document['contenido_html']))) {
                 return false;
             }

@@ -3,7 +3,6 @@
 namespace App\Commands;
 
 use App\Libraries\ClientInstrumentAccess;
-use App\Libraries\PrivacyAccessGate;
 use App\Libraries\PrivacyDocumentService;
 use App\Libraries\PrivacyProgramService;
 use App\Models\DpConsentimientoModel;
@@ -14,6 +13,8 @@ use CodeIgniter\CLI\CLI;
 
 final class DemoPrepare extends BaseCommand
 {
+    private const ACCESS_SCHEMA_VERSION = 2;
+
     protected $group = 'Demo';
     protected $name = 'demo:prepare';
     protected $description = 'Completa de forma idempotente el cliente demo para presentaciones.';
@@ -50,7 +51,6 @@ final class DemoPrepare extends BaseCommand
         $programModel = new DpProgramaModel();
         $program = $programModel->where('cliente_id', $clienteId)->first();
         $config = array_replace(json_decode((string) ($program['config_json'] ?? '{}'), true) ?: [], [
-            'demo_environment' => true,
             'area_responsable' => 'Administracion de la copropiedad',
             'horario_atencion' => 'Lunes a viernes de 8:00 a.m. a 5:00 p.m.',
             'organo_aprobacion' => 'Consejo de Administracion - Acta DEMO-001',
@@ -185,7 +185,7 @@ final class DemoPrepare extends BaseCommand
             'correo real del usuario cliente' => $db->table('usuarios')->where('cliente_id', $clienteId)
                 ->where('email', 'sistemasdegestionpropiedadhori@gmail.com')->where('activo', 1)->countAllResults() === 1,
             'credenciales del usuario demo' => $demoUser && password_verify('Demo2026*', (string) $demoUser['password_hash']),
-            'acceso del usuario demo' => $demoUser && (new PrivacyAccessGate())->ready($clienteId, (int) $demoUser['id']),
+            'usuario demo habilitado' => $demoUser && (int) $demoUser['activo'] === 1,
         ];
         foreach ($checks as $label => $ok) {
             CLI::write(($ok ? '[OK] ' : '[FALTA] ') . $label, $ok ? 'green' : 'red');
@@ -214,7 +214,7 @@ final class DemoPrepare extends BaseCommand
                 continue;
             }
             $variables = json_decode((string) ($published['variables_json'] ?? '{}'), true) ?: [];
-            if ((int) ($variables['demo_access_schema_version'] ?? 0) >= 1) {
+            if ((int) ($variables['demo_access_schema_version'] ?? 0) >= self::ACCESS_SCHEMA_VERSION) {
                 continue;
             }
 
@@ -232,7 +232,7 @@ final class DemoPrepare extends BaseCommand
             $variables['programa_updated_at'] = $program['updated_at'] ?? null;
             $variables['bases'] = array_column($bases, 'id');
             $variables['document_dependencies'] = $dependencies;
-            $variables['demo_access_schema_version'] = 1;
+            $variables['demo_access_schema_version'] = self::ACCESS_SCHEMA_VERSION;
 
             $model->insert([
                 'cliente_id' => $cliente['id'],
@@ -263,7 +263,7 @@ final class DemoPrepare extends BaseCommand
                 return false;
             }
             $variables = json_decode((string) ($document['variables_json'] ?? '{}'), true) ?: [];
-            if ((int) ($variables['demo_access_schema_version'] ?? 0) < 1
+            if ((int) ($variables['demo_access_schema_version'] ?? 0) < self::ACCESS_SCHEMA_VERSION
                 || ! hash_equals((string) $document['hash_sha256'], hash('sha256', (string) $document['contenido_html']))) {
                 return false;
             }

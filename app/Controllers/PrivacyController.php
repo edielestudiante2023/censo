@@ -8,7 +8,6 @@ use App\Libraries\OpenAiPrivacyService;
 use App\Libraries\PrivacyAudit;
 use App\Libraries\PrivacyBusinessDays;
 use App\Libraries\PrivacyConfidentialityService;
-use App\Libraries\PrivacyAccessGate;
 use App\Libraries\PrivacyDocumentService;
 use App\Libraries\PrivacyHousingCoverage;
 use App\Libraries\PrivacyPdf;
@@ -900,10 +899,6 @@ class PrivacyController extends BaseController
         if (! $row) {
             return $this->denied();
         }
-        if (! in_array(session()->get('rol'), ['superadmin', 'admin'], true)
-            && ! (new PrivacyAccessGate())->allowsBase((int) $cliente['id'], (int) session()->get('user_id'), (int) $row['base_id'])) {
-            return redirect()->back()->with('error', 'La base de datos no figura en tu compromiso individual vigente.');
-        }
         $action = (string) $this->request->getPost('accion');
         if (! in_array($action, ['no_encontrado', 'suprimir', 'anonimizar', 'bloquear', 'conservar', 'rectificar', 'actualizar'], true)) {
             return redirect()->back()->with('error', 'Selecciona una accion valida.');
@@ -1095,10 +1090,9 @@ class PrivacyController extends BaseController
                 'cerrado_at' => $now, 'cierre_motivo' => 'Nueva instancia generada por cambio o recertificacion', 'updated_at' => $now]));
             $this->confidentialityEvent((int) $previous['id'], 'superado', ['nueva_instancia_id' => $id]);
         }
-        $db->table('usuarios')->where('id', $userId)->where('cliente_id', $cliente['id'])->update(['activo' => 0, 'updated_at' => $now]);
         $this->confidentialityEvent($id, 'generacion', ['dependencies' => $dependencies, 'hash' => $instance['hash'], 'scope' => ['rol' => $operationalRole, 'bases' => $baseIds, 'purposes' => $purposeIds, 'operations' => $operations]]);
         $url = base_url('confidencialidad/' . $token);
-        $html = '<p>Hola ' . esc($user['nombre']) . ',</p><p>Debes revisar y firmar tu compromiso individual antes de habilitar el acceso.</p><p><a href="' . esc($url, 'attr') . '">Revisar instancia individual</a></p>';
+        $html = '<p>Hola ' . esc($user['nombre']) . ',</p><p>Debes revisar y firmar tu compromiso individual para dejar evidencia de tus responsabilidades y alcance.</p><p><a href="' . esc($url, 'attr') . '">Revisar instancia individual</a></p>';
         $result = (new EmailService())->sendPrivacyMessage($user['email'], 'Compromiso individual de confidencialidad', $html, null, (int) $cliente['id']);
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['success'] ? 'Instancia individual enviada al firmante.' : 'Instancia creada, pero el correo no pudo enviarse.');
     }
@@ -1113,9 +1107,8 @@ class PrivacyController extends BaseController
         $now = date('Y-m-d H:i:s');
         $db->table('dp_compromisos_confidencialidad')->where('id', $id)->update($this->vault()->encryptRow('dp_compromisos_confidencialidad', ['estado' => 'cerrado', 'cerrado_at' => $now,
             'cierre_motivo' => $reason, 'devolucion_certificada_at' => $now, 'devolucion_evidencia' => $evidence, 'updated_at' => $now]));
-        $db->table('usuarios')->where('id', $agreement['usuario_id'])->where('cliente_id', $cliente['id'])->update(['activo' => 0, 'updated_at' => $now]);
         $this->confidentialityEvent($id, 'baja', ['motivo' => $reason, 'evidencia_hash' => hash('sha256', $evidence)]);
-        return redirect()->back()->with('success', 'Acceso revocado y baja certificada.');
+        return redirect()->back()->with('success', 'Compromiso cerrado y baja documentada.');
     }
 
     public function createSecurityIncident(?int $clienteId = null)

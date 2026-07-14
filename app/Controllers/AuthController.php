@@ -5,7 +5,7 @@ namespace App\Controllers;
 use App\Libraries\EmailService;
 use App\Models\RolModel;
 use App\Models\UsuarioModel;
-use App\Libraries\PrivacyAccessGate;
+use App\Libraries\PrivacyMfaPolicy;
 use App\Libraries\PrivacyVault;
 
 class AuthController extends BaseController
@@ -55,11 +55,8 @@ class AuthController extends BaseController
         $rol = (new RolModel())->find($user['rol_id']);
 
         $roleName = (string) ($rol['nombre'] ?? '');
-        $accessGate = new PrivacyAccessGate();
-        if (! empty($user['cliente_id']) && ! $accessGate->ready((int) $user['cliente_id'], (int) $user['id'])) {
-            return redirect()->back()->withInput()->with('error', 'Tu acceso requiere un compromiso individual vigente. Contacta al administrador.');
-        }
-        $privacyMfa = ! empty($user['cliente_id']) && $accessGate->requiresMfa((int) $user['cliente_id'], (int) $user['id']);
+        $privacyMfa = ! empty($user['cliente_id'])
+            && (new PrivacyMfaPolicy())->requiresMfa((int) $user['cliente_id'], (int) $user['id']);
         if (in_array($roleName, ['superadmin', 'admin', 'cliente'], true) || $privacyMfa) {
             return $this->startMfa($user);
         }
@@ -103,9 +100,6 @@ class AuthController extends BaseController
         session()->remove(['pending_mfa_challenge', 'pending_mfa_user']);
         $user = (new UsuarioModel())->find($userId);
         if (! $user || (int) $user['activo'] !== 1) { return redirect()->to('/login')->with('error', 'Cuenta no disponible.'); }
-        if (! empty($user['cliente_id']) && ! (new PrivacyAccessGate())->ready((int) $user['cliente_id'], (int) $user['id'])) {
-            return redirect()->to('/login')->with('error', 'El compromiso individual dejo de estar vigente.');
-        }
         $role = (new RolModel())->find($user['rol_id']);
         return $this->completeLogin($user, (string) ($role['nombre'] ?? ''));
     }
