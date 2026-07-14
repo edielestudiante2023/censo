@@ -7,6 +7,7 @@ use App\Libraries\PrivacyAccessGate;
 use App\Libraries\PrivacyDocumentService;
 use App\Libraries\PrivacyProgramService;
 use App\Models\DpConsentimientoModel;
+use App\Models\DpDocumentoModel;
 use App\Models\DpProgramaModel;
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
@@ -118,6 +119,7 @@ final class DemoPrepare extends BaseCommand
                 'updated_at' => $now,
             ]);
         }
+        $this->refreshAccessDocuments($cliente, $program, $bases, $purposes, $documentService, $now);
         $db->table('dp_aviso_variantes')->where('cliente_id', $clienteId)->update(['estado' => 'publicado', 'publicado_at' => $now, 'updated_at' => $now]);
 
         $authorization = $db->table('dp_documentos')->where('cliente_id', $clienteId)->where('tipo', 'autorizacion')
@@ -178,6 +180,7 @@ final class DemoPrepare extends BaseCommand
             'programa activo' => $db->table('dp_programas')->where('cliente_id', $clienteId)->where('estado', 'activo')->countAllResults() === 1,
             'inventario de bases' => $db->table('dp_bases_datos')->where('cliente_id', $clienteId)->where('activo', 1)->countAllResults() >= 5,
             '7 documentos publicados' => $db->table('dp_documentos')->where('cliente_id', $clienteId)->where('estado', 'publicado')->countAllResults() >= 7,
+            'documentos de acceso versionados' => $this->accessDocumentsReady($clienteId),
             'decisiones demostrativas' => $db->table('dp_consentimientos')->where('cliente_id', $clienteId)->where('canal', 'demo_preparado')->countAllResults() >= 3,
             'correo real del usuario cliente' => $db->table('usuarios')->where('cliente_id', $clienteId)
                 ->where('email', 'sistemasdegestionpropiedadhori@gmail.com')->where('activo', 1)->countAllResults() === 1,
@@ -193,5 +196,78 @@ final class DemoPrepare extends BaseCommand
         }
         CLI::write('DEMO LISTO', 'green');
         return EXIT_SUCCESS;
+    }
+
+    private function refreshAccessDocuments(array $cliente, array $program, array $bases, array $purposes, PrivacyDocumentService $service, string $now): void
+    {
+        $model = new DpDocumentoModel();
+        $dependencyTypes = [
+            'seguridad' => ['politica', 'aviso', 'autorizacion', 'procedimiento'],
+            'confidencialidad' => ['politica', 'aviso', 'autorizacion', 'procedimiento', 'seguridad'],
+            'encargados' => ['politica', 'aviso', 'autorizacion', 'procedimiento', 'seguridad', 'confidencialidad'],
+        ];
+
+        foreach ($dependencyTypes as $type => $dependenciesForType) {
+            $published = $model->where('cliente_id', $cliente['id'])->where('tipo', $type)
+                ->where('estado', 'publicado')->orderBy('version', 'DESC')->first();
+            if (! $published) {
+                continue;
+            }
+            $variables = json_decode((string) ($published['variables_json'] ?? '{}'), true) ?: [];
+            if ((int) ($variables['demo_access_schema_version'] ?? 0) >= 1) {
+                continue;
+            }
+
+            $dependencies = [];
+            foreach ($dependenciesForType as $dependencyType) {
+                $dependency = $model->where('cliente_id', $cliente['id'])->where('tipo', $dependencyType)
+                    ->where('estado', 'publicado')->orderBy('version', 'DESC')->first();
+                $dependencies[$dependencyType] = $dependency
+                    ? ['version' => (int) $dependency['version'], 'hash' => $dependency['hash_sha256']]
+                    : null;
+            }
+            $latest = $model->where('cliente_id', $cliente['id'])->where('tipo', $type)
+                ->orderBy('version', 'DESC')->first();
+            $content = $service->render($type, $cliente, $program, $bases, $purposes);
+            $variables['programa_updated_at'] = $program['updated_at'] ?? null;
+            $variables['bases'] = array_column($bases, 'id');
+            $variables['document_dependencies'] = $dependencies;
+            $variables['demo_access_schema_version'] = 1;
+
+            $model->insert([
+                'cliente_id' => $cliente['id'],
+                'plantilla_id' => $published['plantilla_id'] ?? null,
+                'codigo' => $published['codigo'],
+                'tipo' => $type,
+                'titulo' => $published['titulo'],
+                'version' => (int) ($latest['version'] ?? 0) + 1,
+                'estado' => 'publicado',
+                'contenido_html' => $content,
+                'variables_json' => json_encode($variables, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                'hash_sha256' => hash('sha256', $content),
+                'aprobado_por' => $published['aprobado_por'] ?? null,
+                'aprobado_at' => $now,
+                'vigente_desde' => date('Y-m-d'),
+                'publicado_at' => $now,
+            ]);
+        }
+    }
+
+    private function accessDocumentsReady(int $clienteId): bool
+    {
+        $model = new DpDocumentoModel();
+        foreach (['seguridad', 'confidencialidad', 'encargados'] as $type) {
+            $document = $model->where('cliente_id', $clienteId)->where('tipo', $type)
+                ->where('estado', 'publicado')->orderBy('version', 'DESC')->first();
+            if (! $document) {
+                return false;
+            }
+            $variables = json_decode((string) ($document['variables_json'] ?? '{}'), true) ?: [];
+            if ((int) ($variables['demo_access_schema_version'] ?? 0) < 1
+                || ! hash_equals((string) $document['hash_sha256'], hash('sha256', (string) $document['contenido_html']))) {
+                return false;
+            }
+        }
+        return true;
     }
 }

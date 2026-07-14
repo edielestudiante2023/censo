@@ -4,6 +4,7 @@ namespace App\Commands;
 
 use App\Libraries\ClientInstrumentAccess;
 use App\Libraries\PrivacyAccessGate;
+use App\Models\DpDocumentoModel;
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
 
@@ -31,6 +32,7 @@ final class DemoPreflight extends BaseCommand
             'programa' => $db->table('dp_programas')->where('cliente_id', $id)->where('estado', 'activo')->countAllResults() === 1,
             'bases' => $db->table('dp_bases_datos')->where('cliente_id', $id)->where('activo', 1)->countAllResults() >= 5,
             'documentos' => $db->table('dp_documentos')->where('cliente_id', $id)->where('estado', 'publicado')->countAllResults() >= 7,
+            'documentos de acceso versionados' => $this->accessDocumentsReady($id),
             'decisiones' => $db->table('dp_consentimientos')->where('cliente_id', $id)->where('canal', 'demo_preparado')->countAllResults() >= 3,
             'usuario cliente con correo real' => $db->table('usuarios')->where('cliente_id', $id)
                 ->where('email', 'sistemasdegestionpropiedadhori@gmail.com')->where('activo', 1)->countAllResults() === 1,
@@ -46,5 +48,23 @@ final class DemoPreflight extends BaseCommand
         }
         CLI::write('DEMO LISTO: ' . $client['nombre_tercero'] . ' (id ' . $id . ')', 'green');
         return EXIT_SUCCESS;
+    }
+
+    private function accessDocumentsReady(int $clienteId): bool
+    {
+        $model = new DpDocumentoModel();
+        foreach (['seguridad', 'confidencialidad', 'encargados'] as $type) {
+            $document = $model->where('cliente_id', $clienteId)->where('tipo', $type)
+                ->where('estado', 'publicado')->orderBy('version', 'DESC')->first();
+            if (! $document) {
+                return false;
+            }
+            $variables = json_decode((string) ($document['variables_json'] ?? '{}'), true) ?: [];
+            if ((int) ($variables['demo_access_schema_version'] ?? 0) < 1
+                || ! hash_equals((string) $document['hash_sha256'], hash('sha256', (string) $document['contenido_html']))) {
+                return false;
+            }
+        }
+        return true;
     }
 }
